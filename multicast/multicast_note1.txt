@@ -1,0 +1,75 @@
+From: Bryan Butler <bbutler@nrao.edu>
+ To: Scott Ransom <sransom@nrao.edu>
+ CC: Joe McMullin <jmcmulli@aoc.nrao.edu>, Paul Demorest <pdemores@nrao.edu>, James Robnett <jrobnett@aoc.nrao.edu>, Bryan Butler <bbutler@aoc.nrao.edu>, Rich Moeser <rmoeser@aoc.nrao.edu>, Michael Rupen <mrupen@aoc.nrao.edu>, Martin Pokorny <mpokorny@aoc.nrao.edu>
+ 
+let's pick an easy one - item 2.
+
+the executor sends out what we call the Observation Document at the 
+beginning of each scan.  actually, it's before the scan begins; during 
+normal operation it's roughly one scan ahead.
+
+this document is sent out as an XML document as UDP packets over 
+multicast.  i've attached the current schema for this document to this 
+email, but note that for any production software, the schema should be 
+retrieved from our commons area, so that if changes are made, they are 
+picked up automatically.  the multicast information is:
+    group: 239.192.3.2
+    port: 53001
+similar to the observation document schema, for production software this 
+needs to be pulled from our commons area (EVLAConstants.java contains 
+this information - you're looking for X2DCAF_SOURCE_IP and 
+X2DCAF_SOURCE_PORT for group and port).
+
+in the observation document is an element called <name> which will have 
+the source name.  something like:
+<name>J1331+3030</name>
+or
+<name>NGC7027</name>
+or similar.
+
+the edge frequencies (per item 6) are also available in this document. 
+there will be something like:
+<sslo Sideband="1" FEfilter="0" BWcode="0" IFid="AC" Receiver="6GHz">
+<freq>4488.0</freq>
+</sslo>
+
+the rest of the information is going to be trickier, and will probably 
+have to come from the CBE.  well, except item (1), which will have to 
+come from elsewhere (it might be in the observation document, but not 
+as directly as you might think or like).
+
+
+        -bryan
+
+
+Scott Ransom wrote, On 9/23/11 13:59 PM:
+> Hey All,
+>
+> Here is the information required for real-time coherent mode pulsar
+> observations for the EVLA (via phased array mode and vdiff packets).
+>
+> 1. Observing mode (i.e. are we in phased array and will we be getting
+> vdiff packets?)
+>
+> 2. Pulsar we are observing (via standard name if possible -- we would
+> use this to grab an appropriate ephemeris file which would eventually be
+> provided by the observer)
+>
+> 3. number of subbands (or channels) in total
+>
+> 4. number of CBE nodes to be used (allows us to compute the number of
+> subbands per node)
+>
+> 5. bandwidth per subband (this should be signed so that we know whether
+> upper or lower sideband)
+>
+> 6. center (or edge) freq for each subband
+>
+> 7. number of polarizations
+>
+> 8. how the raw data is stored in each vdiff packet (i.e. are there
+> multiple polns or multiple subbands in each packet?)
+>
+> And I think that is all...
+>
+> Scott
