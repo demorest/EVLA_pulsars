@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2007 sp2 (http://www.altova.com) by Bruce Rowen (NRAO) -->
+<!--
+    File:      		vciDelayModel.xsd
+    Author:   		Sonja.Vrcic@nrc.gc.ca
+    $Date: 2006-11-16 18:23:38 -0700 (Thu, 16 Nov 2006) $
+    $Revision: 870 $
+     
+    WIDAR Correlator  Virtual Correlator Interface (VCI):  Delay Model.     		             
+    
+    Note: 
+    This schema is work in progress and is published for reference only.
+    Before starting any development based on the content of this schema contact the author.
+    
+    XML Namespace is not defined in this version.     
+		
+ -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+	<xs:element name="vciStbDelayModel">
+		<xs:annotation>
+			<xs:documentation>
+			VCI Station Board Delay Model 
+			May contain delay models for up to two basebands
+			and for up to 18 subbands for each baseband.			
+			Epoch is the time when the model becomes valid and is used by the delay modules. Epoch is specified in ISO 8601 format. 
+			t0 is the epoch of the polynomial currently defined to be MJD. This is converted into seconds/microseconds for use by the model generator.
+			if not specified it is assumed that t0 is the same as epoch.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="bbDelayModel" maxOccurs="2">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element ref="modelCff" maxOccurs="unbounded"/>
+							<xs:element name="sbDelayModel" minOccurs="0" maxOccurs="18">
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element ref="modelCff" maxOccurs="unbounded"/>
+									</xs:sequence>
+									<xs:attribute name="sbId" use="required">
+										<xs:annotation>
+											<xs:documentation>logical sub band identifier</xs:documentation>
+										</xs:annotation>
+										<xs:simpleType>
+											<xs:restriction base="xs:int">
+												<xs:minInclusive value="0"/>
+												<xs:maxInclusive value="17"/>
+											</xs:restriction>
+										</xs:simpleType>
+									</xs:attribute>
+								</xs:complexType>
+							</xs:element>
+						</xs:sequence>
+						<xs:attribute name="bbId" use="required">
+							<xs:annotation>
+								<xs:documentation>logical base band identifier</xs:documentation>
+							</xs:annotation>
+							<xs:simpleType>
+								<xs:restriction base="xs:int">
+									<xs:minInclusive value="0"/>
+									<xs:maxInclusive value="7"/>
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:attribute>
+					</xs:complexType>
+				</xs:element>
+			</xs:sequence>
+			<xs:attribute name="epoch" type="xs:dateTime" use="required"/>
+			<xs:attribute name="t0" type="xs:double" use="optional"/>
+			<xs:attribute name="idString" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>optional identifier string for debugging purposes</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+			<xs:attribute name="sslo" type="xs:double">
+				<xs:annotation>
+					<xs:documentation>signed sum LO (LO offset) units are MHz</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+			<xs:attribute name="fShift" type="xs:double">
+				<xs:annotation>
+					<xs:documentation>frequency shift, units are KHz</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="bbDelayModel">
+		<xs:annotation>
+			<xs:documentation>
+			Baseband Delay Model 
+			Epoch and t0  are specified by the parent element (see vciStbDelayModel).
+			numCff - Number of  coefficients of the polynomial specified in the model.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="modelCff" maxOccurs="unbounded"/>
+			</xs:sequence>
+			<xs:attribute name="numCff" type="xs:int" use="required"/>
+			<xs:attribute name="bbId" type="xs:integer" use="required"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="sbDelayModel">
+		<xs:annotation>
+			<xs:documentation>
+			Subband Delay Model 
+			Epoch and t0 are specified by the parent element (see vciStbDelayModel).
+			numCff - Number of  coefficients of the polynomial specified in the model.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="modelCff" maxOccurs="unbounded"/>
+			</xs:sequence>
+			<xs:attribute name="numCff" type="xs:int" use="required"/>
+			<xs:attribute name="bbId" use="required">
+				<xs:simpleType>
+					<xs:restriction base="xs:integer">
+						<xs:minInclusive value="0"/>
+						<xs:maxInclusive value="7"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:attribute>
+			<xs:attribute name="sbId" use="required">
+				<xs:simpleType>
+					<xs:restriction base="xs:integer">
+						<xs:minInclusive value="0"/>
+						<xs:maxInclusive value="17"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:attribute>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="modelCff">
+		<xs:annotation>
+			<xs:documentation>
+				Coefficent for the delay models.
+				This format will be used during the testing.
+				When the full system is installed  ASCII representation may be replaced by hexBinary.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:attribute name="index" type="xs:int" use="required"/>
+			<xs:attribute name="cff" type="xs:double" use="required"/>
+		</xs:complexType>
+	</xs:element>
+</xs:schema>
