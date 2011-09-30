@@ -7105,7 +7105,6 @@ class cmDeleteSubarray(GeneratedsSuper):
 
 
 class cmLogging(GeneratedsSuper):
-    "
     subclass = None
     superclass = None
     def __init__(self, level=None, logCrmMessages=None, logToFile=None, logCbeMessages=None, logBlbMessages=None, logXAlerts=None, logVciMessages=None, logStbMessages=None, logXbbMessages=None):
