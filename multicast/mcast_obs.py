@@ -9,7 +9,6 @@
 
 port = 53001
 group = '239.192.3.2'
-MYTTL = 1 # Increase to reach other networks
 
 import time, struct, socket, sys
 import observation_mcast
@@ -47,19 +46,16 @@ def receiver(group, port):
         mreq = group_bin + struct.pack('@I', 0)
         s.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_JOIN_GROUP, mreq)
 
-    # Loop, printing any data we receive
-    while True:
-        data, sender = s.recvfrom(1500)
-        while data[-1:] == '\0': data = data[:-1] # Strip trailing \0's
-        # print (str(sender) + '  ' + repr(data))
-        return data
-
+    print "Waiting..."
+    data, sender = s.recvfrom(9000)
+    data.rstrip('\0')
+    return data
 
 if __name__ == '__main__':
     while True:
         mcast_str = receiver(group, port)
         obs = observation_mcast.parseString(mcast_str)
         intent = parse_intent(obs.intent)
-        print "Processed a new Observation multicast..."
+        print "Processed a new Observation multicast (%d bytes)..." % len(mcast_str)
         print obs.__dict__
         print intent

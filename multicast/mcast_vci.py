@@ -9,7 +9,6 @@
 
 port = 53000
 group = '239.192.3.1'
-MYTTL = 1 # Increase to reach other networks
 
 import time, struct, socket, sys
 import vcicommon_mcast
@@ -37,19 +36,16 @@ def receiver(group, port):
         mreq = group_bin + struct.pack('@I', 0)
         s.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_JOIN_GROUP, mreq)
 
-    # Loop, printing any data we receive
-    while True:
-        data, sender = s.recvfrom(1500)
-        while data[-1:] == '\0': data = data[:-1] # Strip trailing \0's
-        # print (str(sender) + '  ' + repr(data))
-        return data
-
+    print "Waiting..."
+    data, sender = s.recvfrom(9000)
+    data.rstrip('\0')
+    return data
 
 if __name__ == '__main__':
     while True:
         mcast_str = receiver(group, port)
         print mcast_str
-        if not "AntennaPropertyTable" in mcast_str:
-            vci = vcicommon_mcast.parseString(mcast_str)
+        if 1 and not "AntennaPropertyTable" in mcast_str:
+            vci = vcirequest_mcast.parseString(mcast_str)
             print "Processed a new VCI multicast..."
             print vci.__dict__
