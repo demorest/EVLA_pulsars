@@ -10,6 +10,7 @@
 port = 53000
 group = '239.192.3.1'
 
+from datetime import datetime
 import time, struct, socket, sys
 import vcirequest_mcast
 
@@ -37,8 +38,14 @@ def receiver(group, port):
         s.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_JOIN_GROUP, mreq)
 
     print "Waiting..."
-    data, sender = s.recvfrom(9000)
+    data, sender = s.recvfrom(100000)
+    print "length = ", len(data)
+    print datetime.now()
     data.rstrip('\0')
+    print "length = ", len(data)
+    x = open('subarray_example.txt', 'w')
+    x.write(data)
+    x.close()
     return data
 
 if __name__ == '__main__':

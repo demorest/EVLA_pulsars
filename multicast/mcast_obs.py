@@ -10,6 +10,7 @@
 port = 53001
 group = '239.192.3.2'
 
+from datetime import datetime
 import time, struct, socket, sys
 import observation_mcast
 
@@ -48,6 +49,7 @@ def receiver(group, port):
 
     print "Waiting..."
     data, sender = s.recvfrom(9000)
+    print datetime.now()
     data.rstrip('\0')
     return data
 
