@@ -1,6 +1,6 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2.7
 from datetime import datetime
-from ordereddict import OrderedDict 
+from collections import OrderedDict 
 import time, struct, socket, sys, asyncore
 import vcirequest_mcast
 import observation_mcast
@@ -64,13 +64,13 @@ class mcast_client(asyncore.dispatcher):
         if (self.type=="obs"):
             obj = observation_mcast.parseString(self.read)
             print self.type, ":", obj.configId, obj.seq
+            add_config(obj, self.type)
         elif (self.type=="vci" and not "AntennaPropertyTable" in self.read):
             obj = vcirequest_mcast.parseString(self.read)
             print self.type, ":", obj.configId
+            add_config(obj, self.type)
         else:
             print self.type, ": Unknown message"
-        add_config(obj, self.type)
-        
 
 if __name__ == '__main__':
     clients = [mcast_client(groups[x], ports[x], x) for x in mcast_types]
