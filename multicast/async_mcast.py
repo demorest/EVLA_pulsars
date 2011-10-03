@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 from datetime import datetime
+from ordereddict import OrderedDict 
 import time, struct, socket, sys, asyncore
 import vcirequest_mcast
 import observation_mcast
@@ -8,10 +9,27 @@ mcast_types = ["obs", "vci"]
 ports = {"obs": 53001, "vci": 53000}
 groups = {"obs": '239.192.3.2', "vci": '239.192.3.1'}
 
-vci = None
-vcilast = None
-obs = None
-obslast = None
+configs = OrderedDict()
+configstosave = 5
+
+class EVLA_config:
+    pass
+
+def add_config(obj, type):
+    global configs
+    if not configs.has_key(obj.configId):
+        configs[obj.configId] = EVLA_config()
+    if type in mcast_types:
+        setattr(configs[obj.configId], type, obj)
+    else:
+        print "unknown mcast type in add_config()"
+    # limit the length of configs
+    if len(configs) > configstosave:
+        configs.popitem(last=False)
+    # print if we have a complete config
+    if (hasattr(configs[obj.configId], "vci") and
+        hasattr(configs[obj.configId], "obs")):
+        print "Have complete config for", obj.configId
 
 class mcast_client(asyncore.dispatcher):
 
@@ -41,19 +59,17 @@ class mcast_client(asyncore.dispatcher):
         return False
         
     def handle_read(self):
-        global vci, vcilast, obs, obslast
         self.lastread = self.read
         self.read = self.recv(100000)
         if (self.type=="obs"):
-            obslast = obs
-            obs = observation_mcast.parseString(self.read)
-            print self.type, ":", obs.configId, obs.seq
+            obj = observation_mcast.parseString(self.read)
+            print self.type, ":", obj.configId, obj.seq
         elif (self.type=="vci" and not "AntennaPropertyTable" in self.read):
-            vcilast = vci
-            vci = vcirequest_mcast.parseString(self.read)
-            print self.type, ":", vci.configId
+            obj = vcirequest_mcast.parseString(self.read)
+            print self.type, ":", obj.configId
         else:
             print self.type, ": Unknown message"
+        add_config(obj, self.type)
         
 
 if __name__ == '__main__':
