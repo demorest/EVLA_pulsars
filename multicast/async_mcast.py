@@ -1,6 +1,6 @@
 #!/usr/bin/env python2.7
-from datetime import datetime
 from collections import OrderedDict 
+from psrinfo_mcast import *
 import time, struct, socket, sys, asyncore
 import vcirequest_mcast
 import observation_mcast
@@ -11,9 +11,6 @@ groups = {"obs": '239.192.3.2', "vci": '239.192.3.1'}
 
 configs = OrderedDict()
 configstosave = 5
-
-class EVLA_config:
-    pass
 
 def add_config(obj, type):
     global configs
@@ -30,6 +27,10 @@ def add_config(obj, type):
     if (hasattr(configs[obj.configId], "vci") and
         hasattr(configs[obj.configId], "obs")):
         print "Have complete config for", obj.configId
+        configs[obj.configId].parse()
+        print configs[obj.configId].__dict__
+        for subband in configs[obj.configId].subbands:
+            print subband.__dict__
 
 class mcast_client(asyncore.dispatcher):
 
