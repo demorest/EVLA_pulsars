@@ -1,6 +1,7 @@
 #!/usr/bin/env python2.7
 from collections import OrderedDict 
 from psrinfo_mcast import *
+from guppi_daq import guppi_utils
 import time, struct, socket, sys, asyncore
 import vcirequest_mcast
 import observation_mcast
@@ -11,6 +12,27 @@ groups = {"obs": '239.192.3.2', "vci": '239.192.3.1'}
 
 configs = OrderedDict()
 configstosave = 5
+
+def push_to_shmem(conf):
+    global g
+    g.update("SRC_NAME", conf.source)
+    g.update("OBSERVER", conf.observer)
+    g.update("RA_STR", conf.ra_str)
+    g.update("DEC_STR", conf.dec_str)
+    g.update("TELESCOP", conf.telescope)
+    g.update("FRONTEND", conf.receiver)
+    g.update("PROJID", conf.projid)
+    g.update("FD_POLN", "CIRC")
+    g.update("TRK_MODE", "TRACK")
+    g.update("OBSFREQ", 1200.0)
+    g.update("OBSBW", 800.0)
+    g.update("OBS_MODE", "FOLD")
+    g.update("CAL_MODE", "OFF")
+    g.update("BACKEND", conf.backend)
+    g.update("LST", conf.startLST)
+    g.write()
+    g.show()
+    
 
 def add_config(obj, type):
     global configs
@@ -31,6 +53,7 @@ def add_config(obj, type):
         print configs[obj.configId].__dict__
         for subband in configs[obj.configId].subbands:
             print subband.__dict__
+        push_to_shmem(configs[obj.configId])
 
 class mcast_client(asyncore.dispatcher):
 
@@ -74,5 +97,6 @@ class mcast_client(asyncore.dispatcher):
             print self.type, ": Unknown message"
 
 if __name__ == '__main__':
+    g = guppi_utils.guppi_status()
     clients = [mcast_client(groups[x], ports[x], x) for x in mcast_types]
     asyncore.loop()
