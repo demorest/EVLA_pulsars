@@ -1,2 +1,14 @@
 *~
 *.pyc
+multicast/async_mcast.log0
+multicast/obs.log
+multicast/obs_examples.txt
+multicast/screenlog.0
+multicast/subarray.log
+multicast/subarray_example.txt
+multicast/subarray_example1.txt
+multicast/subarray_example2.txt
+multicast/subarray_example3.txt
+multicast/subarray_example4.txt
+multicast/subarray_introspection.txt
+multicast/vcirequest_mcast_verbose.py
