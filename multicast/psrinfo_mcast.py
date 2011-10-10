@@ -42,7 +42,10 @@ class EVLA_config:
             self.projid = intent["ProjectID"]
         except:
             self.projid = "Unknown"
-        self.scan_intent = intent["ScanIntent"]
+        try:
+            self.scan_intent = intent["ScanIntent"]
+        except:
+            self.scan_intent = "None"
         self.source = o.name
         self.ra_deg = angles.r2d(o.ra)
         self.ra_hrs = angles.r2h(o.ra)
