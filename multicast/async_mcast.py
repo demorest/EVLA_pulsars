@@ -15,6 +15,7 @@ configstosave = 5
 
 def push_to_shmem(conf):
     global g
+    g.read()
     g.update("SRC_NAME", conf.source)
     g.update("OBSERVER", conf.observer)
     g.update("RA_STR", conf.ra_str)
