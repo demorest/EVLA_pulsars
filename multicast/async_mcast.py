@@ -25,8 +25,8 @@ def push_to_shmem(conf):
     g.update("PROJID", conf.projid)
     g.update("FD_POLN", "CIRC")
     g.update("TRK_MODE", "TRACK")
-    g.update("OBSFREQ", 1200.0)
-    g.update("OBSBW", 800.0)
+    g.update("OBSFREQ", conf.skyctrfreq)
+    g.update("OBSBW", conf.bandwidth)
     g.update("OBS_MODE", "FOLD")
     g.update("CAL_MODE", "OFF")
     g.update("BACKEND", conf.backend)
@@ -89,10 +89,12 @@ class mcast_client(asyncore.dispatcher):
         if (self.type=="obs"):
             obj = observation_mcast.parseString(self.read)
             print self.type, ":", obj.configId, obj.seq
+            print self.read
             add_config(obj, self.type)
         elif (self.type=="vci" and not "AntennaPropertyTable" in self.read):
             obj = vcirequest_mcast.parseString(self.read)
             print self.type, ":", obj.configId
+            print self.read
             add_config(obj, self.type)
         else:
             print self.type, ": Unknown message"
