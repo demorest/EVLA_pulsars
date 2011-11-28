@@ -5,7 +5,7 @@ class subband:
     def __init__(self, subBand):
         self.swIndex = subBand.swIndex
         self.sbid = subBand.sbid
-        self.bw = subBand.bw
+        self.bw = float(subBand.bw)
         self.centralFreq = subBand.centralFreq
         self.summedArray = subBand.summedArray
 
@@ -49,7 +49,7 @@ class EVLA_config:
         self.source = o.name
         self.ra_deg = angles.r2d(o.ra)
         self.ra_hrs = angles.r2h(o.ra)
-        self.ra_str = angles.fmt_angle(self.ra_hrs, ":", ":")
+        self.ra_str = angles.fmt_angle(self.ra_hrs, ":", ":").lstrip('+-')
         self.dec_deg = angles.r2d(o.dec)
         self.dec_str = angles.fmt_angle(self.dec_deg, ":", ":")
         self.startLST = o.startLST * 86400.0
@@ -78,6 +78,10 @@ class EVLA_config:
     def parse(self):
         self.parse_obs()
         self.parse_vci()
+        # Might need a list of these...  this assumes 1 subband
+        self.bandwidth = 1e-6 * self.sideband * self.subbands[0].bw # in MHz
+        self.skyctrfreq = self.bandedge + 1e-6 * self.sideband * \
+                          (self.subbands[0].centralFreq - 0.5 * self.subbands[0].bw)  # in MHz
 
 if __name__ == "__main__":
     g = guppi_status()
