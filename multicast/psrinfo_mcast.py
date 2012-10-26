@@ -81,7 +81,7 @@ class EVLA_config:
         # Might need a list of these...  this assumes 1 subband
         self.bandwidth = 1e-6 * self.sideband * self.subbands[0].bw # in MHz
         self.skyctrfreq = self.bandedge + 1e-6 * self.sideband * \
-                          (self.subbands[0].centralFreq - 0.5 * self.subbands[0].bw)  # in MHz
+                          self.subbands[0].centralFreq  # in MHz
 
 if __name__ == "__main__":
     g = guppi_status()
