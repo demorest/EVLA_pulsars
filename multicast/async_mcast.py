@@ -2,14 +2,15 @@
 from collections import OrderedDict 
 from psrinfo_mcast import *
 from guppi_daq import guppi_utils
-import time, struct, socket, sys, asyncore
+import time, struct, socket, sys, asyncore, subprocess
 import vcirequest_mcast
 import observation_mcast
 
 mcast_types = ["obs", "vci"]
 ports = {"obs": 53001, "vci": 53000}
 groups = {"obs": '239.192.3.2', "vci": '239.192.3.1'}
-use_shmem = True
+use_shmem = False
+debugout = False
 
 configs = OrderedDict()
 configstosave = 5
@@ -35,7 +36,6 @@ def push_to_shmem(conf):
     g.write()
     g.show()
     
-
 def add_config(obj, type):
     global configs
     if not configs.has_key(obj.configId):
@@ -52,11 +52,31 @@ def add_config(obj, type):
         hasattr(configs[obj.configId], "obs")):
         print "Have complete config for", obj.configId
         configs[obj.configId].parse()
-        print configs[obj.configId].__dict__
-        for subband in configs[obj.configId].subbands:
-            print subband.__dict__
+        cc = configs[obj.configId]
+        if debugout:
+            print cc.__dict__
+            for subband in cc.subbands:
+                print subband.__dict__
         if use_shmem:
-            push_to_shmem(configs[obj.configId])
+            push_to_shmem(cc)
+        if ('PULSAR_DEDISPERSION' in cc.scan_intent) or \
+               ('PULSAR_SEARCH' in cc.scan_intent):
+            call_dspsr(cc)
+            
+
+def call_dspsr(conf):
+    if 'PULSAR_DEDISPERSION' in conf.scan_intent:
+        # construct command line, referring to .par file
+        # and building the output file name from what should
+        # be unique identifiers [TBC]
+        command_line = 'dspsr -header INSTRUMENT=guppi_daq DATABUF=1 -a PSRFITS -minram=1 -t6 -F256:D -L10. -E /lustre/evla/pulsar/tzpar/%s.par -b 256 -f %.10g -B %.10g -O /lustre/evla/pulsar/%s.%s.FITS' % (conf.source, conf.skyctrfreq, conf.bandwidth, conf.projid, conf.seq)
+    else:  # PULSAR_SEARCH 
+        # construct command line, building the output file name
+        # from what should be unique identifiers [TBC]
+        command_line = 'digifil -F1024:D -o /lustre/evla/pulsar/%s.%s.FITS' % (conf.projid, conf.seq)
+    print "Pulsar observation!  Command: '%s'"%command_line
+    # subprocess.popen(command_line)
+
 
 class mcast_client(asyncore.dispatcher):
 
@@ -90,13 +110,11 @@ class mcast_client(asyncore.dispatcher):
         self.read = self.recv(100000)
         if (self.type=="obs"):
             obj = observation_mcast.parseString(self.read)
-            print self.type, ":", obj.configId, obj.seq
-            print self.read
+            if debugout: print self.type, ":", obj.configId, obj.seq
             add_config(obj, self.type)
         elif (self.type=="vci" and not "AntennaPropertyTable" in self.read):
             obj = vcirequest_mcast.parseString(self.read)
-            print self.type, ":", obj.configId
-            print self.read
+            if debugout: print self.type, ":", obj.configId
             add_config(obj, self.type)
         else:
             print self.type, ": Unknown message"
