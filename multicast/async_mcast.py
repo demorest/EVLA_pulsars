@@ -9,6 +9,7 @@ import observation_mcast
 mcast_types = ["obs", "vci"]
 ports = {"obs": 53001, "vci": 53000}
 groups = {"obs": '239.192.3.2', "vci": '239.192.3.1'}
+use_shmem = True
 
 configs = OrderedDict()
 configstosave = 5
@@ -54,7 +55,8 @@ def add_config(obj, type):
         print configs[obj.configId].__dict__
         for subband in configs[obj.configId].subbands:
             print subband.__dict__
-        push_to_shmem(configs[obj.configId])
+        if use_shmem:
+            push_to_shmem(configs[obj.configId])
 
 class mcast_client(asyncore.dispatcher):
 
@@ -100,6 +102,7 @@ class mcast_client(asyncore.dispatcher):
             print self.type, ": Unknown message"
 
 if __name__ == '__main__':
-    g = guppi_utils.guppi_status()
+    if use_shmem:
+        g = guppi_utils.guppi_status()
     clients = [mcast_client(groups[x], ports[x], x) for x in mcast_types]
     asyncore.loop()
