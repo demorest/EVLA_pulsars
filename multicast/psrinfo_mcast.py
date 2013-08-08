@@ -2,12 +2,13 @@ import angles
 
 class subband:
 
-    def __init__(self, subBand):
+    def __init__(self, subBand, vdif=None):
         self.swIndex = subBand.swIndex
         self.sbid = subBand.sbid
         self.bw = float(subBand.bw)
         self.centralFreq = subBand.centralFreq
         self.summedArray = subBand.summedArray
+        self.vdif = vdif
 
 class EVLA_config:
     
@@ -58,26 +59,39 @@ class EVLA_config:
         else:
             self.startMJD = 0.0
         self.seq = o.seq
-        self.telescope = "EVLA"
+        self.telescope = "VLA"
         self.backend = "YUPPI"
         self.receiver = o.sslo[0].Receiver
         self.sideband = o.sslo[0].Sideband
         self.bandedge = o.sslo[0].freq
 
-    def parse_vci(self):
+    def parse_vci(self,match_ips=[]):
         v = self.vci
         nsIOs = len(v.stationInputOutput)
         sIO = v.stationInputOutput[0]
         nBBs = len(sIO.baseBand)
-        BB = sIO.baseBand[0]
-        nSBs = len(BB.subBand)
-        self.subbands = [subband(x) for x in BB.subBand]
-        print "Found %d station IOs, %d basebands, and %d subbands" % \
+        # Grab only matching subbands
+        self.subbands = []
+        nSBs = 0
+        for BB in sIO.baseBand:
+            nSBs += len(BB.subBand)
+            if len(match_ips)==0:
+                self.subbands += [subband(x) for x in BB.subBand]
+            else:
+                for sb in BB.subBand:
+                    for sa in sb.summedArray:
+                        if sa.vdif:
+                            v = sa.vdif
+                            if (v.aDestIP in match_ips) or (v.bDestIP in match_ips):
+                                self.subbands += [subband(sb,vdif=v)]
+        print "Found %d station IOs, %d basebands, and %d total subbands" % \
               (nsIOs, nBBs, nSBs)
+        if len(match_ips):
+            print "Found %d matching subbands" % (len(self.subbands))
 
-    def parse(self):
+    def parse(self,match_ips=[]):
         self.parse_obs()
-        self.parse_vci()
+        self.parse_vci(match_ips)
         # Might need a list of these...  this assumes 1 subband
         self.bandwidth = 1e-6 * self.sideband * self.subbands[0].bw # in MHz
         self.skyctrfreq = self.bandedge + 1e-6 * self.sideband * \

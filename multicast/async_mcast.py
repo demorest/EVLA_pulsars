@@ -1,16 +1,25 @@
-#!/usr/bin/env python2.7
-from collections import OrderedDict 
+#!/usr/bin/env python
+#from collections import OrderedDict 
+from ordereddict import OrderedDict # For python 2.6
 from psrinfo_mcast import *
 from guppi_daq import guppi_utils
 import time, struct, socket, sys, asyncore, subprocess
 import vcirequest_mcast
 import observation_mcast
+import netifaces
 
 mcast_types = ["obs", "vci"]
 ports = {"obs": 53001, "vci": 53000}
 groups = {"obs": '239.192.3.2', "vci": '239.192.3.1'}
-use_shmem = False
+use_shmem = True
 debugout = False
+
+# Figure out which IP addresses we might get data packets on
+data_ips = []
+for i in netifaces.interfaces():
+    if 'p2p' in i:
+        data_ips += [netifaces.ifaddresses(i)[netifaces.AF_INET][0]['addr']]
+print "Detected IPs:", data_ips
 
 configs = OrderedDict()
 configstosave = 5
@@ -29,10 +38,16 @@ def push_to_shmem(conf):
     g.update("TRK_MODE", "TRACK")
     g.update("OBSFREQ", conf.skyctrfreq)
     g.update("OBSBW", conf.bandwidth)
-    g.update("OBS_MODE", "FOLD")
+    g.update("OBS_MODE", "VDIF")
     g.update("CAL_MODE", "OFF")
     g.update("BACKEND", conf.backend)
     g.update("LST", conf.startLST)
+    if conf.subbands[0].vdif:
+        v = conf.subbands[0].vdif
+        g.update("PKTSIZE", int(v.frameSize)*4+32) # frameSize is in words
+        g.update("VDIFTIDA", int(v.aThread))
+        g.update("VDIFTIDB", int(v.bThread))
+        g.update("DATAPORT", int(v.aDestPort)) # Assume same port for both
     g.write()
     g.show()
     
@@ -51,7 +66,7 @@ def add_config(obj, type):
     if (hasattr(configs[obj.configId], "vci") and
         hasattr(configs[obj.configId], "obs")):
         print "Have complete config for", obj.configId
-        configs[obj.configId].parse()
+        configs[obj.configId].parse(match_ips=data_ips)
         cc = configs[obj.configId]
         if debugout:
             print cc.__dict__
@@ -59,24 +74,25 @@ def add_config(obj, type):
                 print subband.__dict__
         if use_shmem:
             push_to_shmem(cc)
-        if ('PULSAR_DEDISPERSION' in cc.scan_intent) or \
+        if ('PULSAR_FOLD' in cc.scan_intent) or \
                ('PULSAR_SEARCH' in cc.scan_intent):
             call_dspsr(cc)
             
 
 def call_dspsr(conf):
-    if 'PULSAR_DEDISPERSION' in conf.scan_intent:
+    if 'PULSAR_FOLD' in conf.scan_intent:
         # construct command line, referring to .par file
         # and building the output file name from what should
         # be unique identifiers [TBC]
-        command_line = 'dspsr -header INSTRUMENT=guppi_daq DATABUF=1 -a PSRFITS -minram=1 -t6 -F256:D -L10. -E /lustre/evla/pulsar/tzpar/%s.par -b 256 -f %.10g -B %.10g -O /lustre/evla/pulsar/%s.%s.FITS' % (conf.source, conf.skyctrfreq, conf.bandwidth, conf.projid, conf.seq)
+        command_args = ('dspsr -header INSTRUMENT=guppi_daq DATABUF=1 -a PSRFITS -minram=1 -t6 -F256:D -L10. -E /lustre/evla/pulsar/data/%s.par -b 1024 -O /lustre/evla/pulsar/data/%s.%s.%s' % (conf.source, conf.source, conf.projid, conf.seq)).split(' ')
     else:  # PULSAR_SEARCH 
         # construct command line, building the output file name
         # from what should be unique identifiers [TBC]
         command_line = 'digifil -F1024:D -o /lustre/evla/pulsar/%s.%s.FITS' % (conf.projid, conf.seq)
-    print "Pulsar observation!  Command: '%s'"%command_line
-    # subprocess.popen(command_line)
-
+    print "Pulsar observation!  Command: ", command_args
+    #subprocess.Popen(command_args)
+    #time.sleep(1)
+    #open('/tmp/guppi_daq_control','w').write('START')
 
 class mcast_client(asyncore.dispatcher):
 
