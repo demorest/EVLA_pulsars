@@ -2,13 +2,14 @@ import angles
 
 class subband:
 
-    def __init__(self, subBand, vdif=None):
+    def __init__(self, subBand, vdif=None, BBname=""):
         self.swIndex = subBand.swIndex
         self.sbid = subBand.sbid
         self.bw = float(subBand.bw)
         self.centralFreq = subBand.centralFreq
         self.summedArray = subBand.summedArray
         self.vdif = vdif
+        self.baseBandName = BBname
 
 class EVLA_config:
     
@@ -54,16 +55,19 @@ class EVLA_config:
         self.dec_deg = angles.r2d(o.dec)
         self.dec_str = angles.fmt_angle(self.dec_deg, ":", ":")
         self.startLST = o.startLST * 86400.0
-        if hasattr(o, 'startMJD'):
-            self.startMJD = o.startMJD
+        if hasattr(o, 'startTime'):
+            self.startMJD = float(o.startTime)
         else:
             self.startMJD = 0.0
         self.seq = o.seq
         self.telescope = "VLA"
         self.backend = "YUPPI"
+        # Do these ever vary with IF??
         self.receiver = o.sslo[0].Receiver
         self.sideband = o.sslo[0].Sideband
-        self.bandedge = o.sslo[0].freq
+        self.bandedge = {}
+        for s in o.sslo:
+            self.bandedge[s.IFid] = s.freq
 
     def parse_vci(self,match_ips=[]):
         v = self.vci
@@ -76,14 +80,17 @@ class EVLA_config:
         for BB in sIO.baseBand:
             nSBs += len(BB.subBand)
             if len(match_ips)==0:
-                self.subbands += [subband(x) for x in BB.subBand]
+                self.subbands += [subband(x,BBname=BB.swbbName[:2]) 
+                        for x in BB.subBand]
             else:
                 for sb in BB.subBand:
                     for sa in sb.summedArray:
                         if sa.vdif:
                             v = sa.vdif
-                            if (v.aDestIP in match_ips) or (v.bDestIP in match_ips):
-                                self.subbands += [subband(sb,vdif=v)]
+                            if (v.aDestIP in match_ips) or (v.bDestIP 
+                                    in match_ips):
+                                self.subbands += [subband(sb,vdif=v,
+                                    BBname=BB.swbbName[:2])]
         print "Found %d station IOs, %d basebands, and %d total subbands" % \
               (nsIOs, nBBs, nSBs)
         if len(match_ips):
@@ -93,9 +100,13 @@ class EVLA_config:
         self.parse_obs()
         self.parse_vci(match_ips)
         # Might need a list of these...  this assumes 1 subband
-        self.bandwidth = 1e-6 * self.sideband * self.subbands[0].bw # in MHz
-        self.skyctrfreq = self.bandedge + 1e-6 * self.sideband * \
-                          self.subbands[0].centralFreq  # in MHz
+        if len(self.subbands)>0:
+            isub = 0
+            bb = self.subbands[isub].baseBandName
+            # Both results should be MHz:
+            self.bandwidth = 1e-6 * self.sideband * self.subbands[isub].bw
+            self.skyctrfreq = self.bandedge[bb] + 1e-6 * self.sideband * \
+                              self.subbands[isub].centralFreq
 
 if __name__ == "__main__":
     g = guppi_status()
