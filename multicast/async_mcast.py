@@ -108,6 +108,7 @@ def add_config(obj, type):
         if ('PULSAR_FOLD' in cc.scan_intent) or \
                ('PULSAR_SEARCH' in cc.scan_intent):
             print "Pulsar config (%s)" % cc.scan_intent
+            sys.stdout.flush()
             if len(cc.subbands)>0:
                 # First generate the necessary configs:
                 shmem_conf = generate_shmem_config(cc)
@@ -132,14 +133,18 @@ def add_config(obj, type):
             run_at(cc.startMJD, stop_observation)
 
 def generate_obs_command(conf):
-    output_file = "/lustre/evla/pulsar/data/%s.%s.%s.%s" % (conf.source,
+    #output_dir = "/lustre/evla/pulsar/data/%s/%s" % (time.strftime("%Y%m%d"),
+    #        node)
+    output_dir = "/lustre/evla/pulsar/data"
+    #os.system("mkdir -p %s", output_dir)
+    output_file = "%s/%s.%s.%s.%s" % (output_dir, conf.source,
             conf.projid, conf.seq, node)
     if 'PULSAR_FOLD' in conf.scan_intent:
         # Fold command line
         command = 'dspsr -a PSRFITS -minram=1 -t8 -F32:D -L10. -E/lustre/evla/pulsar/data/%s.par -b1024 -O%s' % (conf.source, output_file)
     elif 'PULSAR_SEARCH' in conf.scan_intent:
         # Search command line
-        command = 'digifil -B16 -F256 -t128 -b8 -c -o%s.fil' % (output_file)
+        command = 'digifil -B16 -F32 -t512 -b8 -c -o%s.fil' % (output_file)
     else:
         print "Unrecognized pulsar intent='%s'" % conf.scan_intent
         return
