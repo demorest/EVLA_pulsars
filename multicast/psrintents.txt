@@ -1,0 +1,7 @@
+PsrNumChan
+PsrNumPol
+PsrFoldIntTime
+PsrFoldNumBins
+PsrSearchTimeRes
+PsrSearchNumBits
+TempoFileName
