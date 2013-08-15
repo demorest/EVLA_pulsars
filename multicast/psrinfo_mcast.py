@@ -1,5 +1,11 @@
 import angles
 
+def get_val(d,key,default=None):
+    try:
+        return d[key]
+    except KeyError:
+        return default
+
 class subband:
 
     def __init__(self, subBand, vdif=None, BBname=""):
@@ -36,18 +42,17 @@ class EVLA_config:
     def parse_obs(self):
         o = self.obs
         intent = self.parse_obs_intent(o.intent)
-        try:
-            self.observer = intent["ObserverName"]
-        except:
-            self.observer = "Unknown"
-        try:
-            self.projid = intent["ProjectID"]
-        except:
-            self.projid = "Unknown"
-        try:
-            self.scan_intent = intent["ScanIntent"]
-        except:
-            self.scan_intent = "None"
+        self.observer = get_val(intent,"ObserverName","Unknown")
+        self.projid = get_val(intent,"ProjectID","Unknown")
+        self.scan_intent = get_val(intent,"ScanIntent","None")
+        # TODO what about checking bounds on some of these...
+        self.nchan = get_val(intent,"PsrNumChan",32)
+        self.npol = get_val(intent,"PsrNumPol",4)
+        self.foldtime = get_val(intent,"PsrFoldIntTime",10.0)
+        self.foldbins = get_val(intent,"PsrFoldNumBins",2048)
+        self.timeres = get_val(intent,"PsrSearchTimeRes",1e-3)
+        self.nbitsout = get_val(intent,"PsrSearchNumBits",8)
+        self.parfile = get_val(intent,"TempoFileName",None)
         self.source = o.name
         self.ra_deg = angles.r2d(o.ra)
         self.ra_hrs = angles.r2h(o.ra)
