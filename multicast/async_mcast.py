@@ -63,7 +63,10 @@ def generate_shmem_config(conf):
     result["TRK_MODE"]="TRACK"
     result["OBSFREQ"]=conf.skyctrfreq
     result["OBSBW"]=conf.bandwidth
-    result["OBS_MODE"]="VDIF"
+    if 'PULSAR_MONITOR' in conf.scan_intent:
+        result["OBS_MODE"]="MONITOR"
+    else:
+        result["OBS_MODE"]="VDIF"
     result["CAL_MODE"]="OFF"
     result["BACKEND"]=conf.backend
     result["LST"]=conf.startLST
@@ -82,6 +85,12 @@ def push_to_shmem(params):
         g.update(k, params[k])
     g.write()
     g.show()
+
+def is_pulsar_intent(intent):
+    if 'PULSAR_FOLD' in intent: return True
+    if 'PULSAR_SEARCH' in intent: return True
+    if 'PULSAR_MONITOR' in intent: return True
+    return False
     
 def add_config(obj, type):
     global configs
@@ -105,8 +114,7 @@ def add_config(obj, type):
             print cc.__dict__
             for subband in cc.subbands:
                 print subband.__dict__
-        if ('PULSAR_FOLD' in cc.scan_intent) or \
-               ('PULSAR_SEARCH' in cc.scan_intent):
+        if is_pulsar_intent(cc.scan_intent):
             print "Pulsar config (%s)" % cc.scan_intent
             sys.stdout.flush()
             if len(cc.subbands)>0:
@@ -141,10 +149,17 @@ def generate_obs_command(conf):
             conf.projid, conf.seq, node)
     if 'PULSAR_FOLD' in conf.scan_intent:
         # Fold command line
-        command = 'dspsr -a PSRFITS -minram=1 -t8 -F32:D -L10. -E/lustre/evla/pulsar/data/%s.par -b1024 -O%s' % (conf.source, output_file)
+        command = \
+            'dspsr -a PSRFITS -minram=1 -t8 -F%d:D -d%d -L%f -E%s -b%d -O%s' \
+            % (conf.nchan, conf.npol, conf.foldtime, conf.parfile, 
+                    conf.foldbins, output_file)
     elif 'PULSAR_SEARCH' in conf.scan_intent:
         # Search command line
-        command = 'digifil -B16 -F32 -t512 -b8 -c -o%s.fil' % (output_file)
+        acclen = int(conf.timeres*conf.bandwidth*1e6/conf.nchan)
+        command = 'digifil -B16 -F%d -t%d -b%d -c -o%s.fil' % (conf.nchan, 
+                acclen, conf.nbitsout, output_file)
+    elif 'PULSAR_MONITOR' in conf.scan_intent:
+        command = ''
     else:
         print "Unrecognized pulsar intent='%s'" % conf.scan_intent
         return
@@ -157,7 +172,7 @@ def run_observation(shmem, command):
     push_to_shmem(shmem)
     print "Pulsar observation!  Command: ", command
     sys.stdout.flush()
-    subprocess.Popen(command.split(' '))
+    if command: subprocess.Popen(command.split(' '))
     time.sleep(1)
     guppi_daq_command('START')
 
