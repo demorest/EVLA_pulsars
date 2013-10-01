@@ -46,12 +46,12 @@ class EVLA_config:
         self.projid = get_val(intent,"ProjectID","Unknown")
         self.scan_intent = get_val(intent,"ScanIntent","None")
         # TODO what about checking bounds on some of these...
-        self.nchan = get_val(intent,"PsrNumChan",32)
-        self.npol = get_val(intent,"PsrNumPol",4)
-        self.foldtime = get_val(intent,"PsrFoldIntTime",10.0)
-        self.foldbins = get_val(intent,"PsrFoldNumBins",2048)
-        self.timeres = get_val(intent,"PsrSearchTimeRes",1e-3)
-        self.nbitsout = get_val(intent,"PsrSearchNumBits",8)
+        self.nchan = int(get_val(intent,"PsrNumChan",32))
+        self.npol = int(get_val(intent,"PsrNumPol",4))
+        self.foldtime = float(get_val(intent,"PsrFoldIntTime",10.0))
+        self.foldbins = int(get_val(intent,"PsrFoldNumBins",2048))
+        self.timeres = float(get_val(intent,"PsrSearchTimeRes",1e-3))
+        self.nbitsout = int(get_val(intent,"PsrSearchNumBits",8))
         self.parfile = get_val(intent,"TempoFileName",None)
         self.source = o.name
         self.ra_deg = angles.r2d(o.ra)
