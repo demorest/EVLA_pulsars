@@ -1,0 +1,7 @@
+#! /bin/bash
+ctrl=/tmp/guppi_daq_control
+if [ -e $ctrl ]; then
+	echo $* > $ctrl 
+else
+	echo $ctrl does not exist.
+fi

@@ -1,0 +1,13 @@
+setenv PSR /opt/cbe-local/yuppi
+setenv PSRDATA /lustre/evla/pulsar
+setenv PSRLOGS /lustre/evla/pulsar/log
+setenv TEMPO ${PSR}/src/tempo
+setenv PRESTO ${PSR}/src/presto
+setenv GUPPI_DIR ${PSR}/src/guppi_daq
+setenv PGPLOT_DIR ${PSR}/lib/pgplot
+setenv PGPLOT_DEV /xs
+setenv PATH ${PATH}:${PSR}/bin:${GUPPI_DIR}/bin:${PRESTO}/bin
+setenv LD_LIBRARY_PATH ${PSR}/lib:${PGPLOT_DIR}:${PRESTO}/lib
+setenv LIBRARY_PATH ${PSR}/lib
+setenv CPATH ${PSR}/include
+setenv PYTHONPATH ${PSR}/lib/python2.6/site-packages:${PRESTO}/lib/python

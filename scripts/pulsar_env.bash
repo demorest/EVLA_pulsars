@@ -1,0 +1,13 @@
+export PSR=/opt/cbe-local/yuppi
+export PSRDATA=/lustre/evla/pulsar
+export PSRLOGS=/lustre/evla/pulsar/log
+export TEMPO=$PSR/src/tempo
+export PRESTO=$PSR/src/presto
+export GUPPI_DIR=$PSR/src/guppi_daq
+export PGPLOT_DIR=$PSR/lib/pgplot
+export PGPLOT_DEV=/xs
+export PATH=$PATH:$PSR/bin:$GUPPI_DIR/bin
+export LD_LIBRARY_PATH=$PSR/lib:$PGPLOT_DIR
+export LIBRARY_PATH=$PSR/lib
+export CPATH=$PSR/include
+export PYTHONPATH=$PSR/lib/python2.6/site-packages:$PRESTO/lib/python

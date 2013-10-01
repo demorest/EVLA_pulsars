@@ -1,0 +1,22 @@
+#! /bin/bash
+source /opt/cbe-local/yuppi/pulsar_env.bash
+
+# stop guppi_daq
+test -e /tmp/guppi_daq_control && echo 'QUIT' > /tmp/guppi_daq_control
+sleep 1
+
+# Really stop guppi_daq ;)
+pkill -KILL -f guppi_daq_server
+
+# Remove the control fifo
+rm -f /tmp/guppi_daq_control
+
+# kill dspsrs
+pkill -KILL -f dspsr
+pkill -KILL -f digifil
+
+# stop packet sniff
+pkill -KILL -f async_mcast.py
+
+# Clear shared mem buffers
+clean_guppi_shmem

@@ -1,0 +1,5 @@
+#! /bin/bash
+source /opt/cbe-local/yuppi/pulsar_env.bash
+pkill -KILL -f yuppi_status_daemon
+sleep 2
+( $PSR/src/EVLA_pulsars/status/yuppi_status_daemon.py >> $PSRLOGS/yuppi_status.`hostname`.log 2>&1 ) &
