@@ -73,6 +73,7 @@ def generate_shmem_config(conf):
     if conf.subbands[0].vdif:
         v = conf.subbands[0].vdif
         result["PKTSIZE"]=int(v.frameSize)*4+32 # frameSize is in words
+        result["NBITS"]=int(v.numBits)
         result["VDIFTIDA"]=int(v.aThread)
         result["VDIFTIDB"]=int(v.bThread)
         result["DATAPORT"]=int(v.aDestPort) # Assume same port for both
@@ -141,22 +142,24 @@ def add_config(obj, type):
             run_at(cc.startMJD, stop_observation)
 
 def generate_obs_command(conf):
-    #output_dir = "/lustre/evla/pulsar/data/%s/%s" % (time.strftime("%Y%m%d"),
-    #        node)
+    #output_dir = "/lustre/evla/pulsar/data/%s/%s" % \
+    #        (time.strftime("%Y%m%d"), node)
     output_dir = "/lustre/evla/pulsar/data"
+    #print "mkdir -p %s", output_dir_date
     #os.system("mkdir -p %s", output_dir)
     output_file = "%s/%s.%s.%s.%s" % (output_dir, conf.source,
             conf.projid, conf.seq, node)
     if 'PULSAR_FOLD' in conf.scan_intent:
         # Fold command line
+        # Note, '-2 c0' should turn off two-bit thresholding
         command = \
-            'dspsr -a PSRFITS -minram=1 -t8 -F%d:D -d%d -L%f -E%s -b%d -O%s' \
+            'dspsr -a PSRFITS -minram=1 -t8 -2 c0 -F%d:D -d%d -L%f -E%s -b%d -O%s' \
             % (conf.nchan, conf.npol, conf.foldtime, conf.parfile, 
                     conf.foldbins, output_file)
     elif 'PULSAR_SEARCH' in conf.scan_intent:
         # Search command line
         acclen = int(conf.timeres*conf.bandwidth*1e6/conf.nchan)
-        command = 'digifil -B16 -F%d -t%d -b%d -c -o%s.fil' % (conf.nchan, 
+        command = 'digifil -B64 -F%d -t%d -b%d -c -o%s.fil' % (conf.nchan, 
                 acclen, conf.nbitsout, output_file)
     elif 'PULSAR_MONITOR' in conf.scan_intent:
         command = ''
@@ -170,14 +173,15 @@ def generate_obs_command(conf):
 def run_observation(shmem, command):
     stop_observation() # First make sure we're stopped
     push_to_shmem(shmem)
-    print "Pulsar observation!  Command: ", command
+    print "Pulsar observation at ", time.ctime()
+    print "  Command: ", command
     sys.stdout.flush()
     if command: subprocess.Popen(command.split(' '))
     time.sleep(1)
     guppi_daq_command('START')
 
 def stop_observation():
-    print "Stop observations"
+    print "Stop observations at ", time.ctime()
     sys.stdout.flush()
     guppi_daq_command('STOP')
     # These should probably be done in a cleaner way:
