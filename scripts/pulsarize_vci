@@ -1,0 +1,88 @@
+#! /usr/bin/env python
+
+# Takes an input VCI document and sends the summed array output
+# to the cbe cluster nodes.
+
+import os,sys
+from lxml import etree
+
+# Read the nic config file
+n_nics = {}
+ips = {}
+macs = {}
+nic_file = os.getenv('PSR') + '/share/cbe_nics.dat'
+for l in open(nic_file).readlines():
+    if l.startswith('#'): continue
+    (node,nic,ip,mac) = l.split()
+    if n_nics.has_key(node): 
+        n_nics[node] += 1
+    else:
+        n_nics[node] = 1
+    key = '%s-%s' % (node, nic.replace('p2p',''))
+    ips[key] = ip
+    macs[key] = mac
+
+# Could check lots of stuff here if we wanted to
+
+n_nodes = len(n_nics)
+print "CBE: %d nodes" % n_nodes
+print "CBE: %d NICs" % len(ips)
+
+vcifname = sys.argv[1]
+#parser = etree.XMLParser(remove_blank_text=True)
+#vcitree = etree.parse(vcifname,parser)
+vcitree = etree.parse(vcifname)
+vciroot = vcitree.getroot()
+pfx = '{' + vciroot.nsmap['widar'] + '}'
+
+n_subband = 0
+n_summedarray = 0
+for subband in vciroot.iter(pfx+'subBand'): 
+    n_subband += 1
+    if subband.find(pfx+'summedArray') is not None: n_summedarray += 1
+print "VCI: %d subBands" % n_subband
+print "VCI: %d summedArrays" % n_summedarray
+
+if n_summedarray > n_nodes:
+    print "ERROR: Number of subbands greater than number of nodes"
+    sys.exit(1)
+
+# For now assume summedArray and vdif tags exist
+inode = 1
+for summedarray in vciroot.iter(pfx+'summedArray'):
+    vdif = summedarray.find(pfx+'vdif')
+    if vdif is None:
+        print "ERROR: summedArray section missing vdif component"
+        sys.exit(1)
+
+    node = 'cbe-node-%02d' % inode
+    nic1 = node + '-1'
+    nic2 = node + '-2'
+
+    # Clear the vdif tag and refill with appropriate values
+    vdif.clear()
+    vdif.attrib['agcEnabled'] = 'false'
+    vdif.attrib['vdifEnableB'] = 'true'
+    vdif.attrib['vdifEnableA'] = 'true'
+    vdif.attrib['aPacketDelay'] = '0'
+    vdif.attrib['bPacketDelay'] = '0'
+    vdif.attrib['stationId'] = '12345'
+    vdif.attrib['numBits'] = '8'
+    vdif.attrib['frameSize'] = '1250'
+    vdif.attrib['epochOffset'] = '127057024'
+    vdif.attrib['epoch'] = '0'
+    vdif.attrib['bThread'] = '1'
+    vdif.attrib['aThread'] = '0'
+    vdif.attrib['aDestPort'] = '50000'
+    #vdif.attrib['bDestPort'] = '50000' # XXX need this?
+    vdif.attrib['aDestMAC'] = macs[nic1]
+    vdif.attrib['aDestIP'] = ips[nic1]
+    vdif.attrib['bDestMAC'] = macs[nic2]
+    vdif.attrib['bDestIP'] = ips[nic2]
+    vdif.tail = '\n' + 20*' '
+
+    inode += 1
+
+vcifname_out = vcifname + '_psr'
+vcitree.write(vcifname_out,pretty_print=True,standalone=True,encoding='UTF-8')
+
