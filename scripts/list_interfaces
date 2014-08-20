@@ -1,0 +1,13 @@
+#! /usr/bin/env python
+
+import os
+import netifaces as ni
+
+hostname = os.uname()[1]
+
+for nic in ni.interfaces():
+    if not nic.startswith('p2p'): continue
+    addrs = ni.ifaddresses(nic)
+    ip = addrs[ni.AF_INET][0]['addr']
+    mac = addrs[ni.AF_LINK][0]['addr'].upper()
+    print '%s %s %s %s' % (hostname, nic, ip, mac)
