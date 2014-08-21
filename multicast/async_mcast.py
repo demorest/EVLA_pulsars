@@ -63,6 +63,7 @@ def generate_shmem_config(conf):
     result["TRK_MODE"]="TRACK"
     result["OBSFREQ"]=conf.skyctrfreq
     result["OBSBW"]=conf.bandwidth
+    result["TBIN"]=0.5/abs(conf.bandwidth*1e6)
     if 'PULSAR_MONITOR' in conf.scan_intent:
         result["OBS_MODE"]="MONITOR"
     else:
@@ -159,7 +160,7 @@ def generate_obs_command(conf):
     elif 'PULSAR_SEARCH' in conf.scan_intent:
         # Search command line
         acclen = int(conf.timeres*conf.bandwidth*1e6/conf.nchan)
-        command = 'digifil -B64 -F%d -t%d -b%d -c -o%s.fil' % (conf.nchan, 
+        command = 'digifil -threads 8 -B64 -F%d -t%d -b%d -c -o%s.fil' % (conf.nchan, 
                 acclen, conf.nbitsout, output_file)
     elif 'PULSAR_MONITOR' in conf.scan_intent:
         command = ''
