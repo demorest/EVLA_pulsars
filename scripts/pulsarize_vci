@@ -40,6 +40,12 @@ n_summedarray = 0
 for subband in vciroot.iter(pfx+'subBand'): 
     n_subband += 1
     if subband.find(pfx+'summedArray') is not None: n_summedarray += 1
+    # Strip out any fractional centralFreqs
+    try:
+        freq_int = subband.attrib['centralFreq'].split('.')[0]
+        subband.attrib['centralFreq'] = freq_int
+    except:
+        pass
 print "VCI: %d subBands" % n_subband
 print "VCI: %d summedArrays" % n_summedarray
 
