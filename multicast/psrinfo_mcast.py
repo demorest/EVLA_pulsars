@@ -84,8 +84,13 @@ class EVLA_config:
         nSBs = 0
         for BB in sIO.baseBand:
             nSBs += len(BB.subBand)
+            bbname = BB.swbbName.split('_')[0]
+            if bbname=="A1C1": bbname="AC1"
+            if bbname=="A2C2": bbname="AC2"
+            if bbname=="B1D1": bbname="BD1"
+            if bbname=="B2D2": bbname="BD2"
             if len(match_ips)==0:
-                self.subbands += [subband(x,BBname=BB.swbbName[:2]) 
+                self.subbands += [subband(x, BBname=BB.bbname) 
                         for x in BB.subBand]
             else:
                 for sb in BB.subBand:
@@ -95,7 +100,7 @@ class EVLA_config:
                             if (v.aDestIP in match_ips) or (v.bDestIP 
                                     in match_ips):
                                 self.subbands += [subband(sb,vdif=v,
-                                    BBname=BB.swbbName[:2])]
+                                    BBname=bbname)]
         print "Found %d station IOs, %d basebands, and %d total subbands" % \
               (nsIOs, nBBs, nSBs)
         if len(match_ips):
