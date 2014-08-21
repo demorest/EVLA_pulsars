@@ -65,6 +65,11 @@ for summedarray in vciroot.iter(pfx+'summedArray'):
     nic1 = node + '-1'
     nic2 = node + '-2'
 
+    # Find bandwidth, use to set number of bits
+    bw = float(summedarray.getparent().attrib['bw'])
+    if bw>32e6: nbit = '2'
+    else: nbit = '8'
+
     # Clear the vdif tag and refill with appropriate values
     vdif.clear()
     vdif.attrib['agcEnabled'] = 'false'
@@ -73,7 +78,7 @@ for summedarray in vciroot.iter(pfx+'summedArray'):
     vdif.attrib['aPacketDelay'] = '0'
     vdif.attrib['bPacketDelay'] = '0'
     vdif.attrib['stationId'] = '12345'
-    vdif.attrib['numBits'] = '8'
+    vdif.attrib['numBits'] = nbit
     vdif.attrib['frameSize'] = '1250'
     vdif.attrib['epochOffset'] = '127057024'
     vdif.attrib['epoch'] = '0'
