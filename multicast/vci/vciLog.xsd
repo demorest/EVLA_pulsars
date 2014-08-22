@@ -2,7 +2,7 @@
 <!--
     File: vciLog.xsd (XML Schema) 
     Author: Sonja.Vrcic@nrc.gc.ca
-    Copyright: National Research Council of Canada NRC-HIA-DRAO, 2008
+    Copyright:  National Research Council of Canada and Associated Universities Inc., 2010, 2011, 2012, 2013
     Version of the protocol: As specified in the VCI Protocol Specification,  Widar Document A25201N0000 Revision 3.5, 
     Target namespace has been defined for VCI schemata. Additional changes are due as result of the VCI review.
     Description: VCI Log

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*- 
 
 #
-# Generated Fri Sep 30 10:46:01 2011 by generateDS.py version 2.6a.
+# Generated Fri Aug 22 09:27:56 2014 by generateDS.py version 2.6a.
 #
 
 import sys
@@ -365,21 +365,16 @@ def _cast(typ, value):
 
 class vciRequest(GeneratedsSuper):
     """VCI Request is a "wrapper" element. A single vciRequest may contain
-    several configuration for several components and/or stations.
-    vciRequest can contain several activationTriggers. Element
-    vciRequest can not contain configuration for more than one
-    subarray."""
+    configuration for several components and/or stations. vciRequest
+    can contain several activationTriggers. Element vciRequest can
+    not contain configuration for more than one subarray."""
     subclass = None
     superclass = None
-    def __init__(self, msgId=None, desc=None, version=None, timeStamp=None, component=None, stationHw=None, subArray=None, activationTrigger=None, cmMonitorControl=None):
+    def __init__(self, msgId=None, desc=None, version=None, timeStamp=None, stationHw=None, subArray=None, activationTrigger=None, cmMonitorControl=None):
         self.msgId = _cast(int, msgId)
         self.desc = _cast(None, desc)
         self.version = _cast(None, version)
         self.timeStamp = _cast(None, timeStamp)
-        if component is None:
-            self.component = []
-        else:
-            self.component = component
         if stationHw is None:
             self.stationHw = []
         else:
@@ -396,10 +391,6 @@ class vciRequest(GeneratedsSuper):
         else:
             return vciRequest(*args_, **kwargs_)
     factory = staticmethod(factory)
-    def get_component(self): return self.component
-    def set_component(self, component): self.component = component
-    def add_component(self, value): self.component.append(value)
-    def insert_component(self, index, value): self.component[index] = value
     def get_stationHw(self): return self.stationHw
     def set_stationHw(self, stationHw): self.stationHw = stationHw
     def add_stationHw(self, value): self.stationHw.append(value)
@@ -446,8 +437,6 @@ class vciRequest(GeneratedsSuper):
             already_processed.append('timeStamp')
             outfile.write(' timeStamp=%s' % (self.gds_format_string(quote_attrib(self.timeStamp).encode(ExternalEncoding), input_name='timeStamp'), ))
     def exportChildren(self, outfile, level, namespace_='widar:', name_='vciRequest', fromsubclass_=False):
-        for component_ in self.component:
-            component_.export(outfile, level, namespace_, name_='component')
         for stationHw_ in self.stationHw:
             stationHw_.export(outfile, level, namespace_, name_='stationHw')
         if self.subArray:
@@ -458,7 +447,6 @@ class vciRequest(GeneratedsSuper):
             self.cmMonitorControl.export(outfile, level, namespace_, name_='cmMonitorControl')
     def hasContent_(self):
         if (
-            self.component or
             self.stationHw or
             self.subArray is not None or
             self.activationTrigger or
@@ -490,18 +478,6 @@ class vciRequest(GeneratedsSuper):
             showIndent(outfile, level)
             outfile.write('timeStamp = "%s",\n' % (self.timeStamp,))
     def exportLiteralChildren(self, outfile, level, name_):
-        showIndent(outfile, level)
-        outfile.write('component=[\n')
-        level += 1
-        for component_ in self.component:
-            showIndent(outfile, level)
-            outfile.write('model_.component(\n')
-            component_.exportLiteral(outfile, level)
-            showIndent(outfile, level)
-            outfile.write('),\n')
-        level -= 1
-        showIndent(outfile, level)
-        outfile.write('],\n')
         showIndent(outfile, level)
         outfile.write('stationHw=[\n')
         level += 1
@@ -564,11 +540,7 @@ class vciRequest(GeneratedsSuper):
             already_processed.append('timeStamp')
             self.timeStamp = value
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
-        if nodeName_ == 'component':
-            obj_ = component.factory()
-            obj_.build(child_)
-            self.component.append(obj_)
-        elif nodeName_ == 'stationHw':
+        if nodeName_ == 'stationHw':
             obj_ = stationHw.factory()
             obj_.build(child_)
             self.stationHw.append(obj_)
@@ -769,10 +741,13 @@ class stationHw(GeneratedsSuper):
     replaced by the new configuration. A (previously configured)
     station that belongs to a subarray cannot be re-configured.
     Station ID and Baseband IDs assigned here are used when
-    specifying subarray configuration."""
+    specifying subarray configuration. July 2012
+    Sonja.Vrcic@nrc.gc.ca removed element noiseDiode: --- element
+    ref="widar:noiseDiode" minOccurs="0 --- Noise Diode is not set
+    via VCI."""
     subclass = None
     superclass = None
-    def __init__(self, name=None, timeStamp=None, msgId=None, mappingOrder=None, activationId=None, sid=None, action=None, baseBandHw=None, noiseDiode=None, antenna=None, monitorData=None):
+    def __init__(self, name=None, timeStamp=None, msgId=None, mappingOrder=None, activationId=None, sid=None, action=None, baseBandHw=None, antenna=None):
         self.name = _cast(None, name)
         self.timeStamp = _cast(None, timeStamp)
         self.msgId = _cast(int, msgId)
@@ -784,9 +759,7 @@ class stationHw(GeneratedsSuper):
             self.baseBandHw = []
         else:
             self.baseBandHw = baseBandHw
-        self.noiseDiode = noiseDiode
         self.antenna = antenna
-        self.monitorData = monitorData
     def factory(*args_, **kwargs_):
         if stationHw.subclass:
             return stationHw.subclass(*args_, **kwargs_)
@@ -797,12 +770,8 @@ class stationHw(GeneratedsSuper):
     def set_baseBandHw(self, baseBandHw): self.baseBandHw = baseBandHw
     def add_baseBandHw(self, value): self.baseBandHw.append(value)
     def insert_baseBandHw(self, index, value): self.baseBandHw[index] = value
-    def get_noiseDiode(self): return self.noiseDiode
-    def set_noiseDiode(self, noiseDiode): self.noiseDiode = noiseDiode
     def get_antenna(self): return self.antenna
     def set_antenna(self, antenna): self.antenna = antenna
-    def get_monitorData(self): return self.monitorData
-    def set_monitorData(self, monitorData): self.monitorData = monitorData
     def get_name(self): return self.name
     def set_name(self, name): self.name = name
     def get_timeStamp(self): return self.timeStamp
@@ -854,18 +823,12 @@ class stationHw(GeneratedsSuper):
     def exportChildren(self, outfile, level, namespace_='widar:', name_='stationHw', fromsubclass_=False):
         for baseBandHw_ in self.baseBandHw:
             baseBandHw_.export(outfile, level, namespace_, name_='baseBandHw')
-        if self.noiseDiode:
-            self.noiseDiode.export(outfile, level, namespace_, name_='noiseDiode')
         if self.antenna:
             self.antenna.export(outfile, level, namespace_, name_='antenna')
-        if self.monitorData:
-            self.monitorData.export(outfile, level, namespace_, name_='monitorData')
     def hasContent_(self):
         if (
             self.baseBandHw or
-            self.noiseDiode is not None or
-            self.antenna is not None or
-            self.monitorData is not None
+            self.antenna is not None
             ):
             return True
         else:
@@ -917,22 +880,10 @@ class stationHw(GeneratedsSuper):
         level -= 1
         showIndent(outfile, level)
         outfile.write('],\n')
-        if self.noiseDiode is not None:
-            showIndent(outfile, level)
-            outfile.write('noiseDiode=model_.noiseDiode(\n')
-            self.noiseDiode.exportLiteral(outfile, level)
-            showIndent(outfile, level)
-            outfile.write('),\n')
         if self.antenna is not None:
             showIndent(outfile, level)
             outfile.write('antenna=model_.antenna(\n')
             self.antenna.exportLiteral(outfile, level)
-            showIndent(outfile, level)
-            outfile.write('),\n')
-        if self.monitorData is not None:
-            showIndent(outfile, level)
-            outfile.write('monitorData=model_.monitorData(\n')
-            self.monitorData.exportLiteral(outfile, level)
             showIndent(outfile, level)
             outfile.write('),\n')
     def build(self, node):
@@ -980,18 +931,10 @@ class stationHw(GeneratedsSuper):
             obj_ = baseBandHw.factory()
             obj_.build(child_)
             self.baseBandHw.append(obj_)
-        elif nodeName_ == 'noiseDiode':
-            obj_ = noiseDiode.factory()
-            obj_.build(child_)
-            self.set_noiseDiode(obj_)
         elif nodeName_ == 'antenna':
             obj_ = antenna.factory()
             obj_.build(child_)
             self.set_antenna(obj_)
-        elif nodeName_ == 'monitorData':
-            obj_ = monitorData.factory()
-            obj_.build(child_)
-            self.set_monitorData(obj_)
 # end class stationHw
 
 
@@ -1112,10 +1055,11 @@ class subArray(GeneratedsSuper):
     basebands. A combination of baseband pairs and singletons is
     also allowed. dtEpoch is epoch for DumpTrig signal. Applies for
     all basebands/subbands. Element modifySummedArray should be
-    specified only if action is "modify"."""
+    specified only if action is "modify". Deleted: xs:attribute
+    name="targetRqRms" type="xs:string" use="optional"/"""
     subclass = None
     superclass = None
-    def __init__(self, subarrayId=None, scanId=None, name=None, msgId=None, reConfigureCompleteBaselineBoards=False, mappingOrder=None, modelErrorReportingThreshold=None, dtEpoch=None, activationId=None, observationTime=None, timeStamp=None, action='create', configId=None, targetRqRms=None, listOfStations=None, stationInputOutput=None, baseline=None, modifySummedArray=None, stbDataProducts=None, monitorData=None):
+    def __init__(self, subarrayId=None, scanId=None, name=None, msgId=None, reConfigureCompleteBaselineBoards=False, mappingOrder=None, modelErrorReportingThreshold=None, dtEpoch=None, activationId=None, observationTime=None, timeStamp=None, action='create', configId=None, listOfStations=None, stationInputOutput=None, baseline=None, modifySummedArray=None):
         self.subarrayId = _cast(None, subarrayId)
         self.scanId = _cast(None, scanId)
         self.name = _cast(None, name)
@@ -1129,7 +1073,6 @@ class subArray(GeneratedsSuper):
         self.timeStamp = _cast(None, timeStamp)
         self.action = _cast(None, action)
         self.configId = _cast(None, configId)
-        self.targetRqRms = _cast(None, targetRqRms)
         self.listOfStations = listOfStations
         if stationInputOutput is None:
             self.stationInputOutput = []
@@ -1140,8 +1083,6 @@ class subArray(GeneratedsSuper):
         else:
             self.baseline = baseline
         self.modifySummedArray = modifySummedArray
-        self.stbDataProducts = stbDataProducts
-        self.monitorData = monitorData
     def factory(*args_, **kwargs_):
         if subArray.subclass:
             return subArray.subclass(*args_, **kwargs_)
@@ -1160,10 +1101,6 @@ class subArray(GeneratedsSuper):
     def insert_baseline(self, index, value): self.baseline[index] = value
     def get_modifySummedArray(self): return self.modifySummedArray
     def set_modifySummedArray(self, modifySummedArray): self.modifySummedArray = modifySummedArray
-    def get_stbDataProducts(self): return self.stbDataProducts
-    def set_stbDataProducts(self, stbDataProducts): self.stbDataProducts = stbDataProducts
-    def get_monitorData(self): return self.monitorData
-    def set_monitorData(self, monitorData): self.monitorData = monitorData
     def get_subarrayId(self): return self.subarrayId
     def set_subarrayId(self, subarrayId): self.subarrayId = subarrayId
     def get_scanId(self): return self.scanId
@@ -1190,8 +1127,6 @@ class subArray(GeneratedsSuper):
     def set_action(self, action): self.action = action
     def get_configId(self): return self.configId
     def set_configId(self, configId): self.configId = configId
-    def get_targetRqRms(self): return self.targetRqRms
-    def set_targetRqRms(self, targetRqRms): self.targetRqRms = targetRqRms
     def export(self, outfile, level, namespace_='widar:', name_='subArray', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
@@ -1244,9 +1179,6 @@ class subArray(GeneratedsSuper):
         if self.configId is not None and 'configId' not in already_processed:
             already_processed.append('configId')
             outfile.write(' configId=%s' % (self.gds_format_string(quote_attrib(self.configId).encode(ExternalEncoding), input_name='configId'), ))
-        if self.targetRqRms is not None and 'targetRqRms' not in already_processed:
-            already_processed.append('targetRqRms')
-            outfile.write(' targetRqRms=%s' % (self.gds_format_string(quote_attrib(self.targetRqRms).encode(ExternalEncoding), input_name='targetRqRms'), ))
     def exportChildren(self, outfile, level, namespace_='widar:', name_='subArray', fromsubclass_=False):
         if self.listOfStations:
             self.listOfStations.export(outfile, level, namespace_, name_='listOfStations')
@@ -1256,18 +1188,12 @@ class subArray(GeneratedsSuper):
             baseline_.export(outfile, level, namespace_, name_='baseline')
         if self.modifySummedArray:
             self.modifySummedArray.export(outfile, level, namespace_, name_='modifySummedArray')
-        if self.stbDataProducts:
-            self.stbDataProducts.export(outfile, level, namespace_, name_='stbDataProducts')
-        if self.monitorData:
-            self.monitorData.export(outfile, level, namespace_, name_='monitorData')
     def hasContent_(self):
         if (
             self.listOfStations is not None or
             self.stationInputOutput or
             self.baseline or
-            self.modifySummedArray is not None or
-            self.stbDataProducts is not None or
-            self.monitorData is not None
+            self.modifySummedArray is not None
             ):
             return True
         else:
@@ -1330,10 +1256,6 @@ class subArray(GeneratedsSuper):
             already_processed.append('configId')
             showIndent(outfile, level)
             outfile.write('configId = "%s",\n' % (self.configId,))
-        if self.targetRqRms is not None and 'targetRqRms' not in already_processed:
-            already_processed.append('targetRqRms')
-            showIndent(outfile, level)
-            outfile.write('targetRqRms = "%s",\n' % (self.targetRqRms,))
     def exportLiteralChildren(self, outfile, level, name_):
         if self.listOfStations is not None:
             showIndent(outfile, level)
@@ -1369,18 +1291,6 @@ class subArray(GeneratedsSuper):
             showIndent(outfile, level)
             outfile.write('modifySummedArray=model_.modifySummedArray(\n')
             self.modifySummedArray.exportLiteral(outfile, level)
-            showIndent(outfile, level)
-            outfile.write('),\n')
-        if self.stbDataProducts is not None:
-            showIndent(outfile, level)
-            outfile.write('stbDataProducts=model_.stbDataProducts(\n')
-            self.stbDataProducts.exportLiteral(outfile, level)
-            showIndent(outfile, level)
-            outfile.write('),\n')
-        if self.monitorData is not None:
-            showIndent(outfile, level)
-            outfile.write('monitorData=model_.monitorData(\n')
-            self.monitorData.exportLiteral(outfile, level)
             showIndent(outfile, level)
             outfile.write('),\n')
     def build(self, node):
@@ -1455,10 +1365,6 @@ class subArray(GeneratedsSuper):
         if value is not None and 'configId' not in already_processed:
             already_processed.append('configId')
             self.configId = value
-        value = find_attr_value_('targetRqRms', node)
-        if value is not None and 'targetRqRms' not in already_processed:
-            already_processed.append('targetRqRms')
-            self.targetRqRms = value
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'listOfStations':
             obj_ = listOfStations.factory()
@@ -1476,14 +1382,6 @@ class subArray(GeneratedsSuper):
             obj_ = modifySummedArray.factory()
             obj_.build(child_)
             self.set_modifySummedArray(obj_)
-        elif nodeName_ == 'stbDataProducts':
-            obj_ = stbDataProducts.factory()
-            obj_.build(child_)
-            self.set_stbDataProducts(obj_)
-        elif nodeName_ == 'monitorData':
-            obj_ = monitorData.factory()
-            obj_.build(child_)
-            self.set_monitorData(obj_)
 # end class subArray
 
 
@@ -2116,7 +2014,7 @@ class stationInputOutput(GeneratedsSuper):
     defined using stationHw."""
     subclass = None
     superclass = None
-    def __init__(self, name=None, sid='all', station=None, bbParams=None, baseBand=None, stbDataProducts=None, monitorData=None):
+    def __init__(self, name=None, sid='all', station=None, bbParams=None, baseBand=None):
         self.name = _cast(None, name)
         self.sid = _cast(None, sid)
         if station is None:
@@ -2131,8 +2029,6 @@ class stationInputOutput(GeneratedsSuper):
             self.baseBand = []
         else:
             self.baseBand = baseBand
-        self.stbDataProducts = stbDataProducts
-        self.monitorData = monitorData
     def factory(*args_, **kwargs_):
         if stationInputOutput.subclass:
             return stationInputOutput.subclass(*args_, **kwargs_)
@@ -2151,10 +2047,6 @@ class stationInputOutput(GeneratedsSuper):
     def set_baseBand(self, baseBand): self.baseBand = baseBand
     def add_baseBand(self, value): self.baseBand.append(value)
     def insert_baseBand(self, index, value): self.baseBand[index] = value
-    def get_stbDataProducts(self): return self.stbDataProducts
-    def set_stbDataProducts(self, stbDataProducts): self.stbDataProducts = stbDataProducts
-    def get_monitorData(self): return self.monitorData
-    def set_monitorData(self, monitorData): self.monitorData = monitorData
     def get_name(self): return self.name
     def set_name(self, name): self.name = name
     def get_sid(self): return self.sid
@@ -2185,17 +2077,11 @@ class stationInputOutput(GeneratedsSuper):
             bbParams_.export(outfile, level, namespace_, name_='bbParams')
         for baseBand_ in self.baseBand:
             baseBand_.export(outfile, level, namespace_, name_='baseBand')
-        if self.stbDataProducts:
-            self.stbDataProducts.export(outfile, level, namespace_, name_='stbDataProducts')
-        if self.monitorData:
-            self.monitorData.export(outfile, level, namespace_, name_='monitorData')
     def hasContent_(self):
         if (
             self.station or
             self.bbParams or
-            self.baseBand or
-            self.stbDataProducts is not None or
-            self.monitorData is not None
+            self.baseBand
             ):
             return True
         else:
@@ -2251,18 +2137,6 @@ class stationInputOutput(GeneratedsSuper):
         level -= 1
         showIndent(outfile, level)
         outfile.write('],\n')
-        if self.stbDataProducts is not None:
-            showIndent(outfile, level)
-            outfile.write('stbDataProducts=model_.stbDataProducts(\n')
-            self.stbDataProducts.exportLiteral(outfile, level)
-            showIndent(outfile, level)
-            outfile.write('),\n')
-        if self.monitorData is not None:
-            showIndent(outfile, level)
-            outfile.write('monitorData=model_.monitorData(\n')
-            self.monitorData.exportLiteral(outfile, level)
-            showIndent(outfile, level)
-            outfile.write('),\n')
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
         for child in node:
@@ -2290,14 +2164,6 @@ class stationInputOutput(GeneratedsSuper):
             obj_ = baseBand.factory()
             obj_.build(child_)
             self.baseBand.append(obj_)
-        elif nodeName_ == 'stbDataProducts':
-            obj_ = stbDataProducts.factory()
-            obj_.build(child_)
-            self.set_stbDataProducts(obj_)
-        elif nodeName_ == 'monitorData':
-            obj_ = monitorData.factory()
-            obj_.build(child_)
-            self.set_monitorData(obj_)
 # end class stationInputOutput
 
 
@@ -2335,7 +2201,7 @@ class baseBand(GeneratedsSuper):
     testing."""
     subclass = None
     superclass = None
-    def __init__(self, swPwrEpoch=None, delayModelsValid=1, name=None, swbbName=None, defaultFilterGain=None, stage2Rms=None, bbB=None, bbA=None, requantRms=None, bw=None, swPwrInteg=None, sid=None, singlePhaseCenter='yes', stage1Rms=None, stage3Rms=None, inQuant=None, stage4Rms=None, subBand=None, pulsarGating=None, wideBandCorrelator=None):
+    def __init__(self, swPwrEpoch=None, delayModelsValid=1, name=None, swbbName=None, defaultFilterGain=None, stage2Rms=None, bbB=None, bbA=None, noWbcProducts=None, requantRms=None, bw=None, swPwrInteg=None, sid=None, singlePhaseCenter='yes', stage1Rms=None, stage3Rms=None, inQuant=None, stage4Rms=None, subBand=None, wpp=None, pulsarGating=None):
         self.swPwrEpoch = _cast(None, swPwrEpoch)
         self.delayModelsValid = _cast(int, delayModelsValid)
         self.name = _cast(None, name)
@@ -2344,6 +2210,7 @@ class baseBand(GeneratedsSuper):
         self.stage2Rms = _cast(float, stage2Rms)
         self.bbB = _cast(None, bbB)
         self.bbA = _cast(None, bbA)
+        self.noWbcProducts = _cast(None, noWbcProducts)
         self.requantRms = _cast(float, requantRms)
         self.bw = _cast(None, bw)
         self.swPwrInteg = _cast(int, swPwrInteg)
@@ -2357,8 +2224,11 @@ class baseBand(GeneratedsSuper):
             self.subBand = []
         else:
             self.subBand = subBand
+        if wpp is None:
+            self.wpp = []
+        else:
+            self.wpp = wpp
         self.pulsarGating = pulsarGating
-        self.wideBandCorrelator = wideBandCorrelator
     def factory(*args_, **kwargs_):
         if baseBand.subclass:
             return baseBand.subclass(*args_, **kwargs_)
@@ -2369,10 +2239,12 @@ class baseBand(GeneratedsSuper):
     def set_subBand(self, subBand): self.subBand = subBand
     def add_subBand(self, value): self.subBand.append(value)
     def insert_subBand(self, index, value): self.subBand[index] = value
+    def get_wpp(self): return self.wpp
+    def set_wpp(self, wpp): self.wpp = wpp
+    def add_wpp(self, value): self.wpp.append(value)
+    def insert_wpp(self, index, value): self.wpp[index] = value
     def get_pulsarGating(self): return self.pulsarGating
     def set_pulsarGating(self, pulsarGating): self.pulsarGating = pulsarGating
-    def get_wideBandCorrelator(self): return self.wideBandCorrelator
-    def set_wideBandCorrelator(self, wideBandCorrelator): self.wideBandCorrelator = wideBandCorrelator
     def get_swPwrEpoch(self): return self.swPwrEpoch
     def set_swPwrEpoch(self, swPwrEpoch): self.swPwrEpoch = swPwrEpoch
     def get_delayModelsValid(self): return self.delayModelsValid
@@ -2389,6 +2261,8 @@ class baseBand(GeneratedsSuper):
     def set_bbB(self, bbB): self.bbB = bbB
     def get_bbA(self): return self.bbA
     def set_bbA(self, bbA): self.bbA = bbA
+    def get_noWbcProducts(self): return self.noWbcProducts
+    def set_noWbcProducts(self, noWbcProducts): self.noWbcProducts = noWbcProducts
     def get_requantRms(self): return self.requantRms
     def set_requantRms(self, requantRms): self.requantRms = requantRms
     def get_bw(self): return self.bw
@@ -2444,6 +2318,9 @@ class baseBand(GeneratedsSuper):
         if self.bbA is not None and 'bbA' not in already_processed:
             already_processed.append('bbA')
             outfile.write(' bbA=%s' % (quote_attrib(self.bbA), ))
+        if self.noWbcProducts is not None and 'noWbcProducts' not in already_processed:
+            already_processed.append('noWbcProducts')
+            outfile.write(' noWbcProducts=%s' % (self.gds_format_string(quote_attrib(self.noWbcProducts).encode(ExternalEncoding), input_name='noWbcProducts'), ))
         if self.requantRms is not None and 'requantRms' not in already_processed:
             already_processed.append('requantRms')
             outfile.write(' requantRms="%s"' % self.gds_format_double(self.requantRms, input_name='requantRms'))
@@ -2474,15 +2351,15 @@ class baseBand(GeneratedsSuper):
     def exportChildren(self, outfile, level, namespace_='widar:', name_='baseBand', fromsubclass_=False):
         for subBand_ in self.subBand:
             subBand_.export(outfile, level, namespace_, name_='subBand')
+        for wpp_ in self.wpp:
+            wpp_.export(outfile, level, namespace_, name_='wpp')
         if self.pulsarGating:
             self.pulsarGating.export(outfile, level, namespace_, name_='pulsarGating')
-        if self.wideBandCorrelator:
-            self.wideBandCorrelator.export(outfile, level, namespace_, name_='wideBandCorrelator')
     def hasContent_(self):
         if (
             self.subBand or
-            self.pulsarGating is not None or
-            self.wideBandCorrelator is not None
+            self.wpp or
+            self.pulsarGating is not None
             ):
             return True
         else:
@@ -2525,6 +2402,10 @@ class baseBand(GeneratedsSuper):
             already_processed.append('bbA')
             showIndent(outfile, level)
             outfile.write('bbA = %s,\n' % (self.bbA,))
+        if self.noWbcProducts is not None and 'noWbcProducts' not in already_processed:
+            already_processed.append('noWbcProducts')
+            showIndent(outfile, level)
+            outfile.write('noWbcProducts = "%s",\n' % (self.noWbcProducts,))
         if self.requantRms is not None and 'requantRms' not in already_processed:
             already_processed.append('requantRms')
             showIndent(outfile, level)
@@ -2574,16 +2455,22 @@ class baseBand(GeneratedsSuper):
         level -= 1
         showIndent(outfile, level)
         outfile.write('],\n')
+        showIndent(outfile, level)
+        outfile.write('wpp=[\n')
+        level += 1
+        for wpp_ in self.wpp:
+            showIndent(outfile, level)
+            outfile.write('model_.wpp(\n')
+            wpp_.exportLiteral(outfile, level)
+            showIndent(outfile, level)
+            outfile.write('),\n')
+        level -= 1
+        showIndent(outfile, level)
+        outfile.write('],\n')
         if self.pulsarGating is not None:
             showIndent(outfile, level)
             outfile.write('pulsarGating=model_.pulsarGating(\n')
             self.pulsarGating.exportLiteral(outfile, level)
-            showIndent(outfile, level)
-            outfile.write('),\n')
-        if self.wideBandCorrelator is not None:
-            showIndent(outfile, level)
-            outfile.write('wideBandCorrelator=model_.wideBandCorrelator(\n')
-            self.wideBandCorrelator.exportLiteral(outfile, level)
             showIndent(outfile, level)
             outfile.write('),\n')
     def build(self, node):
@@ -2630,6 +2517,10 @@ class baseBand(GeneratedsSuper):
         if value is not None and 'bbA' not in already_processed:
             already_processed.append('bbA')
             self.bbA = value
+        value = find_attr_value_('noWbcProducts', node)
+        if value is not None and 'noWbcProducts' not in already_processed:
+            already_processed.append('noWbcProducts')
+            self.noWbcProducts = value
         value = find_attr_value_('requantRms', node)
         if value is not None and 'requantRms' not in already_processed:
             already_processed.append('requantRms')
@@ -2686,14 +2577,14 @@ class baseBand(GeneratedsSuper):
             obj_ = subBand.factory()
             obj_.build(child_)
             self.subBand.append(obj_)
+        elif nodeName_ == 'wpp':
+            obj_ = wpp.factory()
+            obj_.build(child_)
+            self.wpp.append(obj_)
         elif nodeName_ == 'pulsarGating':
             obj_ = pulsarGating.factory()
             obj_.build(child_)
             self.set_pulsarGating(obj_)
-        elif nodeName_ == 'wideBandCorrelator':
-            obj_ = wideBandCorrelator.factory()
-            obj_.build(child_)
-            self.set_wideBandCorrelator(obj_)
 # end class baseBand
 
 
@@ -2701,29 +2592,30 @@ class subBand(GeneratedsSuper):
     """Subband configuration specifies filter configuration and output
     products. swIndex is index of the Spectral Window (BDF). WIDAR
     correlator does not use swIndex; swIndex is forwarded to CBE
-    (BDF).."""
+    (BDF)."""
     subclass = None
     superclass = None
-    def __init__(self, mixerPhaseErrorCorr='no', rqNumBits=None, name=None, sbid=None, pulsarGatingPhase=0, centralFreq=None, bw=None, useMixer='no', swIndex=None, signalToNoise='0', polProducts=None, autoCorrMode=None, pulsarBinning=None, burstMode=None, summedArray=None, modifySummedArray=None, radarMode=None, toneExtraction=None):
+    def __init__(self, interFrameDelay=None, mixerPhaseErrorCorr='no', rqNumBits=None, name=None, sbid=None, rfiBlankingDuration=None, pulsarGatingPhase=0, centralFreq=None, bw=None, randomizeDelay=None, useMixer='no', rfiDetectionLevel=None, frameSchedulingAlgorithm=None, swIndex=None, signalToNoise='0', polProducts=None, summedArray=None, radarMode=None, toneExtraction=None):
+        self.interFrameDelay = _cast(None, interFrameDelay)
         self.mixerPhaseErrorCorr = _cast(None, mixerPhaseErrorCorr)
         self.rqNumBits = _cast(None, rqNumBits)
         self.name = _cast(None, name)
         self.sbid = _cast(None, sbid)
+        self.rfiBlankingDuration = _cast(float, rfiBlankingDuration)
         self.pulsarGatingPhase = _cast(int, pulsarGatingPhase)
-        self.centralFreq = _cast(int, centralFreq)
+        self.centralFreq = _cast(float, centralFreq)
         self.bw = _cast(None, bw)
+        self.randomizeDelay = _cast(None, randomizeDelay)
         self.useMixer = _cast(None, useMixer)
+        self.rfiDetectionLevel = _cast(float, rfiDetectionLevel)
+        self.frameSchedulingAlgorithm = _cast(None, frameSchedulingAlgorithm)
         self.swIndex = _cast(int, swIndex)
         self.signalToNoise = _cast(None, signalToNoise)
         self.polProducts = polProducts
-        self.autoCorrMode = autoCorrMode
-        self.pulsarBinning = pulsarBinning
-        self.burstMode = burstMode
         if summedArray is None:
             self.summedArray = []
         else:
             self.summedArray = summedArray
-        self.modifySummedArray = modifySummedArray
         self.radarMode = radarMode
         self.toneExtraction = toneExtraction
     def factory(*args_, **kwargs_):
@@ -2734,22 +2626,16 @@ class subBand(GeneratedsSuper):
     factory = staticmethod(factory)
     def get_polProducts(self): return self.polProducts
     def set_polProducts(self, polProducts): self.polProducts = polProducts
-    def get_autoCorrMode(self): return self.autoCorrMode
-    def set_autoCorrMode(self, autoCorrMode): self.autoCorrMode = autoCorrMode
-    def get_pulsarBinning(self): return self.pulsarBinning
-    def set_pulsarBinning(self, pulsarBinning): self.pulsarBinning = pulsarBinning
-    def get_burstMode(self): return self.burstMode
-    def set_burstMode(self, burstMode): self.burstMode = burstMode
     def get_summedArray(self): return self.summedArray
     def set_summedArray(self, summedArray): self.summedArray = summedArray
     def add_summedArray(self, value): self.summedArray.append(value)
     def insert_summedArray(self, index, value): self.summedArray[index] = value
-    def get_modifySummedArray(self): return self.modifySummedArray
-    def set_modifySummedArray(self, modifySummedArray): self.modifySummedArray = modifySummedArray
     def get_radarMode(self): return self.radarMode
     def set_radarMode(self, radarMode): self.radarMode = radarMode
     def get_toneExtraction(self): return self.toneExtraction
     def set_toneExtraction(self, toneExtraction): self.toneExtraction = toneExtraction
+    def get_interFrameDelay(self): return self.interFrameDelay
+    def set_interFrameDelay(self, interFrameDelay): self.interFrameDelay = interFrameDelay
     def get_mixerPhaseErrorCorr(self): return self.mixerPhaseErrorCorr
     def set_mixerPhaseErrorCorr(self, mixerPhaseErrorCorr): self.mixerPhaseErrorCorr = mixerPhaseErrorCorr
     def get_rqNumBits(self): return self.rqNumBits
@@ -2758,14 +2644,22 @@ class subBand(GeneratedsSuper):
     def set_name(self, name): self.name = name
     def get_sbid(self): return self.sbid
     def set_sbid(self, sbid): self.sbid = sbid
+    def get_rfiBlankingDuration(self): return self.rfiBlankingDuration
+    def set_rfiBlankingDuration(self, rfiBlankingDuration): self.rfiBlankingDuration = rfiBlankingDuration
     def get_pulsarGatingPhase(self): return self.pulsarGatingPhase
     def set_pulsarGatingPhase(self, pulsarGatingPhase): self.pulsarGatingPhase = pulsarGatingPhase
     def get_centralFreq(self): return self.centralFreq
     def set_centralFreq(self, centralFreq): self.centralFreq = centralFreq
     def get_bw(self): return self.bw
     def set_bw(self, bw): self.bw = bw
+    def get_randomizeDelay(self): return self.randomizeDelay
+    def set_randomizeDelay(self, randomizeDelay): self.randomizeDelay = randomizeDelay
     def get_useMixer(self): return self.useMixer
     def set_useMixer(self, useMixer): self.useMixer = useMixer
+    def get_rfiDetectionLevel(self): return self.rfiDetectionLevel
+    def set_rfiDetectionLevel(self, rfiDetectionLevel): self.rfiDetectionLevel = rfiDetectionLevel
+    def get_frameSchedulingAlgorithm(self): return self.frameSchedulingAlgorithm
+    def set_frameSchedulingAlgorithm(self, frameSchedulingAlgorithm): self.frameSchedulingAlgorithm = frameSchedulingAlgorithm
     def get_swIndex(self): return self.swIndex
     def set_swIndex(self, swIndex): self.swIndex = swIndex
     def get_signalToNoise(self): return self.signalToNoise
@@ -2783,6 +2677,9 @@ class subBand(GeneratedsSuper):
         else:
             outfile.write('/>\n')
     def exportAttributes(self, outfile, level, already_processed, namespace_='widar:', name_='subBand'):
+        if self.interFrameDelay is not None and 'interFrameDelay' not in already_processed:
+            already_processed.append('interFrameDelay')
+            outfile.write(' interFrameDelay=%s' % (quote_attrib(self.interFrameDelay), ))
         if self.mixerPhaseErrorCorr is not None and 'mixerPhaseErrorCorr' not in already_processed:
             already_processed.append('mixerPhaseErrorCorr')
             outfile.write(' mixerPhaseErrorCorr=%s' % (quote_attrib(self.mixerPhaseErrorCorr), ))
@@ -2795,18 +2692,30 @@ class subBand(GeneratedsSuper):
         if self.sbid is not None and 'sbid' not in already_processed:
             already_processed.append('sbid')
             outfile.write(' sbid=%s' % (quote_attrib(self.sbid), ))
+        if self.rfiBlankingDuration is not None and 'rfiBlankingDuration' not in already_processed:
+            already_processed.append('rfiBlankingDuration')
+            outfile.write(' rfiBlankingDuration="%s"' % self.gds_format_float(self.rfiBlankingDuration, input_name='rfiBlankingDuration'))
         if self.pulsarGatingPhase is not None and 'pulsarGatingPhase' not in already_processed:
             already_processed.append('pulsarGatingPhase')
             outfile.write(' pulsarGatingPhase="%s"' % self.gds_format_integer(self.pulsarGatingPhase, input_name='pulsarGatingPhase'))
         if self.centralFreq is not None and 'centralFreq' not in already_processed:
             already_processed.append('centralFreq')
-            outfile.write(' centralFreq="%s"' % self.gds_format_integer(self.centralFreq, input_name='centralFreq'))
+            outfile.write(' centralFreq="%s"' % self.gds_format_float(self.centralFreq, input_name='centralFreq'))
         if self.bw is not None and 'bw' not in already_processed:
             already_processed.append('bw')
             outfile.write(' bw=%s' % (quote_attrib(self.bw), ))
+        if self.randomizeDelay is not None and 'randomizeDelay' not in already_processed:
+            already_processed.append('randomizeDelay')
+            outfile.write(' randomizeDelay=%s' % (quote_attrib(self.randomizeDelay), ))
         if self.useMixer is not None and 'useMixer' not in already_processed:
             already_processed.append('useMixer')
             outfile.write(' useMixer=%s' % (quote_attrib(self.useMixer), ))
+        if self.rfiDetectionLevel is not None and 'rfiDetectionLevel' not in already_processed:
+            already_processed.append('rfiDetectionLevel')
+            outfile.write(' rfiDetectionLevel="%s"' % self.gds_format_float(self.rfiDetectionLevel, input_name='rfiDetectionLevel'))
+        if self.frameSchedulingAlgorithm is not None and 'frameSchedulingAlgorithm' not in already_processed:
+            already_processed.append('frameSchedulingAlgorithm')
+            outfile.write(' frameSchedulingAlgorithm=%s' % (quote_attrib(self.frameSchedulingAlgorithm), ))
         if self.swIndex is not None and 'swIndex' not in already_processed:
             already_processed.append('swIndex')
             outfile.write(' swIndex="%s"' % self.gds_format_integer(self.swIndex, input_name='swIndex'))
@@ -2816,16 +2725,8 @@ class subBand(GeneratedsSuper):
     def exportChildren(self, outfile, level, namespace_='widar:', name_='subBand', fromsubclass_=False):
         if self.polProducts:
             self.polProducts.export(outfile, level, namespace_, name_='polProducts')
-        if self.autoCorrMode:
-            self.autoCorrMode.export(outfile, level, namespace_, name_='autoCorrMode')
-        if self.pulsarBinning:
-            self.pulsarBinning.export(outfile, level, namespace_, name_='pulsarBinning')
-        if self.burstMode:
-            self.burstMode.export(outfile, level, namespace_, name_='burstMode')
         for summedArray_ in self.summedArray:
             summedArray_.export(outfile, level, namespace_, name_='summedArray')
-        if self.modifySummedArray:
-            self.modifySummedArray.export(outfile, level, namespace_, name_='modifySummedArray')
         if self.radarMode:
             self.radarMode.export(outfile, level, namespace_, name_='radarMode')
         if self.toneExtraction:
@@ -2833,11 +2734,7 @@ class subBand(GeneratedsSuper):
     def hasContent_(self):
         if (
             self.polProducts is not None or
-            self.autoCorrMode is not None or
-            self.pulsarBinning is not None or
-            self.burstMode is not None or
             self.summedArray or
-            self.modifySummedArray is not None or
             self.radarMode is not None or
             self.toneExtraction is not None
             ):
@@ -2850,6 +2747,10 @@ class subBand(GeneratedsSuper):
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
     def exportLiteralAttributes(self, outfile, level, already_processed, name_):
+        if self.interFrameDelay is not None and 'interFrameDelay' not in already_processed:
+            already_processed.append('interFrameDelay')
+            showIndent(outfile, level)
+            outfile.write('interFrameDelay = %s,\n' % (self.interFrameDelay,))
         if self.mixerPhaseErrorCorr is not None and 'mixerPhaseErrorCorr' not in already_processed:
             already_processed.append('mixerPhaseErrorCorr')
             showIndent(outfile, level)
@@ -2866,6 +2767,10 @@ class subBand(GeneratedsSuper):
             already_processed.append('sbid')
             showIndent(outfile, level)
             outfile.write('sbid = %s,\n' % (self.sbid,))
+        if self.rfiBlankingDuration is not None and 'rfiBlankingDuration' not in already_processed:
+            already_processed.append('rfiBlankingDuration')
+            showIndent(outfile, level)
+            outfile.write('rfiBlankingDuration = %f,\n' % (self.rfiBlankingDuration,))
         if self.pulsarGatingPhase is not None and 'pulsarGatingPhase' not in already_processed:
             already_processed.append('pulsarGatingPhase')
             showIndent(outfile, level)
@@ -2873,15 +2778,27 @@ class subBand(GeneratedsSuper):
         if self.centralFreq is not None and 'centralFreq' not in already_processed:
             already_processed.append('centralFreq')
             showIndent(outfile, level)
-            outfile.write('centralFreq = %d,\n' % (self.centralFreq,))
+            outfile.write('centralFreq = %f,\n' % (self.centralFreq,))
         if self.bw is not None and 'bw' not in already_processed:
             already_processed.append('bw')
             showIndent(outfile, level)
             outfile.write('bw = %s,\n' % (self.bw,))
+        if self.randomizeDelay is not None and 'randomizeDelay' not in already_processed:
+            already_processed.append('randomizeDelay')
+            showIndent(outfile, level)
+            outfile.write('randomizeDelay = %s,\n' % (self.randomizeDelay,))
         if self.useMixer is not None and 'useMixer' not in already_processed:
             already_processed.append('useMixer')
             showIndent(outfile, level)
             outfile.write('useMixer = %s,\n' % (self.useMixer,))
+        if self.rfiDetectionLevel is not None and 'rfiDetectionLevel' not in already_processed:
+            already_processed.append('rfiDetectionLevel')
+            showIndent(outfile, level)
+            outfile.write('rfiDetectionLevel = %f,\n' % (self.rfiDetectionLevel,))
+        if self.frameSchedulingAlgorithm is not None and 'frameSchedulingAlgorithm' not in already_processed:
+            already_processed.append('frameSchedulingAlgorithm')
+            showIndent(outfile, level)
+            outfile.write('frameSchedulingAlgorithm = %s,\n' % (self.frameSchedulingAlgorithm,))
         if self.swIndex is not None and 'swIndex' not in already_processed:
             already_processed.append('swIndex')
             showIndent(outfile, level)
@@ -2897,24 +2814,6 @@ class subBand(GeneratedsSuper):
             self.polProducts.exportLiteral(outfile, level)
             showIndent(outfile, level)
             outfile.write('),\n')
-        if self.autoCorrMode is not None:
-            showIndent(outfile, level)
-            outfile.write('autoCorrMode=model_.autoCorrMode(\n')
-            self.autoCorrMode.exportLiteral(outfile, level)
-            showIndent(outfile, level)
-            outfile.write('),\n')
-        if self.pulsarBinning is not None:
-            showIndent(outfile, level)
-            outfile.write('pulsarBinning=model_.pulsarBinning(\n')
-            self.pulsarBinning.exportLiteral(outfile, level)
-            showIndent(outfile, level)
-            outfile.write('),\n')
-        if self.burstMode is not None:
-            showIndent(outfile, level)
-            outfile.write('burstMode=model_.burstMode(\n')
-            self.burstMode.exportLiteral(outfile, level)
-            showIndent(outfile, level)
-            outfile.write('),\n')
         showIndent(outfile, level)
         outfile.write('summedArray=[\n')
         level += 1
@@ -2927,12 +2826,6 @@ class subBand(GeneratedsSuper):
         level -= 1
         showIndent(outfile, level)
         outfile.write('],\n')
-        if self.modifySummedArray is not None:
-            showIndent(outfile, level)
-            outfile.write('modifySummedArray=model_.modifySummedArray(\n')
-            self.modifySummedArray.exportLiteral(outfile, level)
-            showIndent(outfile, level)
-            outfile.write('),\n')
         if self.radarMode is not None:
             showIndent(outfile, level)
             outfile.write('radarMode=model_.radarMode(\n')
@@ -2951,6 +2844,10 @@ class subBand(GeneratedsSuper):
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
     def buildAttributes(self, node, attrs, already_processed):
+        value = find_attr_value_('interFrameDelay', node)
+        if value is not None and 'interFrameDelay' not in already_processed:
+            already_processed.append('interFrameDelay')
+            self.interFrameDelay = value
         value = find_attr_value_('mixerPhaseErrorCorr', node)
         if value is not None and 'mixerPhaseErrorCorr' not in already_processed:
             already_processed.append('mixerPhaseErrorCorr')
@@ -2967,6 +2864,13 @@ class subBand(GeneratedsSuper):
         if value is not None and 'sbid' not in already_processed:
             already_processed.append('sbid')
             self.sbid = value
+        value = find_attr_value_('rfiBlankingDuration', node)
+        if value is not None and 'rfiBlankingDuration' not in already_processed:
+            already_processed.append('rfiBlankingDuration')
+            try:
+                self.rfiBlankingDuration = float(value)
+            except ValueError, exp:
+                raise ValueError('Bad float/double attribute (rfiBlankingDuration): %s' % exp)
         value = find_attr_value_('pulsarGatingPhase', node)
         if value is not None and 'pulsarGatingPhase' not in already_processed:
             already_processed.append('pulsarGatingPhase')
@@ -2978,17 +2882,32 @@ class subBand(GeneratedsSuper):
         if value is not None and 'centralFreq' not in already_processed:
             already_processed.append('centralFreq')
             try:
-                self.centralFreq = int(value)
+                self.centralFreq = float(value)
             except ValueError, exp:
-                raise_parse_error(node, 'Bad integer attribute: %s' % exp)
+                raise ValueError('Bad float/double attribute (centralFreq): %s' % exp)
         value = find_attr_value_('bw', node)
         if value is not None and 'bw' not in already_processed:
             already_processed.append('bw')
             self.bw = value
+        value = find_attr_value_('randomizeDelay', node)
+        if value is not None and 'randomizeDelay' not in already_processed:
+            already_processed.append('randomizeDelay')
+            self.randomizeDelay = value
         value = find_attr_value_('useMixer', node)
         if value is not None and 'useMixer' not in already_processed:
             already_processed.append('useMixer')
             self.useMixer = value
+        value = find_attr_value_('rfiDetectionLevel', node)
+        if value is not None and 'rfiDetectionLevel' not in already_processed:
+            already_processed.append('rfiDetectionLevel')
+            try:
+                self.rfiDetectionLevel = float(value)
+            except ValueError, exp:
+                raise ValueError('Bad float/double attribute (rfiDetectionLevel): %s' % exp)
+        value = find_attr_value_('frameSchedulingAlgorithm', node)
+        if value is not None and 'frameSchedulingAlgorithm' not in already_processed:
+            already_processed.append('frameSchedulingAlgorithm')
+            self.frameSchedulingAlgorithm = value
         value = find_attr_value_('swIndex', node)
         if value is not None and 'swIndex' not in already_processed:
             already_processed.append('swIndex')
@@ -3005,26 +2924,10 @@ class subBand(GeneratedsSuper):
             obj_ = polProducts.factory()
             obj_.build(child_)
             self.set_polProducts(obj_)
-        elif nodeName_ == 'autoCorrMode':
-            obj_ = autoCorrMode.factory()
-            obj_.build(child_)
-            self.set_autoCorrMode(obj_)
-        elif nodeName_ == 'pulsarBinning':
-            obj_ = pulsarBinning.factory()
-            obj_.build(child_)
-            self.set_pulsarBinning(obj_)
-        elif nodeName_ == 'burstMode':
-            obj_ = burstMode.factory()
-            obj_.build(child_)
-            self.set_burstMode(obj_)
         elif nodeName_ == 'summedArray':
             obj_ = summedArray.factory()
             obj_.build(child_)
             self.summedArray.append(obj_)
-        elif nodeName_ == 'modifySummedArray':
-            obj_ = modifySummedArray.factory()
-            obj_.build(child_)
-            self.set_modifySummedArray(obj_)
         elif nodeName_ == 'radarMode':
             obj_ = radarMode.factory()
             obj_.build(child_)
@@ -3044,21 +2947,19 @@ class polProducts(GeneratedsSuper):
     uses different DUMPTRIG."""
     subclass = None
     superclass = None
-    def __init__(self, autoCorrMode='off', pp=None, blbProdIntegration=None, blbPair=None, blbSingle=None, stationPacking=None, productPacking=None, autoCorrSubset=None):
+    def __init__(self, autoCorrMode='off', pp=None, blbProdIntegration=None, pulsarTiming=None, pulsarBins=None, blbPair=None, stationPacking=None, productPacking=None, autoCorrSubset=None):
         self.autoCorrMode = _cast(None, autoCorrMode)
         if pp is None:
             self.pp = []
         else:
             self.pp = pp
         self.blbProdIntegration = blbProdIntegration
+        self.pulsarTiming = pulsarTiming
+        self.pulsarBins = pulsarBins
         if blbPair is None:
             self.blbPair = []
         else:
             self.blbPair = blbPair
-        if blbSingle is None:
-            self.blbSingle = []
-        else:
-            self.blbSingle = blbSingle
         self.stationPacking = stationPacking
         self.productPacking = productPacking
         self.autoCorrSubset = autoCorrSubset
@@ -3074,14 +2975,14 @@ class polProducts(GeneratedsSuper):
     def insert_pp(self, index, value): self.pp[index] = value
     def get_blbProdIntegration(self): return self.blbProdIntegration
     def set_blbProdIntegration(self, blbProdIntegration): self.blbProdIntegration = blbProdIntegration
+    def get_pulsarTiming(self): return self.pulsarTiming
+    def set_pulsarTiming(self, pulsarTiming): self.pulsarTiming = pulsarTiming
+    def get_pulsarBins(self): return self.pulsarBins
+    def set_pulsarBins(self, pulsarBins): self.pulsarBins = pulsarBins
     def get_blbPair(self): return self.blbPair
     def set_blbPair(self, blbPair): self.blbPair = blbPair
     def add_blbPair(self, value): self.blbPair.append(value)
     def insert_blbPair(self, index, value): self.blbPair[index] = value
-    def get_blbSingle(self): return self.blbSingle
-    def set_blbSingle(self, blbSingle): self.blbSingle = blbSingle
-    def add_blbSingle(self, value): self.blbSingle.append(value)
-    def insert_blbSingle(self, index, value): self.blbSingle[index] = value
     def get_stationPacking(self): return self.stationPacking
     def set_stationPacking(self, stationPacking): self.stationPacking = stationPacking
     def get_productPacking(self): return self.productPacking
@@ -3111,10 +3012,12 @@ class polProducts(GeneratedsSuper):
             pp_.export(outfile, level, namespace_, name_='pp')
         if self.blbProdIntegration:
             self.blbProdIntegration.export(outfile, level, namespace_, name_='blbProdIntegration')
+        if self.pulsarTiming:
+            self.pulsarTiming.export(outfile, level, namespace_, name_='pulsarTiming')
+        if self.pulsarBins:
+            self.pulsarBins.export(outfile, level, namespace_, name_='pulsarBins')
         for blbPair_ in self.blbPair:
             blbPair_.export(outfile, level, namespace_, name_='blbPair')
-        for blbSingle_ in self.blbSingle:
-            blbSingle_.export(outfile, level, namespace_, name_='blbSingle')
         if self.stationPacking:
             self.stationPacking.export(outfile, level, namespace_, name_='stationPacking')
         if self.productPacking:
@@ -3125,8 +3028,9 @@ class polProducts(GeneratedsSuper):
         if (
             self.pp or
             self.blbProdIntegration is not None or
+            self.pulsarTiming is not None or
+            self.pulsarBins is not None or
             self.blbPair or
-            self.blbSingle or
             self.stationPacking is not None or
             self.productPacking is not None or
             self.autoCorrSubset is not None
@@ -3163,6 +3067,18 @@ class polProducts(GeneratedsSuper):
             self.blbProdIntegration.exportLiteral(outfile, level)
             showIndent(outfile, level)
             outfile.write('),\n')
+        if self.pulsarTiming is not None:
+            showIndent(outfile, level)
+            outfile.write('pulsarTiming=model_.pulsarTiming(\n')
+            self.pulsarTiming.exportLiteral(outfile, level)
+            showIndent(outfile, level)
+            outfile.write('),\n')
+        if self.pulsarBins is not None:
+            showIndent(outfile, level)
+            outfile.write('pulsarBins=model_.pulsarBins(\n')
+            self.pulsarBins.exportLiteral(outfile, level)
+            showIndent(outfile, level)
+            outfile.write('),\n')
         showIndent(outfile, level)
         outfile.write('blbPair=[\n')
         level += 1
@@ -3170,18 +3086,6 @@ class polProducts(GeneratedsSuper):
             showIndent(outfile, level)
             outfile.write('model_.blbPair(\n')
             blbPair_.exportLiteral(outfile, level)
-            showIndent(outfile, level)
-            outfile.write('),\n')
-        level -= 1
-        showIndent(outfile, level)
-        outfile.write('],\n')
-        showIndent(outfile, level)
-        outfile.write('blbSingle=[\n')
-        level += 1
-        for blbSingle_ in self.blbSingle:
-            showIndent(outfile, level)
-            outfile.write('model_.blbSingle(\n')
-            blbSingle_.exportLiteral(outfile, level)
             showIndent(outfile, level)
             outfile.write('),\n')
         level -= 1
@@ -3224,14 +3128,18 @@ class polProducts(GeneratedsSuper):
             obj_ = blbProdIntegration.factory()
             obj_.build(child_)
             self.set_blbProdIntegration(obj_)
+        elif nodeName_ == 'pulsarTiming':
+            obj_ = pulsarTiming.factory()
+            obj_.build(child_)
+            self.set_pulsarTiming(obj_)
+        elif nodeName_ == 'pulsarBins':
+            obj_ = pulsarBins.factory()
+            obj_.build(child_)
+            self.set_pulsarBins(obj_)
         elif nodeName_ == 'blbPair':
             obj_ = blbPair.factory()
             obj_.build(child_)
             self.blbPair.append(obj_)
-        elif nodeName_ == 'blbSingle':
-            obj_ = blbSingle.factory()
-            obj_.build(child_)
-            self.blbSingle.append(obj_)
         elif nodeName_ == 'stationPacking':
             obj_ = stationPacking.factory()
             obj_.build(child_)
@@ -3348,15 +3256,23 @@ class blbProdIntegration(GeneratedsSuper):
     LTA integration factor (LTA integration time specified as
     multiple of the h/w integration time). CBE integration factor
     (CBE integration time specified as multiple of the LTA
-    integration time)."""
+    integration time). Phase for recirculation should be specified
+    only if recFactor>1. If recPhase is not specified and
+    recFactor>1, CM uses serial phase."""
     subclass = None
     superclass = None
-    def __init__(self, minIntegTime=None, ccIntegFactor=1, ltaIntegFactor=1, cbeIntegFactor=1, recirculation=None):
-        self.minIntegTime = _cast(None, minIntegTime)
+    def __init__(self, ccIntegFactor=1, burstBlankDuration=None, pauseBetweenBursts=None, numRollingBursts=None, cbeIntegFactor=1, recirculation=None, recPhase=None, minIntegTime=None, burstDuration=None, ltaIntegFactor=1, firstBurstOffset=None):
         self.ccIntegFactor = _cast(int, ccIntegFactor)
-        self.ltaIntegFactor = _cast(int, ltaIntegFactor)
+        self.burstBlankDuration = _cast(int, burstBlankDuration)
+        self.pauseBetweenBursts = _cast(int, pauseBetweenBursts)
+        self.numRollingBursts = _cast(int, numRollingBursts)
         self.cbeIntegFactor = _cast(int, cbeIntegFactor)
         self.recirculation = _cast(None, recirculation)
+        self.recPhase = _cast(None, recPhase)
+        self.minIntegTime = _cast(None, minIntegTime)
+        self.burstDuration = _cast(int, burstDuration)
+        self.ltaIntegFactor = _cast(int, ltaIntegFactor)
+        self.firstBurstOffset = _cast(int, firstBurstOffset)
         pass
     def factory(*args_, **kwargs_):
         if blbProdIntegration.subclass:
@@ -3364,16 +3280,28 @@ class blbProdIntegration(GeneratedsSuper):
         else:
             return blbProdIntegration(*args_, **kwargs_)
     factory = staticmethod(factory)
-    def get_minIntegTime(self): return self.minIntegTime
-    def set_minIntegTime(self, minIntegTime): self.minIntegTime = minIntegTime
     def get_ccIntegFactor(self): return self.ccIntegFactor
     def set_ccIntegFactor(self, ccIntegFactor): self.ccIntegFactor = ccIntegFactor
-    def get_ltaIntegFactor(self): return self.ltaIntegFactor
-    def set_ltaIntegFactor(self, ltaIntegFactor): self.ltaIntegFactor = ltaIntegFactor
+    def get_burstBlankDuration(self): return self.burstBlankDuration
+    def set_burstBlankDuration(self, burstBlankDuration): self.burstBlankDuration = burstBlankDuration
+    def get_pauseBetweenBursts(self): return self.pauseBetweenBursts
+    def set_pauseBetweenBursts(self, pauseBetweenBursts): self.pauseBetweenBursts = pauseBetweenBursts
+    def get_numRollingBursts(self): return self.numRollingBursts
+    def set_numRollingBursts(self, numRollingBursts): self.numRollingBursts = numRollingBursts
     def get_cbeIntegFactor(self): return self.cbeIntegFactor
     def set_cbeIntegFactor(self, cbeIntegFactor): self.cbeIntegFactor = cbeIntegFactor
     def get_recirculation(self): return self.recirculation
     def set_recirculation(self, recirculation): self.recirculation = recirculation
+    def get_recPhase(self): return self.recPhase
+    def set_recPhase(self, recPhase): self.recPhase = recPhase
+    def get_minIntegTime(self): return self.minIntegTime
+    def set_minIntegTime(self, minIntegTime): self.minIntegTime = minIntegTime
+    def get_burstDuration(self): return self.burstDuration
+    def set_burstDuration(self, burstDuration): self.burstDuration = burstDuration
+    def get_ltaIntegFactor(self): return self.ltaIntegFactor
+    def set_ltaIntegFactor(self, ltaIntegFactor): self.ltaIntegFactor = ltaIntegFactor
+    def get_firstBurstOffset(self): return self.firstBurstOffset
+    def set_firstBurstOffset(self, firstBurstOffset): self.firstBurstOffset = firstBurstOffset
     def export(self, outfile, level, namespace_='widar:', name_='blbProdIntegration', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
@@ -3386,21 +3314,39 @@ class blbProdIntegration(GeneratedsSuper):
         else:
             outfile.write('/>\n')
     def exportAttributes(self, outfile, level, already_processed, namespace_='widar:', name_='blbProdIntegration'):
-        if self.minIntegTime is not None and 'minIntegTime' not in already_processed:
-            already_processed.append('minIntegTime')
-            outfile.write(' minIntegTime=%s' % (quote_attrib(self.minIntegTime), ))
         if self.ccIntegFactor is not None and 'ccIntegFactor' not in already_processed:
             already_processed.append('ccIntegFactor')
             outfile.write(' ccIntegFactor="%s"' % self.gds_format_integer(self.ccIntegFactor, input_name='ccIntegFactor'))
-        if self.ltaIntegFactor is not None and 'ltaIntegFactor' not in already_processed:
-            already_processed.append('ltaIntegFactor')
-            outfile.write(' ltaIntegFactor="%s"' % self.gds_format_integer(self.ltaIntegFactor, input_name='ltaIntegFactor'))
+        if self.burstBlankDuration is not None and 'burstBlankDuration' not in already_processed:
+            already_processed.append('burstBlankDuration')
+            outfile.write(' burstBlankDuration="%s"' % self.gds_format_integer(self.burstBlankDuration, input_name='burstBlankDuration'))
+        if self.pauseBetweenBursts is not None and 'pauseBetweenBursts' not in already_processed:
+            already_processed.append('pauseBetweenBursts')
+            outfile.write(' pauseBetweenBursts="%s"' % self.gds_format_integer(self.pauseBetweenBursts, input_name='pauseBetweenBursts'))
+        if self.numRollingBursts is not None and 'numRollingBursts' not in already_processed:
+            already_processed.append('numRollingBursts')
+            outfile.write(' numRollingBursts="%s"' % self.gds_format_integer(self.numRollingBursts, input_name='numRollingBursts'))
         if self.cbeIntegFactor is not None and 'cbeIntegFactor' not in already_processed:
             already_processed.append('cbeIntegFactor')
             outfile.write(' cbeIntegFactor="%s"' % self.gds_format_integer(self.cbeIntegFactor, input_name='cbeIntegFactor'))
         if self.recirculation is not None and 'recirculation' not in already_processed:
             already_processed.append('recirculation')
             outfile.write(' recirculation=%s' % (quote_attrib(self.recirculation), ))
+        if self.recPhase is not None and 'recPhase' not in already_processed:
+            already_processed.append('recPhase')
+            outfile.write(' recPhase=%s' % (quote_attrib(self.recPhase), ))
+        if self.minIntegTime is not None and 'minIntegTime' not in already_processed:
+            already_processed.append('minIntegTime')
+            outfile.write(' minIntegTime=%s' % (quote_attrib(self.minIntegTime), ))
+        if self.burstDuration is not None and 'burstDuration' not in already_processed:
+            already_processed.append('burstDuration')
+            outfile.write(' burstDuration="%s"' % self.gds_format_integer(self.burstDuration, input_name='burstDuration'))
+        if self.ltaIntegFactor is not None and 'ltaIntegFactor' not in already_processed:
+            already_processed.append('ltaIntegFactor')
+            outfile.write(' ltaIntegFactor="%s"' % self.gds_format_integer(self.ltaIntegFactor, input_name='ltaIntegFactor'))
+        if self.firstBurstOffset is not None and 'firstBurstOffset' not in already_processed:
+            already_processed.append('firstBurstOffset')
+            outfile.write(' firstBurstOffset="%s"' % self.gds_format_integer(self.firstBurstOffset, input_name='firstBurstOffset'))
     def exportChildren(self, outfile, level, namespace_='widar:', name_='blbProdIntegration', fromsubclass_=False):
         pass
     def hasContent_(self):
@@ -3416,18 +3362,22 @@ class blbProdIntegration(GeneratedsSuper):
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
     def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        if self.minIntegTime is not None and 'minIntegTime' not in already_processed:
-            already_processed.append('minIntegTime')
-            showIndent(outfile, level)
-            outfile.write('minIntegTime = %s,\n' % (self.minIntegTime,))
         if self.ccIntegFactor is not None and 'ccIntegFactor' not in already_processed:
             already_processed.append('ccIntegFactor')
             showIndent(outfile, level)
             outfile.write('ccIntegFactor = %d,\n' % (self.ccIntegFactor,))
-        if self.ltaIntegFactor is not None and 'ltaIntegFactor' not in already_processed:
-            already_processed.append('ltaIntegFactor')
+        if self.burstBlankDuration is not None and 'burstBlankDuration' not in already_processed:
+            already_processed.append('burstBlankDuration')
             showIndent(outfile, level)
-            outfile.write('ltaIntegFactor = %d,\n' % (self.ltaIntegFactor,))
+            outfile.write('burstBlankDuration = %d,\n' % (self.burstBlankDuration,))
+        if self.pauseBetweenBursts is not None and 'pauseBetweenBursts' not in already_processed:
+            already_processed.append('pauseBetweenBursts')
+            showIndent(outfile, level)
+            outfile.write('pauseBetweenBursts = %d,\n' % (self.pauseBetweenBursts,))
+        if self.numRollingBursts is not None and 'numRollingBursts' not in already_processed:
+            already_processed.append('numRollingBursts')
+            showIndent(outfile, level)
+            outfile.write('numRollingBursts = %d,\n' % (self.numRollingBursts,))
         if self.cbeIntegFactor is not None and 'cbeIntegFactor' not in already_processed:
             already_processed.append('cbeIntegFactor')
             showIndent(outfile, level)
@@ -3436,6 +3386,26 @@ class blbProdIntegration(GeneratedsSuper):
             already_processed.append('recirculation')
             showIndent(outfile, level)
             outfile.write('recirculation = %s,\n' % (self.recirculation,))
+        if self.recPhase is not None and 'recPhase' not in already_processed:
+            already_processed.append('recPhase')
+            showIndent(outfile, level)
+            outfile.write('recPhase = %s,\n' % (self.recPhase,))
+        if self.minIntegTime is not None and 'minIntegTime' not in already_processed:
+            already_processed.append('minIntegTime')
+            showIndent(outfile, level)
+            outfile.write('minIntegTime = %s,\n' % (self.minIntegTime,))
+        if self.burstDuration is not None and 'burstDuration' not in already_processed:
+            already_processed.append('burstDuration')
+            showIndent(outfile, level)
+            outfile.write('burstDuration = %d,\n' % (self.burstDuration,))
+        if self.ltaIntegFactor is not None and 'ltaIntegFactor' not in already_processed:
+            already_processed.append('ltaIntegFactor')
+            showIndent(outfile, level)
+            outfile.write('ltaIntegFactor = %d,\n' % (self.ltaIntegFactor,))
+        if self.firstBurstOffset is not None and 'firstBurstOffset' not in already_processed:
+            already_processed.append('firstBurstOffset')
+            showIndent(outfile, level)
+            outfile.write('firstBurstOffset = %d,\n' % (self.firstBurstOffset,))
     def exportLiteralChildren(self, outfile, level, name_):
         pass
     def build(self, node):
@@ -3444,10 +3414,6 @@ class blbProdIntegration(GeneratedsSuper):
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
     def buildAttributes(self, node, attrs, already_processed):
-        value = find_attr_value_('minIntegTime', node)
-        if value is not None and 'minIntegTime' not in already_processed:
-            already_processed.append('minIntegTime')
-            self.minIntegTime = value
         value = find_attr_value_('ccIntegFactor', node)
         if value is not None and 'ccIntegFactor' not in already_processed:
             already_processed.append('ccIntegFactor')
@@ -3455,11 +3421,25 @@ class blbProdIntegration(GeneratedsSuper):
                 self.ccIntegFactor = int(value)
             except ValueError, exp:
                 raise_parse_error(node, 'Bad integer attribute: %s' % exp)
-        value = find_attr_value_('ltaIntegFactor', node)
-        if value is not None and 'ltaIntegFactor' not in already_processed:
-            already_processed.append('ltaIntegFactor')
+        value = find_attr_value_('burstBlankDuration', node)
+        if value is not None and 'burstBlankDuration' not in already_processed:
+            already_processed.append('burstBlankDuration')
             try:
-                self.ltaIntegFactor = int(value)
+                self.burstBlankDuration = int(value)
+            except ValueError, exp:
+                raise_parse_error(node, 'Bad integer attribute: %s' % exp)
+        value = find_attr_value_('pauseBetweenBursts', node)
+        if value is not None and 'pauseBetweenBursts' not in already_processed:
+            already_processed.append('pauseBetweenBursts')
+            try:
+                self.pauseBetweenBursts = int(value)
+            except ValueError, exp:
+                raise_parse_error(node, 'Bad integer attribute: %s' % exp)
+        value = find_attr_value_('numRollingBursts', node)
+        if value is not None and 'numRollingBursts' not in already_processed:
+            already_processed.append('numRollingBursts')
+            try:
+                self.numRollingBursts = int(value)
             except ValueError, exp:
                 raise_parse_error(node, 'Bad integer attribute: %s' % exp)
         value = find_attr_value_('cbeIntegFactor', node)
@@ -3473,18 +3453,473 @@ class blbProdIntegration(GeneratedsSuper):
         if value is not None and 'recirculation' not in already_processed:
             already_processed.append('recirculation')
             self.recirculation = value
+        value = find_attr_value_('recPhase', node)
+        if value is not None and 'recPhase' not in already_processed:
+            already_processed.append('recPhase')
+            self.recPhase = value
+        value = find_attr_value_('minIntegTime', node)
+        if value is not None and 'minIntegTime' not in already_processed:
+            already_processed.append('minIntegTime')
+            self.minIntegTime = value
+        value = find_attr_value_('burstDuration', node)
+        if value is not None and 'burstDuration' not in already_processed:
+            already_processed.append('burstDuration')
+            try:
+                self.burstDuration = int(value)
+            except ValueError, exp:
+                raise_parse_error(node, 'Bad integer attribute: %s' % exp)
+        value = find_attr_value_('ltaIntegFactor', node)
+        if value is not None and 'ltaIntegFactor' not in already_processed:
+            already_processed.append('ltaIntegFactor')
+            try:
+                self.ltaIntegFactor = int(value)
+            except ValueError, exp:
+                raise_parse_error(node, 'Bad integer attribute: %s' % exp)
+        value = find_attr_value_('firstBurstOffset', node)
+        if value is not None and 'firstBurstOffset' not in already_processed:
+            already_processed.append('firstBurstOffset')
+            try:
+                self.firstBurstOffset = int(value)
+            except ValueError, exp:
+                raise_parse_error(node, 'Bad integer attribute: %s' % exp)
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         pass
 # end class blbProdIntegration
 
 
-class blbPair(GeneratedsSuper):
-    """Lists Baseline Board Pairs to be used for a particular subband"""
+class pulsarTiming(GeneratedsSuper):
+    """Occurs as sequence element under subband replacing pulsarBinning.
+    referenceTime is MJD"""
     subclass = None
     superclass = None
-    def __init__(self, quadrant=None, numBlbPairs=None, firstBlbPair=None):
+    def __init__(self, status=None, referenceTime=None, numCff=None, pulsarModelCff=None):
+        self.status = _cast(None, status)
+        self.referenceTime = _cast(float, referenceTime)
+        self.numCff = _cast(int, numCff)
+        if pulsarModelCff is None:
+            self.pulsarModelCff = []
+        else:
+            self.pulsarModelCff = pulsarModelCff
+    def factory(*args_, **kwargs_):
+        if pulsarTiming.subclass:
+            return pulsarTiming.subclass(*args_, **kwargs_)
+        else:
+            return pulsarTiming(*args_, **kwargs_)
+    factory = staticmethod(factory)
+    def get_pulsarModelCff(self): return self.pulsarModelCff
+    def set_pulsarModelCff(self, pulsarModelCff): self.pulsarModelCff = pulsarModelCff
+    def add_pulsarModelCff(self, value): self.pulsarModelCff.append(value)
+    def insert_pulsarModelCff(self, index, value): self.pulsarModelCff[index] = value
+    def get_status(self): return self.status
+    def set_status(self, status): self.status = status
+    def get_referenceTime(self): return self.referenceTime
+    def set_referenceTime(self, referenceTime): self.referenceTime = referenceTime
+    def get_numCff(self): return self.numCff
+    def set_numCff(self, numCff): self.numCff = numCff
+    def export(self, outfile, level, namespace_='widar:', name_='pulsarTiming', namespacedef_=''):
+        showIndent(outfile, level)
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='pulsarTiming')
+        if self.hasContent_():
+            outfile.write('>\n')
+            self.exportChildren(outfile, level + 1, namespace_, name_)
+            showIndent(outfile, level)
+            outfile.write('</%s%s>\n' % (namespace_, name_))
+        else:
+            outfile.write('/>\n')
+    def exportAttributes(self, outfile, level, already_processed, namespace_='widar:', name_='pulsarTiming'):
+        if self.status is not None and 'status' not in already_processed:
+            already_processed.append('status')
+            outfile.write(' status=%s' % (quote_attrib(self.status), ))
+        if self.referenceTime is not None and 'referenceTime' not in already_processed:
+            already_processed.append('referenceTime')
+            outfile.write(' referenceTime="%s"' % self.gds_format_double(self.referenceTime, input_name='referenceTime'))
+        if self.numCff is not None and 'numCff' not in already_processed:
+            already_processed.append('numCff')
+            outfile.write(' numCff="%s"' % self.gds_format_integer(self.numCff, input_name='numCff'))
+    def exportChildren(self, outfile, level, namespace_='widar:', name_='pulsarTiming', fromsubclass_=False):
+        for pulsarModelCff_ in self.pulsarModelCff:
+            pulsarModelCff_.export(outfile, level, namespace_, name_='pulsarModelCff')
+    def hasContent_(self):
+        if (
+            self.pulsarModelCff
+            ):
+            return True
+        else:
+            return False
+    def exportLiteral(self, outfile, level, name_='pulsarTiming'):
+        level += 1
+        self.exportLiteralAttributes(outfile, level, [], name_)
+        if self.hasContent_():
+            self.exportLiteralChildren(outfile, level, name_)
+    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
+        if self.status is not None and 'status' not in already_processed:
+            already_processed.append('status')
+            showIndent(outfile, level)
+            outfile.write('status = %s,\n' % (self.status,))
+        if self.referenceTime is not None and 'referenceTime' not in already_processed:
+            already_processed.append('referenceTime')
+            showIndent(outfile, level)
+            outfile.write('referenceTime = %e,\n' % (self.referenceTime,))
+        if self.numCff is not None and 'numCff' not in already_processed:
+            already_processed.append('numCff')
+            showIndent(outfile, level)
+            outfile.write('numCff = %d,\n' % (self.numCff,))
+    def exportLiteralChildren(self, outfile, level, name_):
+        showIndent(outfile, level)
+        outfile.write('pulsarModelCff=[\n')
+        level += 1
+        for pulsarModelCff_ in self.pulsarModelCff:
+            showIndent(outfile, level)
+            outfile.write('model_.pulsarModelCff(\n')
+            pulsarModelCff_.exportLiteral(outfile, level)
+            showIndent(outfile, level)
+            outfile.write('),\n')
+        level -= 1
+        showIndent(outfile, level)
+        outfile.write('],\n')
+    def build(self, node):
+        self.buildAttributes(node, node.attrib, [])
+        for child in node:
+            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
+            self.buildChildren(child, node, nodeName_)
+    def buildAttributes(self, node, attrs, already_processed):
+        value = find_attr_value_('status', node)
+        if value is not None and 'status' not in already_processed:
+            already_processed.append('status')
+            self.status = value
+        value = find_attr_value_('referenceTime', node)
+        if value is not None and 'referenceTime' not in already_processed:
+            already_processed.append('referenceTime')
+            try:
+                self.referenceTime = float(value)
+            except ValueError, exp:
+                raise ValueError('Bad float/double attribute (referenceTime): %s' % exp)
+        value = find_attr_value_('numCff', node)
+        if value is not None and 'numCff' not in already_processed:
+            already_processed.append('numCff')
+            try:
+                self.numCff = int(value)
+            except ValueError, exp:
+                raise_parse_error(node, 'Bad integer attribute: %s' % exp)
+    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
+        if nodeName_ == 'pulsarModelCff':
+            obj_ = pulsarModelCff.factory()
+            obj_.build(child_)
+            self.pulsarModelCff.append(obj_)
+# end class pulsarTiming
+
+
+class pulsarModelCff(GeneratedsSuper):
+    subclass = None
+    superclass = None
+    def __init__(self, cff=None, index=None):
+        self.cff = _cast(float, cff)
+        self.index = _cast(int, index)
+        pass
+    def factory(*args_, **kwargs_):
+        if pulsarModelCff.subclass:
+            return pulsarModelCff.subclass(*args_, **kwargs_)
+        else:
+            return pulsarModelCff(*args_, **kwargs_)
+    factory = staticmethod(factory)
+    def get_cff(self): return self.cff
+    def set_cff(self, cff): self.cff = cff
+    def get_index(self): return self.index
+    def set_index(self, index): self.index = index
+    def export(self, outfile, level, namespace_='widar:', name_='pulsarModelCff', namespacedef_=''):
+        showIndent(outfile, level)
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='pulsarModelCff')
+        if self.hasContent_():
+            outfile.write('>\n')
+            self.exportChildren(outfile, level + 1, namespace_, name_)
+            outfile.write('</%s%s>\n' % (namespace_, name_))
+        else:
+            outfile.write('/>\n')
+    def exportAttributes(self, outfile, level, already_processed, namespace_='widar:', name_='pulsarModelCff'):
+        if self.cff is not None and 'cff' not in already_processed:
+            already_processed.append('cff')
+            outfile.write(' cff="%s"' % self.gds_format_double(self.cff, input_name='cff'))
+        if self.index is not None and 'index' not in already_processed:
+            already_processed.append('index')
+            outfile.write(' index="%s"' % self.gds_format_integer(self.index, input_name='index'))
+    def exportChildren(self, outfile, level, namespace_='widar:', name_='pulsarModelCff', fromsubclass_=False):
+        pass
+    def hasContent_(self):
+        if (
+
+            ):
+            return True
+        else:
+            return False
+    def exportLiteral(self, outfile, level, name_='pulsarModelCff'):
+        level += 1
+        self.exportLiteralAttributes(outfile, level, [], name_)
+        if self.hasContent_():
+            self.exportLiteralChildren(outfile, level, name_)
+    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
+        if self.cff is not None and 'cff' not in already_processed:
+            already_processed.append('cff')
+            showIndent(outfile, level)
+            outfile.write('cff = %e,\n' % (self.cff,))
+        if self.index is not None and 'index' not in already_processed:
+            already_processed.append('index')
+            showIndent(outfile, level)
+            outfile.write('index = %d,\n' % (self.index,))
+    def exportLiteralChildren(self, outfile, level, name_):
+        pass
+    def build(self, node):
+        self.buildAttributes(node, node.attrib, [])
+        for child in node:
+            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
+            self.buildChildren(child, node, nodeName_)
+    def buildAttributes(self, node, attrs, already_processed):
+        value = find_attr_value_('cff', node)
+        if value is not None and 'cff' not in already_processed:
+            already_processed.append('cff')
+            try:
+                self.cff = float(value)
+            except ValueError, exp:
+                raise ValueError('Bad float/double attribute (cff): %s' % exp)
+        value = find_attr_value_('index', node)
+        if value is not None and 'index' not in already_processed:
+            already_processed.append('index')
+            try:
+                self.index = int(value)
+            except ValueError, exp:
+                raise_parse_error(node, 'Bad integer attribute: %s' % exp)
+    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
+        pass
+# end class pulsarModelCff
+
+
+class pulsarBins(GeneratedsSuper):
+    """Occurs as sequence element under pp (polarization product)"""
+    subclass = None
+    superclass = None
+    def __init__(self, nmbrPulsarBinSets=None, pulsarBinSet=None):
+        self.nmbrPulsarBinSets = _cast(int, nmbrPulsarBinSets)
+        if pulsarBinSet is None:
+            self.pulsarBinSet = []
+        else:
+            self.pulsarBinSet = pulsarBinSet
+    def factory(*args_, **kwargs_):
+        if pulsarBins.subclass:
+            return pulsarBins.subclass(*args_, **kwargs_)
+        else:
+            return pulsarBins(*args_, **kwargs_)
+    factory = staticmethod(factory)
+    def get_pulsarBinSet(self): return self.pulsarBinSet
+    def set_pulsarBinSet(self, pulsarBinSet): self.pulsarBinSet = pulsarBinSet
+    def add_pulsarBinSet(self, value): self.pulsarBinSet.append(value)
+    def insert_pulsarBinSet(self, index, value): self.pulsarBinSet[index] = value
+    def get_nmbrPulsarBinSets(self): return self.nmbrPulsarBinSets
+    def set_nmbrPulsarBinSets(self, nmbrPulsarBinSets): self.nmbrPulsarBinSets = nmbrPulsarBinSets
+    def export(self, outfile, level, namespace_='widar:', name_='pulsarBins', namespacedef_=''):
+        showIndent(outfile, level)
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='pulsarBins')
+        if self.hasContent_():
+            outfile.write('>\n')
+            self.exportChildren(outfile, level + 1, namespace_, name_)
+            showIndent(outfile, level)
+            outfile.write('</%s%s>\n' % (namespace_, name_))
+        else:
+            outfile.write('/>\n')
+    def exportAttributes(self, outfile, level, already_processed, namespace_='widar:', name_='pulsarBins'):
+        if self.nmbrPulsarBinSets is not None and 'nmbrPulsarBinSets' not in already_processed:
+            already_processed.append('nmbrPulsarBinSets')
+            outfile.write(' nmbrPulsarBinSets="%s"' % self.gds_format_integer(self.nmbrPulsarBinSets, input_name='nmbrPulsarBinSets'))
+    def exportChildren(self, outfile, level, namespace_='widar:', name_='pulsarBins', fromsubclass_=False):
+        for pulsarBinSet_ in self.pulsarBinSet:
+            pulsarBinSet_.export(outfile, level, namespace_, name_='pulsarBinSet')
+    def hasContent_(self):
+        if (
+            self.pulsarBinSet
+            ):
+            return True
+        else:
+            return False
+    def exportLiteral(self, outfile, level, name_='pulsarBins'):
+        level += 1
+        self.exportLiteralAttributes(outfile, level, [], name_)
+        if self.hasContent_():
+            self.exportLiteralChildren(outfile, level, name_)
+    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
+        if self.nmbrPulsarBinSets is not None and 'nmbrPulsarBinSets' not in already_processed:
+            already_processed.append('nmbrPulsarBinSets')
+            showIndent(outfile, level)
+            outfile.write('nmbrPulsarBinSets = %d,\n' % (self.nmbrPulsarBinSets,))
+    def exportLiteralChildren(self, outfile, level, name_):
+        showIndent(outfile, level)
+        outfile.write('pulsarBinSet=[\n')
+        level += 1
+        for pulsarBinSet_ in self.pulsarBinSet:
+            showIndent(outfile, level)
+            outfile.write('model_.pulsarBinSet(\n')
+            pulsarBinSet_.exportLiteral(outfile, level)
+            showIndent(outfile, level)
+            outfile.write('),\n')
+        level -= 1
+        showIndent(outfile, level)
+        outfile.write('],\n')
+    def build(self, node):
+        self.buildAttributes(node, node.attrib, [])
+        for child in node:
+            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
+            self.buildChildren(child, node, nodeName_)
+    def buildAttributes(self, node, attrs, already_processed):
+        value = find_attr_value_('nmbrPulsarBinSets', node)
+        if value is not None and 'nmbrPulsarBinSets' not in already_processed:
+            already_processed.append('nmbrPulsarBinSets')
+            try:
+                self.nmbrPulsarBinSets = int(value)
+            except ValueError, exp:
+                raise_parse_error(node, 'Bad integer attribute: %s' % exp)
+    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
+        if nodeName_ == 'pulsarBinSet':
+            obj_ = pulsarBinSet.factory()
+            obj_.build(child_)
+            self.pulsarBinSet.append(obj_)
+# end class pulsarBins
+
+
+class pulsarBinSet(GeneratedsSuper):
+    """Bin positions are specified as fraction of the period. binWidth must
+    be at least 1us smaller than binSpacing. If binWidth is omitted,
+    1us less than binSpacing is assumed."""
+    subclass = None
+    superclass = None
+    def __init__(self, binWidth=None, binSpacing=None, startingPhase=None, nmbrBins=None):
+        self.binWidth = _cast(float, binWidth)
+        self.binSpacing = _cast(float, binSpacing)
+        self.startingPhase = _cast(float, startingPhase)
+        self.nmbrBins = _cast(int, nmbrBins)
+        pass
+    def factory(*args_, **kwargs_):
+        if pulsarBinSet.subclass:
+            return pulsarBinSet.subclass(*args_, **kwargs_)
+        else:
+            return pulsarBinSet(*args_, **kwargs_)
+    factory = staticmethod(factory)
+    def get_binWidth(self): return self.binWidth
+    def set_binWidth(self, binWidth): self.binWidth = binWidth
+    def get_binSpacing(self): return self.binSpacing
+    def set_binSpacing(self, binSpacing): self.binSpacing = binSpacing
+    def get_startingPhase(self): return self.startingPhase
+    def set_startingPhase(self, startingPhase): self.startingPhase = startingPhase
+    def get_nmbrBins(self): return self.nmbrBins
+    def set_nmbrBins(self, nmbrBins): self.nmbrBins = nmbrBins
+    def export(self, outfile, level, namespace_='widar:', name_='pulsarBinSet', namespacedef_=''):
+        showIndent(outfile, level)
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='pulsarBinSet')
+        if self.hasContent_():
+            outfile.write('>\n')
+            self.exportChildren(outfile, level + 1, namespace_, name_)
+            outfile.write('</%s%s>\n' % (namespace_, name_))
+        else:
+            outfile.write('/>\n')
+    def exportAttributes(self, outfile, level, already_processed, namespace_='widar:', name_='pulsarBinSet'):
+        if self.binWidth is not None and 'binWidth' not in already_processed:
+            already_processed.append('binWidth')
+            outfile.write(' binWidth="%s"' % self.gds_format_double(self.binWidth, input_name='binWidth'))
+        if self.binSpacing is not None and 'binSpacing' not in already_processed:
+            already_processed.append('binSpacing')
+            outfile.write(' binSpacing="%s"' % self.gds_format_double(self.binSpacing, input_name='binSpacing'))
+        if self.startingPhase is not None and 'startingPhase' not in already_processed:
+            already_processed.append('startingPhase')
+            outfile.write(' startingPhase="%s"' % self.gds_format_double(self.startingPhase, input_name='startingPhase'))
+        if self.nmbrBins is not None and 'nmbrBins' not in already_processed:
+            already_processed.append('nmbrBins')
+            outfile.write(' nmbrBins="%s"' % self.gds_format_integer(self.nmbrBins, input_name='nmbrBins'))
+    def exportChildren(self, outfile, level, namespace_='widar:', name_='pulsarBinSet', fromsubclass_=False):
+        pass
+    def hasContent_(self):
+        if (
+
+            ):
+            return True
+        else:
+            return False
+    def exportLiteral(self, outfile, level, name_='pulsarBinSet'):
+        level += 1
+        self.exportLiteralAttributes(outfile, level, [], name_)
+        if self.hasContent_():
+            self.exportLiteralChildren(outfile, level, name_)
+    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
+        if self.binWidth is not None and 'binWidth' not in already_processed:
+            already_processed.append('binWidth')
+            showIndent(outfile, level)
+            outfile.write('binWidth = %e,\n' % (self.binWidth,))
+        if self.binSpacing is not None and 'binSpacing' not in already_processed:
+            already_processed.append('binSpacing')
+            showIndent(outfile, level)
+            outfile.write('binSpacing = %e,\n' % (self.binSpacing,))
+        if self.startingPhase is not None and 'startingPhase' not in already_processed:
+            already_processed.append('startingPhase')
+            showIndent(outfile, level)
+            outfile.write('startingPhase = %e,\n' % (self.startingPhase,))
+        if self.nmbrBins is not None and 'nmbrBins' not in already_processed:
+            already_processed.append('nmbrBins')
+            showIndent(outfile, level)
+            outfile.write('nmbrBins = %d,\n' % (self.nmbrBins,))
+    def exportLiteralChildren(self, outfile, level, name_):
+        pass
+    def build(self, node):
+        self.buildAttributes(node, node.attrib, [])
+        for child in node:
+            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
+            self.buildChildren(child, node, nodeName_)
+    def buildAttributes(self, node, attrs, already_processed):
+        value = find_attr_value_('binWidth', node)
+        if value is not None and 'binWidth' not in already_processed:
+            already_processed.append('binWidth')
+            try:
+                self.binWidth = float(value)
+            except ValueError, exp:
+                raise ValueError('Bad float/double attribute (binWidth): %s' % exp)
+        value = find_attr_value_('binSpacing', node)
+        if value is not None and 'binSpacing' not in already_processed:
+            already_processed.append('binSpacing')
+            try:
+                self.binSpacing = float(value)
+            except ValueError, exp:
+                raise ValueError('Bad float/double attribute (binSpacing): %s' % exp)
+        value = find_attr_value_('startingPhase', node)
+        if value is not None and 'startingPhase' not in already_processed:
+            already_processed.append('startingPhase')
+            try:
+                self.startingPhase = float(value)
+            except ValueError, exp:
+                raise ValueError('Bad float/double attribute (startingPhase): %s' % exp)
+        value = find_attr_value_('nmbrBins', node)
+        if value is not None and 'nmbrBins' not in already_processed:
+            already_processed.append('nmbrBins')
+            try:
+                self.nmbrBins = int(value)
+            except ValueError, exp:
+                raise_parse_error(node, 'Bad integer attribute: %s' % exp)
+    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
+        pass
+# end class pulsarBinSet
+
+
+class blbPair(GeneratedsSuper):
+    """List of Baseline Board Pairs to be used for a particular subband
+    Acronym ifd stands for Inter-Frame Delay"""
+    subclass = None
+    superclass = None
+    def __init__(self, quadrant=None, numBlbPairs=None, ifd=None, ifdRandom=None, firstBlbPair=None):
         self.quadrant = _cast(None, quadrant)
         self.numBlbPairs = _cast(None, numBlbPairs)
+        self.ifd = _cast(None, ifd)
+        self.ifdRandom = _cast(None, ifdRandom)
         self.firstBlbPair = _cast(None, firstBlbPair)
         pass
     def factory(*args_, **kwargs_):
@@ -3497,6 +3932,10 @@ class blbPair(GeneratedsSuper):
     def set_quadrant(self, quadrant): self.quadrant = quadrant
     def get_numBlbPairs(self): return self.numBlbPairs
     def set_numBlbPairs(self, numBlbPairs): self.numBlbPairs = numBlbPairs
+    def get_ifd(self): return self.ifd
+    def set_ifd(self, ifd): self.ifd = ifd
+    def get_ifdRandom(self): return self.ifdRandom
+    def set_ifdRandom(self, ifdRandom): self.ifdRandom = ifdRandom
     def get_firstBlbPair(self): return self.firstBlbPair
     def set_firstBlbPair(self, firstBlbPair): self.firstBlbPair = firstBlbPair
     def export(self, outfile, level, namespace_='widar:', name_='blbPair', namespacedef_=''):
@@ -3517,6 +3956,12 @@ class blbPair(GeneratedsSuper):
         if self.numBlbPairs is not None and 'numBlbPairs' not in already_processed:
             already_processed.append('numBlbPairs')
             outfile.write(' numBlbPairs=%s' % (quote_attrib(self.numBlbPairs), ))
+        if self.ifd is not None and 'ifd' not in already_processed:
+            already_processed.append('ifd')
+            outfile.write(' ifd=%s' % (quote_attrib(self.ifd), ))
+        if self.ifdRandom is not None and 'ifdRandom' not in already_processed:
+            already_processed.append('ifdRandom')
+            outfile.write(' ifdRandom=%s' % (quote_attrib(self.ifdRandom), ))
         if self.firstBlbPair is not None and 'firstBlbPair' not in already_processed:
             already_processed.append('firstBlbPair')
             outfile.write(' firstBlbPair=%s' % (quote_attrib(self.firstBlbPair), ))
@@ -3543,6 +3988,14 @@ class blbPair(GeneratedsSuper):
             already_processed.append('numBlbPairs')
             showIndent(outfile, level)
             outfile.write('numBlbPairs = %s,\n' % (self.numBlbPairs,))
+        if self.ifd is not None and 'ifd' not in already_processed:
+            already_processed.append('ifd')
+            showIndent(outfile, level)
+            outfile.write('ifd = %s,\n' % (self.ifd,))
+        if self.ifdRandom is not None and 'ifdRandom' not in already_processed:
+            already_processed.append('ifdRandom')
+            showIndent(outfile, level)
+            outfile.write('ifdRandom = %s,\n' % (self.ifdRandom,))
         if self.firstBlbPair is not None and 'firstBlbPair' not in already_processed:
             already_processed.append('firstBlbPair')
             showIndent(outfile, level)
@@ -3563,6 +4016,14 @@ class blbPair(GeneratedsSuper):
         if value is not None and 'numBlbPairs' not in already_processed:
             already_processed.append('numBlbPairs')
             self.numBlbPairs = value
+        value = find_attr_value_('ifd', node)
+        if value is not None and 'ifd' not in already_processed:
+            already_processed.append('ifd')
+            self.ifd = value
+        value = find_attr_value_('ifdRandom', node)
+        if value is not None and 'ifdRandom' not in already_processed:
+            already_processed.append('ifdRandom')
+            self.ifdRandom = value
         value = find_attr_value_('firstBlbPair', node)
         if value is not None and 'firstBlbPair' not in already_processed:
             already_processed.append('firstBlbPair')
@@ -3572,116 +4033,20 @@ class blbPair(GeneratedsSuper):
 # end class blbPair
 
 
-class blbSingle(GeneratedsSuper):
-    """This element is used when a single Baseline Board is used to obtain
-    specifieed product(s). In this context the Baseline Board is not
-    identified by its MLID (rack-crate-slot), instead it is
-    identified as a member of a Baseline Board pair."""
-    subclass = None
-    superclass = None
-    def __init__(self, quadrant=None, blbIndex=None, blbPair=None):
-        self.quadrant = _cast(None, quadrant)
-        self.blbIndex = _cast(None, blbIndex)
-        self.blbPair = _cast(None, blbPair)
-        pass
-    def factory(*args_, **kwargs_):
-        if blbSingle.subclass:
-            return blbSingle.subclass(*args_, **kwargs_)
-        else:
-            return blbSingle(*args_, **kwargs_)
-    factory = staticmethod(factory)
-    def get_quadrant(self): return self.quadrant
-    def set_quadrant(self, quadrant): self.quadrant = quadrant
-    def get_blbIndex(self): return self.blbIndex
-    def set_blbIndex(self, blbIndex): self.blbIndex = blbIndex
-    def get_blbPair(self): return self.blbPair
-    def set_blbPair(self, blbPair): self.blbPair = blbPair
-    def export(self, outfile, level, namespace_='widar:', name_='blbSingle', namespacedef_=''):
-        showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        already_processed = []
-        self.exportAttributes(outfile, level, already_processed, namespace_, name_='blbSingle')
-        if self.hasContent_():
-            outfile.write('>\n')
-            self.exportChildren(outfile, level + 1, namespace_, name_)
-            outfile.write('</%s%s>\n' % (namespace_, name_))
-        else:
-            outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, already_processed, namespace_='widar:', name_='blbSingle'):
-        if self.quadrant is not None and 'quadrant' not in already_processed:
-            already_processed.append('quadrant')
-            outfile.write(' quadrant=%s' % (quote_attrib(self.quadrant), ))
-        if self.blbIndex is not None and 'blbIndex' not in already_processed:
-            already_processed.append('blbIndex')
-            outfile.write(' blbIndex=%s' % (quote_attrib(self.blbIndex), ))
-        if self.blbPair is not None and 'blbPair' not in already_processed:
-            already_processed.append('blbPair')
-            outfile.write(' blbPair=%s' % (quote_attrib(self.blbPair), ))
-    def exportChildren(self, outfile, level, namespace_='widar:', name_='blbSingle', fromsubclass_=False):
-        pass
-    def hasContent_(self):
-        if (
-
-            ):
-            return True
-        else:
-            return False
-    def exportLiteral(self, outfile, level, name_='blbSingle'):
-        level += 1
-        self.exportLiteralAttributes(outfile, level, [], name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        if self.quadrant is not None and 'quadrant' not in already_processed:
-            already_processed.append('quadrant')
-            showIndent(outfile, level)
-            outfile.write('quadrant = %s,\n' % (self.quadrant,))
-        if self.blbIndex is not None and 'blbIndex' not in already_processed:
-            already_processed.append('blbIndex')
-            showIndent(outfile, level)
-            outfile.write('blbIndex = %s,\n' % (self.blbIndex,))
-        if self.blbPair is not None and 'blbPair' not in already_processed:
-            already_processed.append('blbPair')
-            showIndent(outfile, level)
-            outfile.write('blbPair = %s,\n' % (self.blbPair,))
-    def exportLiteralChildren(self, outfile, level, name_):
-        pass
-    def build(self, node):
-        self.buildAttributes(node, node.attrib, [])
-        for child in node:
-            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
-            self.buildChildren(child, node, nodeName_)
-    def buildAttributes(self, node, attrs, already_processed):
-        value = find_attr_value_('quadrant', node)
-        if value is not None and 'quadrant' not in already_processed:
-            already_processed.append('quadrant')
-            self.quadrant = value
-        value = find_attr_value_('blbIndex', node)
-        if value is not None and 'blbIndex' not in already_processed:
-            already_processed.append('blbIndex')
-            self.blbIndex = value
-        value = find_attr_value_('blbPair', node)
-        if value is not None and 'blbPair' not in already_processed:
-            already_processed.append('blbPair')
-            self.blbPair = value
-    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
-        pass
-# end class blbSingle
-
-
 class summedArray(GeneratedsSuper):
-    """The sum of the subarray. Baseline Boards: If specified in
+    """The sum of the subarray. List of Baseline Boards: If specified in
     summedArray choice applies both for cc and vdif. If not
-    specified at all, CM will use the Baseline Boards assifned to
-    polProducts."""
+    specified at all, CM will use Baseline Boards specified in
+    element polProducts."""
     subclass = None
     superclass = None
-    def __init__(self, integTime=10, autoIntegration=True, continuousInteg=True, headroom6dB=False, zeroFillInvalidData=True, applyIntegInHw=True, sid=None, excludeStations=None, blbPair=None, blbSingle=None, cc=None, vdif=None):
+    def __init__(self, integTime=None, autoIntegration=None, continuousInteg=None, headroom6dB=None, zeroFillInvalidData=None, modifyExcludeStations=None, applyIntegInHw=None, sid=None, excludeStations=None, blbPair=None, cc=None, vdif=None):
         self.integTime = _cast(int, integTime)
         self.autoIntegration = _cast(bool, autoIntegration)
         self.continuousInteg = _cast(bool, continuousInteg)
         self.headroom6dB = _cast(bool, headroom6dB)
         self.zeroFillInvalidData = _cast(bool, zeroFillInvalidData)
+        self.modifyExcludeStations = _cast(bool, modifyExcludeStations)
         self.applyIntegInHw = _cast(bool, applyIntegInHw)
         self.sid = _cast(None, sid)
         self.excludeStations = _cast(None, excludeStations)
@@ -3689,10 +4054,6 @@ class summedArray(GeneratedsSuper):
             self.blbPair = []
         else:
             self.blbPair = blbPair
-        if blbSingle is None:
-            self.blbSingle = []
-        else:
-            self.blbSingle = blbSingle
         self.cc = cc
         self.vdif = vdif
     def factory(*args_, **kwargs_):
@@ -3705,10 +4066,6 @@ class summedArray(GeneratedsSuper):
     def set_blbPair(self, blbPair): self.blbPair = blbPair
     def add_blbPair(self, value): self.blbPair.append(value)
     def insert_blbPair(self, index, value): self.blbPair[index] = value
-    def get_blbSingle(self): return self.blbSingle
-    def set_blbSingle(self, blbSingle): self.blbSingle = blbSingle
-    def add_blbSingle(self, value): self.blbSingle.append(value)
-    def insert_blbSingle(self, index, value): self.blbSingle[index] = value
     def get_cc(self): return self.cc
     def set_cc(self, cc): self.cc = cc
     def get_vdif(self): return self.vdif
@@ -3723,6 +4080,8 @@ class summedArray(GeneratedsSuper):
     def set_headroom6dB(self, headroom6dB): self.headroom6dB = headroom6dB
     def get_zeroFillInvalidData(self): return self.zeroFillInvalidData
     def set_zeroFillInvalidData(self, zeroFillInvalidData): self.zeroFillInvalidData = zeroFillInvalidData
+    def get_modifyExcludeStations(self): return self.modifyExcludeStations
+    def set_modifyExcludeStations(self, modifyExcludeStations): self.modifyExcludeStations = modifyExcludeStations
     def get_applyIntegInHw(self): return self.applyIntegInHw
     def set_applyIntegInHw(self, applyIntegInHw): self.applyIntegInHw = applyIntegInHw
     def get_sid(self): return self.sid
@@ -3757,6 +4116,9 @@ class summedArray(GeneratedsSuper):
         if self.zeroFillInvalidData is not None and 'zeroFillInvalidData' not in already_processed:
             already_processed.append('zeroFillInvalidData')
             outfile.write(' zeroFillInvalidData="%s"' % self.gds_format_boolean(self.gds_str_lower(str(self.zeroFillInvalidData)), input_name='zeroFillInvalidData'))
+        if self.modifyExcludeStations is not None and 'modifyExcludeStations' not in already_processed:
+            already_processed.append('modifyExcludeStations')
+            outfile.write(' modifyExcludeStations="%s"' % self.gds_format_boolean(self.gds_str_lower(str(self.modifyExcludeStations)), input_name='modifyExcludeStations'))
         if self.applyIntegInHw is not None and 'applyIntegInHw' not in already_processed:
             already_processed.append('applyIntegInHw')
             outfile.write(' applyIntegInHw="%s"' % self.gds_format_boolean(self.gds_str_lower(str(self.applyIntegInHw)), input_name='applyIntegInHw'))
@@ -3769,8 +4131,6 @@ class summedArray(GeneratedsSuper):
     def exportChildren(self, outfile, level, namespace_='widar:', name_='summedArray', fromsubclass_=False):
         for blbPair_ in self.blbPair:
             blbPair_.export(outfile, level, namespace_, name_='blbPair')
-        for blbSingle_ in self.blbSingle:
-            blbSingle_.export(outfile, level, namespace_, name_='blbSingle')
         if self.cc:
             self.cc.export(outfile, level, namespace_, name_='cc')
         if self.vdif:
@@ -3778,7 +4138,6 @@ class summedArray(GeneratedsSuper):
     def hasContent_(self):
         if (
             self.blbPair or
-            self.blbSingle or
             self.cc is not None or
             self.vdif is not None
             ):
@@ -3811,6 +4170,10 @@ class summedArray(GeneratedsSuper):
             already_processed.append('zeroFillInvalidData')
             showIndent(outfile, level)
             outfile.write('zeroFillInvalidData = %s,\n' % (self.zeroFillInvalidData,))
+        if self.modifyExcludeStations is not None and 'modifyExcludeStations' not in already_processed:
+            already_processed.append('modifyExcludeStations')
+            showIndent(outfile, level)
+            outfile.write('modifyExcludeStations = %s,\n' % (self.modifyExcludeStations,))
         if self.applyIntegInHw is not None and 'applyIntegInHw' not in already_processed:
             already_processed.append('applyIntegInHw')
             showIndent(outfile, level)
@@ -3831,18 +4194,6 @@ class summedArray(GeneratedsSuper):
             showIndent(outfile, level)
             outfile.write('model_.blbPair(\n')
             blbPair_.exportLiteral(outfile, level)
-            showIndent(outfile, level)
-            outfile.write('),\n')
-        level -= 1
-        showIndent(outfile, level)
-        outfile.write('],\n')
-        showIndent(outfile, level)
-        outfile.write('blbSingle=[\n')
-        level += 1
-        for blbSingle_ in self.blbSingle:
-            showIndent(outfile, level)
-            outfile.write('model_.blbSingle(\n')
-            blbSingle_.exportLiteral(outfile, level)
             showIndent(outfile, level)
             outfile.write('),\n')
         level -= 1
@@ -3909,6 +4260,15 @@ class summedArray(GeneratedsSuper):
                 self.zeroFillInvalidData = False
             else:
                 raise_parse_error(node, 'Bad boolean attribute')
+        value = find_attr_value_('modifyExcludeStations', node)
+        if value is not None and 'modifyExcludeStations' not in already_processed:
+            already_processed.append('modifyExcludeStations')
+            if value in ('true', '1'):
+                self.modifyExcludeStations = True
+            elif value in ('false', '0'):
+                self.modifyExcludeStations = False
+            else:
+                raise_parse_error(node, 'Bad boolean attribute')
         value = find_attr_value_('applyIntegInHw', node)
         if value is not None and 'applyIntegInHw' not in already_processed:
             already_processed.append('applyIntegInHw')
@@ -3931,10 +4291,6 @@ class summedArray(GeneratedsSuper):
             obj_ = blbPair.factory()
             obj_.build(child_)
             self.blbPair.append(obj_)
-        elif nodeName_ == 'blbSingle':
-            obj_ = blbSingle.factory()
-            obj_.build(child_)
-            self.blbSingle.append(obj_)
         elif nodeName_ == 'cc':
             obj_ = cc.factory()
             obj_.build(child_)
@@ -3948,10 +4304,12 @@ class summedArray(GeneratedsSuper):
 
 class modifySummedArray(GeneratedsSuper):
     """Modify summed array - If the action=modify can be specified in
-    element subarray or per subband."""
+    element subarray or per subband. 2012-04-13 SV : Not
+    implemented. Need to check is this required. If not, should be
+    removed from the schema."""
     subclass = None
     superclass = None
-    def __init__(self, excludeStations=None, vdifEnableA=False, vdifEnableB=False):
+    def __init__(self, excludeStations=None, vdifEnableA=None, vdifEnableB=None):
         self.excludeStations = _cast(None, excludeStations)
         self.vdifEnableA = _cast(bool, vdifEnableA)
         self.vdifEnableB = _cast(bool, vdifEnableB)
@@ -4055,7 +4413,7 @@ class cc(GeneratedsSuper):
     """Send summed data to the Correlator Chip Array"""
     subclass = None
     superclass = None
-    def __init__(self, agcEnabled=True, requantGain=None, agcRms=None, pp=None, blbPair=None, blbSingle=None, blbProdIntegration=None):
+    def __init__(self, agcEnabled=True, requantGain=None, agcRms=None, pp=None, blbPair=None, blbProdIntegration=None):
         self.agcEnabled = _cast(bool, agcEnabled)
         self.requantGain = _cast(None, requantGain)
         self.agcRms = _cast(float, agcRms)
@@ -4067,10 +4425,6 @@ class cc(GeneratedsSuper):
             self.blbPair = []
         else:
             self.blbPair = blbPair
-        if blbSingle is None:
-            self.blbSingle = []
-        else:
-            self.blbSingle = blbSingle
         self.blbProdIntegration = blbProdIntegration
     def factory(*args_, **kwargs_):
         if cc.subclass:
@@ -4086,10 +4440,6 @@ class cc(GeneratedsSuper):
     def set_blbPair(self, blbPair): self.blbPair = blbPair
     def add_blbPair(self, value): self.blbPair.append(value)
     def insert_blbPair(self, index, value): self.blbPair[index] = value
-    def get_blbSingle(self): return self.blbSingle
-    def set_blbSingle(self, blbSingle): self.blbSingle = blbSingle
-    def add_blbSingle(self, value): self.blbSingle.append(value)
-    def insert_blbSingle(self, index, value): self.blbSingle[index] = value
     def get_blbProdIntegration(self): return self.blbProdIntegration
     def set_blbProdIntegration(self, blbProdIntegration): self.blbProdIntegration = blbProdIntegration
     def get_agcEnabled(self): return self.agcEnabled
@@ -4125,15 +4475,12 @@ class cc(GeneratedsSuper):
             pp_.export(outfile, level, namespace_, name_='pp')
         for blbPair_ in self.blbPair:
             blbPair_.export(outfile, level, namespace_, name_='blbPair')
-        for blbSingle_ in self.blbSingle:
-            blbSingle_.export(outfile, level, namespace_, name_='blbSingle')
         if self.blbProdIntegration:
             self.blbProdIntegration.export(outfile, level, namespace_, name_='blbProdIntegration')
     def hasContent_(self):
         if (
             self.pp or
             self.blbPair or
-            self.blbSingle or
             self.blbProdIntegration is not None
             ):
             return True
@@ -4182,18 +4529,6 @@ class cc(GeneratedsSuper):
         level -= 1
         showIndent(outfile, level)
         outfile.write('],\n')
-        showIndent(outfile, level)
-        outfile.write('blbSingle=[\n')
-        level += 1
-        for blbSingle_ in self.blbSingle:
-            showIndent(outfile, level)
-            outfile.write('model_.blbSingle(\n')
-            blbSingle_.exportLiteral(outfile, level)
-            showIndent(outfile, level)
-            outfile.write('),\n')
-        level -= 1
-        showIndent(outfile, level)
-        outfile.write('],\n')
         if self.blbProdIntegration is not None:
             showIndent(outfile, level)
             outfile.write('blbProdIntegration=model_.blbProdIntegration(\n')
@@ -4235,10 +4570,6 @@ class cc(GeneratedsSuper):
             obj_ = blbPair.factory()
             obj_.build(child_)
             self.blbPair.append(obj_)
-        elif nodeName_ == 'blbSingle':
-            obj_ = blbSingle.factory()
-            obj_.build(child_)
-            self.blbSingle.append(obj_)
         elif nodeName_ == 'blbProdIntegration':
             obj_ = blbProdIntegration.factory()
             obj_.build(child_)
@@ -4247,17 +4578,20 @@ class cc(GeneratedsSuper):
 
 
 class vdif(GeneratedsSuper):
-    """Send the sum to VDIF"""
+    """Send the sum of a subarray to VDIF output Default value for VDIF
+    frame size is 1250 (enforced by CM). Default enforced by CM: a)
+    vdifEnable=false b) agcEnabled=true. c) epoch and epochOffset
+    are required parameters in "create subarray" """
     subclass = None
     superclass = None
-    def __init__(self, bThread=None, bDestIP=None, frameSize=None, aDestMAC='12:34:56:78:90:00', requantGain=None, agcEnabled=True, aDestPort='12002', epoch=None, aThread=None, aDestIP='192.168.0.21', stationId=None, bDestMAC=None, vdifEnableA=False, epochOffset=None, vdifEnableB=False, bDestPort=None, numBits='2', packetDelay='0', agcRms=None, blbPair=None, blbSingle=None):
+    def __init__(self, bThread=None, bDestIP=None, frameSize=None, aDestMAC='12:34:56:78:90:00', agcEnabled=None, aDestPort='12002', bPacketDelay=None, epoch=None, aThread=None, aDestIP='192.168.0.21', stationId=None, bDestMAC=None, vdifEnableA=None, epochOffset=None, aPacketDelay=None, vdifEnableB=None, bDestPort=None, numBits='2', requantGain=None, agcRms=None, blbPair=None):
         self.bThread = _cast(None, bThread)
         self.bDestIP = _cast(None, bDestIP)
         self.frameSize = _cast(None, frameSize)
         self.aDestMAC = _cast(None, aDestMAC)
-        self.requantGain = _cast(None, requantGain)
         self.agcEnabled = _cast(bool, agcEnabled)
         self.aDestPort = _cast(None, aDestPort)
+        self.bPacketDelay = _cast(None, bPacketDelay)
         self.epoch = _cast(None, epoch)
         self.aThread = _cast(None, aThread)
         self.aDestIP = _cast(None, aDestIP)
@@ -4265,19 +4599,16 @@ class vdif(GeneratedsSuper):
         self.bDestMAC = _cast(None, bDestMAC)
         self.vdifEnableA = _cast(bool, vdifEnableA)
         self.epochOffset = _cast(int, epochOffset)
+        self.aPacketDelay = _cast(None, aPacketDelay)
         self.vdifEnableB = _cast(bool, vdifEnableB)
         self.bDestPort = _cast(None, bDestPort)
         self.numBits = _cast(None, numBits)
-        self.packetDelay = _cast(None, packetDelay)
+        self.requantGain = _cast(None, requantGain)
         self.agcRms = _cast(float, agcRms)
         if blbPair is None:
             self.blbPair = []
         else:
             self.blbPair = blbPair
-        if blbSingle is None:
-            self.blbSingle = []
-        else:
-            self.blbSingle = blbSingle
     def factory(*args_, **kwargs_):
         if vdif.subclass:
             return vdif.subclass(*args_, **kwargs_)
@@ -4288,10 +4619,6 @@ class vdif(GeneratedsSuper):
     def set_blbPair(self, blbPair): self.blbPair = blbPair
     def add_blbPair(self, value): self.blbPair.append(value)
     def insert_blbPair(self, index, value): self.blbPair[index] = value
-    def get_blbSingle(self): return self.blbSingle
-    def set_blbSingle(self, blbSingle): self.blbSingle = blbSingle
-    def add_blbSingle(self, value): self.blbSingle.append(value)
-    def insert_blbSingle(self, index, value): self.blbSingle[index] = value
     def get_bThread(self): return self.bThread
     def set_bThread(self, bThread): self.bThread = bThread
     def get_bDestIP(self): return self.bDestIP
@@ -4300,12 +4627,12 @@ class vdif(GeneratedsSuper):
     def set_frameSize(self, frameSize): self.frameSize = frameSize
     def get_aDestMAC(self): return self.aDestMAC
     def set_aDestMAC(self, aDestMAC): self.aDestMAC = aDestMAC
-    def get_requantGain(self): return self.requantGain
-    def set_requantGain(self, requantGain): self.requantGain = requantGain
     def get_agcEnabled(self): return self.agcEnabled
     def set_agcEnabled(self, agcEnabled): self.agcEnabled = agcEnabled
     def get_aDestPort(self): return self.aDestPort
     def set_aDestPort(self, aDestPort): self.aDestPort = aDestPort
+    def get_bPacketDelay(self): return self.bPacketDelay
+    def set_bPacketDelay(self, bPacketDelay): self.bPacketDelay = bPacketDelay
     def get_epoch(self): return self.epoch
     def set_epoch(self, epoch): self.epoch = epoch
     def get_aThread(self): return self.aThread
@@ -4320,14 +4647,16 @@ class vdif(GeneratedsSuper):
     def set_vdifEnableA(self, vdifEnableA): self.vdifEnableA = vdifEnableA
     def get_epochOffset(self): return self.epochOffset
     def set_epochOffset(self, epochOffset): self.epochOffset = epochOffset
+    def get_aPacketDelay(self): return self.aPacketDelay
+    def set_aPacketDelay(self, aPacketDelay): self.aPacketDelay = aPacketDelay
     def get_vdifEnableB(self): return self.vdifEnableB
     def set_vdifEnableB(self, vdifEnableB): self.vdifEnableB = vdifEnableB
     def get_bDestPort(self): return self.bDestPort
     def set_bDestPort(self, bDestPort): self.bDestPort = bDestPort
     def get_numBits(self): return self.numBits
     def set_numBits(self, numBits): self.numBits = numBits
-    def get_packetDelay(self): return self.packetDelay
-    def set_packetDelay(self, packetDelay): self.packetDelay = packetDelay
+    def get_requantGain(self): return self.requantGain
+    def set_requantGain(self, requantGain): self.requantGain = requantGain
     def get_agcRms(self): return self.agcRms
     def set_agcRms(self, agcRms): self.agcRms = agcRms
     def export(self, outfile, level, namespace_='widar:', name_='vdif', namespacedef_=''):
@@ -4355,15 +4684,15 @@ class vdif(GeneratedsSuper):
         if self.aDestMAC is not None and 'aDestMAC' not in already_processed:
             already_processed.append('aDestMAC')
             outfile.write(' aDestMAC=%s' % (self.gds_format_string(quote_attrib(self.aDestMAC).encode(ExternalEncoding), input_name='aDestMAC'), ))
-        if self.requantGain is not None and 'requantGain' not in already_processed:
-            already_processed.append('requantGain')
-            outfile.write(' requantGain=%s' % (quote_attrib(self.requantGain), ))
         if self.agcEnabled is not None and 'agcEnabled' not in already_processed:
             already_processed.append('agcEnabled')
             outfile.write(' agcEnabled="%s"' % self.gds_format_boolean(self.gds_str_lower(str(self.agcEnabled)), input_name='agcEnabled'))
         if self.aDestPort is not None and 'aDestPort' not in already_processed:
             already_processed.append('aDestPort')
             outfile.write(' aDestPort=%s' % (self.gds_format_string(quote_attrib(self.aDestPort).encode(ExternalEncoding), input_name='aDestPort'), ))
+        if self.bPacketDelay is not None and 'bPacketDelay' not in already_processed:
+            already_processed.append('bPacketDelay')
+            outfile.write(' bPacketDelay=%s' % (quote_attrib(self.bPacketDelay), ))
         if self.epoch is not None and 'epoch' not in already_processed:
             already_processed.append('epoch')
             outfile.write(' epoch=%s' % (quote_attrib(self.epoch), ))
@@ -4385,6 +4714,9 @@ class vdif(GeneratedsSuper):
         if self.epochOffset is not None and 'epochOffset' not in already_processed:
             already_processed.append('epochOffset')
             outfile.write(' epochOffset="%s"' % self.gds_format_integer(self.epochOffset, input_name='epochOffset'))
+        if self.aPacketDelay is not None and 'aPacketDelay' not in already_processed:
+            already_processed.append('aPacketDelay')
+            outfile.write(' aPacketDelay=%s' % (quote_attrib(self.aPacketDelay), ))
         if self.vdifEnableB is not None and 'vdifEnableB' not in already_processed:
             already_processed.append('vdifEnableB')
             outfile.write(' vdifEnableB="%s"' % self.gds_format_boolean(self.gds_str_lower(str(self.vdifEnableB)), input_name='vdifEnableB'))
@@ -4394,21 +4726,18 @@ class vdif(GeneratedsSuper):
         if self.numBits is not None and 'numBits' not in already_processed:
             already_processed.append('numBits')
             outfile.write(' numBits=%s' % (quote_attrib(self.numBits), ))
-        if self.packetDelay is not None and 'packetDelay' not in already_processed:
-            already_processed.append('packetDelay')
-            outfile.write(' packetDelay=%s' % (quote_attrib(self.packetDelay), ))
+        if self.requantGain is not None and 'requantGain' not in already_processed:
+            already_processed.append('requantGain')
+            outfile.write(' requantGain=%s' % (quote_attrib(self.requantGain), ))
         if self.agcRms is not None and 'agcRms' not in already_processed:
             already_processed.append('agcRms')
             outfile.write(' agcRms="%s"' % self.gds_format_float(self.agcRms, input_name='agcRms'))
     def exportChildren(self, outfile, level, namespace_='widar:', name_='vdif', fromsubclass_=False):
         for blbPair_ in self.blbPair:
             blbPair_.export(outfile, level, namespace_, name_='blbPair')
-        for blbSingle_ in self.blbSingle:
-            blbSingle_.export(outfile, level, namespace_, name_='blbSingle')
     def hasContent_(self):
         if (
-            self.blbPair or
-            self.blbSingle
+            self.blbPair
             ):
             return True
         else:
@@ -4435,10 +4764,6 @@ class vdif(GeneratedsSuper):
             already_processed.append('aDestMAC')
             showIndent(outfile, level)
             outfile.write('aDestMAC = "%s",\n' % (self.aDestMAC,))
-        if self.requantGain is not None and 'requantGain' not in already_processed:
-            already_processed.append('requantGain')
-            showIndent(outfile, level)
-            outfile.write('requantGain = %s,\n' % (self.requantGain,))
         if self.agcEnabled is not None and 'agcEnabled' not in already_processed:
             already_processed.append('agcEnabled')
             showIndent(outfile, level)
@@ -4447,6 +4772,10 @@ class vdif(GeneratedsSuper):
             already_processed.append('aDestPort')
             showIndent(outfile, level)
             outfile.write('aDestPort = "%s",\n' % (self.aDestPort,))
+        if self.bPacketDelay is not None and 'bPacketDelay' not in already_processed:
+            already_processed.append('bPacketDelay')
+            showIndent(outfile, level)
+            outfile.write('bPacketDelay = %s,\n' % (self.bPacketDelay,))
         if self.epoch is not None and 'epoch' not in already_processed:
             already_processed.append('epoch')
             showIndent(outfile, level)
@@ -4475,6 +4804,10 @@ class vdif(GeneratedsSuper):
             already_processed.append('epochOffset')
             showIndent(outfile, level)
             outfile.write('epochOffset = %d,\n' % (self.epochOffset,))
+        if self.aPacketDelay is not None and 'aPacketDelay' not in already_processed:
+            already_processed.append('aPacketDelay')
+            showIndent(outfile, level)
+            outfile.write('aPacketDelay = %s,\n' % (self.aPacketDelay,))
         if self.vdifEnableB is not None and 'vdifEnableB' not in already_processed:
             already_processed.append('vdifEnableB')
             showIndent(outfile, level)
@@ -4487,10 +4820,10 @@ class vdif(GeneratedsSuper):
             already_processed.append('numBits')
             showIndent(outfile, level)
             outfile.write('numBits = %s,\n' % (self.numBits,))
-        if self.packetDelay is not None and 'packetDelay' not in already_processed:
-            already_processed.append('packetDelay')
+        if self.requantGain is not None and 'requantGain' not in already_processed:
+            already_processed.append('requantGain')
             showIndent(outfile, level)
-            outfile.write('packetDelay = %s,\n' % (self.packetDelay,))
+            outfile.write('requantGain = %s,\n' % (self.requantGain,))
         if self.agcRms is not None and 'agcRms' not in already_processed:
             already_processed.append('agcRms')
             showIndent(outfile, level)
@@ -4503,18 +4836,6 @@ class vdif(GeneratedsSuper):
             showIndent(outfile, level)
             outfile.write('model_.blbPair(\n')
             blbPair_.exportLiteral(outfile, level)
-            showIndent(outfile, level)
-            outfile.write('),\n')
-        level -= 1
-        showIndent(outfile, level)
-        outfile.write('],\n')
-        showIndent(outfile, level)
-        outfile.write('blbSingle=[\n')
-        level += 1
-        for blbSingle_ in self.blbSingle:
-            showIndent(outfile, level)
-            outfile.write('model_.blbSingle(\n')
-            blbSingle_.exportLiteral(outfile, level)
             showIndent(outfile, level)
             outfile.write('),\n')
         level -= 1
@@ -4542,10 +4863,6 @@ class vdif(GeneratedsSuper):
         if value is not None and 'aDestMAC' not in already_processed:
             already_processed.append('aDestMAC')
             self.aDestMAC = value
-        value = find_attr_value_('requantGain', node)
-        if value is not None and 'requantGain' not in already_processed:
-            already_processed.append('requantGain')
-            self.requantGain = value
         value = find_attr_value_('agcEnabled', node)
         if value is not None and 'agcEnabled' not in already_processed:
             already_processed.append('agcEnabled')
@@ -4559,6 +4876,10 @@ class vdif(GeneratedsSuper):
         if value is not None and 'aDestPort' not in already_processed:
             already_processed.append('aDestPort')
             self.aDestPort = value
+        value = find_attr_value_('bPacketDelay', node)
+        if value is not None and 'bPacketDelay' not in already_processed:
+            already_processed.append('bPacketDelay')
+            self.bPacketDelay = value
         value = find_attr_value_('epoch', node)
         if value is not None and 'epoch' not in already_processed:
             already_processed.append('epoch')
@@ -4595,6 +4916,10 @@ class vdif(GeneratedsSuper):
                 self.epochOffset = int(value)
             except ValueError, exp:
                 raise_parse_error(node, 'Bad integer attribute: %s' % exp)
+        value = find_attr_value_('aPacketDelay', node)
+        if value is not None and 'aPacketDelay' not in already_processed:
+            already_processed.append('aPacketDelay')
+            self.aPacketDelay = value
         value = find_attr_value_('vdifEnableB', node)
         if value is not None and 'vdifEnableB' not in already_processed:
             already_processed.append('vdifEnableB')
@@ -4612,10 +4937,10 @@ class vdif(GeneratedsSuper):
         if value is not None and 'numBits' not in already_processed:
             already_processed.append('numBits')
             self.numBits = value
-        value = find_attr_value_('packetDelay', node)
-        if value is not None and 'packetDelay' not in already_processed:
-            already_processed.append('packetDelay')
-            self.packetDelay = value
+        value = find_attr_value_('requantGain', node)
+        if value is not None and 'requantGain' not in already_processed:
+            already_processed.append('requantGain')
+            self.requantGain = value
         value = find_attr_value_('agcRms', node)
         if value is not None and 'agcRms' not in already_processed:
             already_processed.append('agcRms')
@@ -4628,377 +4953,31 @@ class vdif(GeneratedsSuper):
             obj_ = blbPair.factory()
             obj_.build(child_)
             self.blbPair.append(obj_)
-        elif nodeName_ == 'blbSingle':
-            obj_ = blbSingle.factory()
-            obj_.build(child_)
-            self.blbSingle.append(obj_)
 # end class vdif
 
 
-class pulsarBinning(GeneratedsSuper):
-    """Minimum Hardware Integration Time (used to generate DUMPTRIG) is
-    calculated as period / numBins."""
-    subclass = None
-    superclass = None
-    def __init__(self, status=None, integFactor=None, period=None, firstDerivative=None, numBins=None, epoch=None, secondDerivative=None, blbPair=None, blbSingle=None):
-        self.status = _cast(None, status)
-        self.integFactor = _cast(int, integFactor)
-        self.period = _cast(int, period)
-        self.firstDerivative = _cast(int, firstDerivative)
-        self.numBins = _cast(None, numBins)
-        self.epoch = _cast(None, epoch)
-        self.secondDerivative = _cast(int, secondDerivative)
-        if blbPair is None:
-            self.blbPair = []
-        else:
-            self.blbPair = blbPair
-        if blbSingle is None:
-            self.blbSingle = []
-        else:
-            self.blbSingle = blbSingle
-    def factory(*args_, **kwargs_):
-        if pulsarBinning.subclass:
-            return pulsarBinning.subclass(*args_, **kwargs_)
-        else:
-            return pulsarBinning(*args_, **kwargs_)
-    factory = staticmethod(factory)
-    def get_blbPair(self): return self.blbPair
-    def set_blbPair(self, blbPair): self.blbPair = blbPair
-    def add_blbPair(self, value): self.blbPair.append(value)
-    def insert_blbPair(self, index, value): self.blbPair[index] = value
-    def get_blbSingle(self): return self.blbSingle
-    def set_blbSingle(self, blbSingle): self.blbSingle = blbSingle
-    def add_blbSingle(self, value): self.blbSingle.append(value)
-    def insert_blbSingle(self, index, value): self.blbSingle[index] = value
-    def get_status(self): return self.status
-    def set_status(self, status): self.status = status
-    def get_integFactor(self): return self.integFactor
-    def set_integFactor(self, integFactor): self.integFactor = integFactor
-    def get_period(self): return self.period
-    def set_period(self, period): self.period = period
-    def get_firstDerivative(self): return self.firstDerivative
-    def set_firstDerivative(self, firstDerivative): self.firstDerivative = firstDerivative
-    def get_numBins(self): return self.numBins
-    def set_numBins(self, numBins): self.numBins = numBins
-    def get_epoch(self): return self.epoch
-    def set_epoch(self, epoch): self.epoch = epoch
-    def get_secondDerivative(self): return self.secondDerivative
-    def set_secondDerivative(self, secondDerivative): self.secondDerivative = secondDerivative
-    def export(self, outfile, level, namespace_='widar:', name_='pulsarBinning', namespacedef_=''):
-        showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        already_processed = []
-        self.exportAttributes(outfile, level, already_processed, namespace_, name_='pulsarBinning')
-        if self.hasContent_():
-            outfile.write('>\n')
-            self.exportChildren(outfile, level + 1, namespace_, name_)
-            showIndent(outfile, level)
-            outfile.write('</%s%s>\n' % (namespace_, name_))
-        else:
-            outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, already_processed, namespace_='widar:', name_='pulsarBinning'):
-        if self.status is not None and 'status' not in already_processed:
-            already_processed.append('status')
-            outfile.write(' status=%s' % (quote_attrib(self.status), ))
-        if self.integFactor is not None and 'integFactor' not in already_processed:
-            already_processed.append('integFactor')
-            outfile.write(' integFactor="%s"' % self.gds_format_integer(self.integFactor, input_name='integFactor'))
-        if self.period is not None and 'period' not in already_processed:
-            already_processed.append('period')
-            outfile.write(' period="%s"' % self.gds_format_integer(self.period, input_name='period'))
-        if self.firstDerivative is not None and 'firstDerivative' not in already_processed:
-            already_processed.append('firstDerivative')
-            outfile.write(' firstDerivative="%s"' % self.gds_format_integer(self.firstDerivative, input_name='firstDerivative'))
-        if self.numBins is not None and 'numBins' not in already_processed:
-            already_processed.append('numBins')
-            outfile.write(' numBins=%s' % (quote_attrib(self.numBins), ))
-        if self.epoch is not None and 'epoch' not in already_processed:
-            already_processed.append('epoch')
-            outfile.write(' epoch=%s' % (self.gds_format_string(quote_attrib(self.epoch).encode(ExternalEncoding), input_name='epoch'), ))
-        if self.secondDerivative is not None and 'secondDerivative' not in already_processed:
-            already_processed.append('secondDerivative')
-            outfile.write(' secondDerivative="%s"' % self.gds_format_integer(self.secondDerivative, input_name='secondDerivative'))
-    def exportChildren(self, outfile, level, namespace_='widar:', name_='pulsarBinning', fromsubclass_=False):
-        for blbPair_ in self.blbPair:
-            blbPair_.export(outfile, level, namespace_, name_='blbPair')
-        for blbSingle_ in self.blbSingle:
-            blbSingle_.export(outfile, level, namespace_, name_='blbSingle')
-    def hasContent_(self):
-        if (
-            self.blbPair or
-            self.blbSingle
-            ):
-            return True
-        else:
-            return False
-    def exportLiteral(self, outfile, level, name_='pulsarBinning'):
-        level += 1
-        self.exportLiteralAttributes(outfile, level, [], name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        if self.status is not None and 'status' not in already_processed:
-            already_processed.append('status')
-            showIndent(outfile, level)
-            outfile.write('status = %s,\n' % (self.status,))
-        if self.integFactor is not None and 'integFactor' not in already_processed:
-            already_processed.append('integFactor')
-            showIndent(outfile, level)
-            outfile.write('integFactor = %d,\n' % (self.integFactor,))
-        if self.period is not None and 'period' not in already_processed:
-            already_processed.append('period')
-            showIndent(outfile, level)
-            outfile.write('period = %d,\n' % (self.period,))
-        if self.firstDerivative is not None and 'firstDerivative' not in already_processed:
-            already_processed.append('firstDerivative')
-            showIndent(outfile, level)
-            outfile.write('firstDerivative = %d,\n' % (self.firstDerivative,))
-        if self.numBins is not None and 'numBins' not in already_processed:
-            already_processed.append('numBins')
-            showIndent(outfile, level)
-            outfile.write('numBins = %s,\n' % (self.numBins,))
-        if self.epoch is not None and 'epoch' not in already_processed:
-            already_processed.append('epoch')
-            showIndent(outfile, level)
-            outfile.write('epoch = "%s",\n' % (self.epoch,))
-        if self.secondDerivative is not None and 'secondDerivative' not in already_processed:
-            already_processed.append('secondDerivative')
-            showIndent(outfile, level)
-            outfile.write('secondDerivative = %d,\n' % (self.secondDerivative,))
-    def exportLiteralChildren(self, outfile, level, name_):
-        showIndent(outfile, level)
-        outfile.write('blbPair=[\n')
-        level += 1
-        for blbPair_ in self.blbPair:
-            showIndent(outfile, level)
-            outfile.write('model_.blbPair(\n')
-            blbPair_.exportLiteral(outfile, level)
-            showIndent(outfile, level)
-            outfile.write('),\n')
-        level -= 1
-        showIndent(outfile, level)
-        outfile.write('],\n')
-        showIndent(outfile, level)
-        outfile.write('blbSingle=[\n')
-        level += 1
-        for blbSingle_ in self.blbSingle:
-            showIndent(outfile, level)
-            outfile.write('model_.blbSingle(\n')
-            blbSingle_.exportLiteral(outfile, level)
-            showIndent(outfile, level)
-            outfile.write('),\n')
-        level -= 1
-        showIndent(outfile, level)
-        outfile.write('],\n')
-    def build(self, node):
-        self.buildAttributes(node, node.attrib, [])
-        for child in node:
-            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
-            self.buildChildren(child, node, nodeName_)
-    def buildAttributes(self, node, attrs, already_processed):
-        value = find_attr_value_('status', node)
-        if value is not None and 'status' not in already_processed:
-            already_processed.append('status')
-            self.status = value
-        value = find_attr_value_('integFactor', node)
-        if value is not None and 'integFactor' not in already_processed:
-            already_processed.append('integFactor')
-            try:
-                self.integFactor = int(value)
-            except ValueError, exp:
-                raise_parse_error(node, 'Bad integer attribute: %s' % exp)
-        value = find_attr_value_('period', node)
-        if value is not None and 'period' not in already_processed:
-            already_processed.append('period')
-            try:
-                self.period = int(value)
-            except ValueError, exp:
-                raise_parse_error(node, 'Bad integer attribute: %s' % exp)
-        value = find_attr_value_('firstDerivative', node)
-        if value is not None and 'firstDerivative' not in already_processed:
-            already_processed.append('firstDerivative')
-            try:
-                self.firstDerivative = int(value)
-            except ValueError, exp:
-                raise_parse_error(node, 'Bad integer attribute: %s' % exp)
-        value = find_attr_value_('numBins', node)
-        if value is not None and 'numBins' not in already_processed:
-            already_processed.append('numBins')
-            self.numBins = value
-        value = find_attr_value_('epoch', node)
-        if value is not None and 'epoch' not in already_processed:
-            already_processed.append('epoch')
-            self.epoch = value
-        value = find_attr_value_('secondDerivative', node)
-        if value is not None and 'secondDerivative' not in already_processed:
-            already_processed.append('secondDerivative')
-            try:
-                self.secondDerivative = int(value)
-            except ValueError, exp:
-                raise_parse_error(node, 'Bad integer attribute: %s' % exp)
-    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
-        if nodeName_ == 'blbPair':
-            obj_ = blbPair.factory()
-            obj_.build(child_)
-            self.blbPair.append(obj_)
-        elif nodeName_ == 'blbSingle':
-            obj_ = blbSingle.factory()
-            obj_.build(child_)
-            self.blbSingle.append(obj_)
-# end class pulsarBinning
-
-
-class burstMode(GeneratedsSuper):
-    """Burst Mode. Duration and blanking period could be specified in
-    milliseconds. Algorithm used for CMIB controlled burst mode TBD."""
-    subclass = None
-    superclass = None
-    def __init__(self, duration=None, epoch=None, mode=None, blankPeriod=None, schedule=None):
-        self.duration = _cast(int, duration)
-        self.epoch = _cast(None, epoch)
-        self.mode = _cast(None, mode)
-        self.blankPeriod = _cast(int, blankPeriod)
-        self.schedule = _cast(None, schedule)
-        pass
-    def factory(*args_, **kwargs_):
-        if burstMode.subclass:
-            return burstMode.subclass(*args_, **kwargs_)
-        else:
-            return burstMode(*args_, **kwargs_)
-    factory = staticmethod(factory)
-    def get_duration(self): return self.duration
-    def set_duration(self, duration): self.duration = duration
-    def get_epoch(self): return self.epoch
-    def set_epoch(self, epoch): self.epoch = epoch
-    def get_mode(self): return self.mode
-    def set_mode(self, mode): self.mode = mode
-    def get_blankPeriod(self): return self.blankPeriod
-    def set_blankPeriod(self, blankPeriod): self.blankPeriod = blankPeriod
-    def get_schedule(self): return self.schedule
-    def set_schedule(self, schedule): self.schedule = schedule
-    def export(self, outfile, level, namespace_='widar:', name_='burstMode', namespacedef_=''):
-        showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        already_processed = []
-        self.exportAttributes(outfile, level, already_processed, namespace_, name_='burstMode')
-        if self.hasContent_():
-            outfile.write('>\n')
-            self.exportChildren(outfile, level + 1, namespace_, name_)
-            outfile.write('</%s%s>\n' % (namespace_, name_))
-        else:
-            outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, already_processed, namespace_='widar:', name_='burstMode'):
-        if self.duration is not None and 'duration' not in already_processed:
-            already_processed.append('duration')
-            outfile.write(' duration="%s"' % self.gds_format_integer(self.duration, input_name='duration'))
-        if self.epoch is not None and 'epoch' not in already_processed:
-            already_processed.append('epoch')
-            outfile.write(' epoch=%s' % (self.gds_format_string(quote_attrib(self.epoch).encode(ExternalEncoding), input_name='epoch'), ))
-        if self.mode is not None and 'mode' not in already_processed:
-            already_processed.append('mode')
-            outfile.write(' mode=%s' % (quote_attrib(self.mode), ))
-        if self.blankPeriod is not None and 'blankPeriod' not in already_processed:
-            already_processed.append('blankPeriod')
-            outfile.write(' blankPeriod="%s"' % self.gds_format_integer(self.blankPeriod, input_name='blankPeriod'))
-        if self.schedule is not None and 'schedule' not in already_processed:
-            already_processed.append('schedule')
-            outfile.write(' schedule=%s' % (self.gds_format_string(quote_attrib(self.schedule).encode(ExternalEncoding), input_name='schedule'), ))
-    def exportChildren(self, outfile, level, namespace_='widar:', name_='burstMode', fromsubclass_=False):
-        pass
-    def hasContent_(self):
-        if (
-
-            ):
-            return True
-        else:
-            return False
-    def exportLiteral(self, outfile, level, name_='burstMode'):
-        level += 1
-        self.exportLiteralAttributes(outfile, level, [], name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        if self.duration is not None and 'duration' not in already_processed:
-            already_processed.append('duration')
-            showIndent(outfile, level)
-            outfile.write('duration = %d,\n' % (self.duration,))
-        if self.epoch is not None and 'epoch' not in already_processed:
-            already_processed.append('epoch')
-            showIndent(outfile, level)
-            outfile.write('epoch = "%s",\n' % (self.epoch,))
-        if self.mode is not None and 'mode' not in already_processed:
-            already_processed.append('mode')
-            showIndent(outfile, level)
-            outfile.write('mode = %s,\n' % (self.mode,))
-        if self.blankPeriod is not None and 'blankPeriod' not in already_processed:
-            already_processed.append('blankPeriod')
-            showIndent(outfile, level)
-            outfile.write('blankPeriod = %d,\n' % (self.blankPeriod,))
-        if self.schedule is not None and 'schedule' not in already_processed:
-            already_processed.append('schedule')
-            showIndent(outfile, level)
-            outfile.write('schedule = "%s",\n' % (self.schedule,))
-    def exportLiteralChildren(self, outfile, level, name_):
-        pass
-    def build(self, node):
-        self.buildAttributes(node, node.attrib, [])
-        for child in node:
-            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
-            self.buildChildren(child, node, nodeName_)
-    def buildAttributes(self, node, attrs, already_processed):
-        value = find_attr_value_('duration', node)
-        if value is not None and 'duration' not in already_processed:
-            already_processed.append('duration')
-            try:
-                self.duration = int(value)
-            except ValueError, exp:
-                raise_parse_error(node, 'Bad integer attribute: %s' % exp)
-        value = find_attr_value_('epoch', node)
-        if value is not None and 'epoch' not in already_processed:
-            already_processed.append('epoch')
-            self.epoch = value
-        value = find_attr_value_('mode', node)
-        if value is not None and 'mode' not in already_processed:
-            already_processed.append('mode')
-            self.mode = value
-        value = find_attr_value_('blankPeriod', node)
-        if value is not None and 'blankPeriod' not in already_processed:
-            already_processed.append('blankPeriod')
-            try:
-                self.blankPeriod = int(value)
-            except ValueError, exp:
-                raise_parse_error(node, 'Bad integer attribute: %s' % exp)
-        value = find_attr_value_('schedule', node)
-        if value is not None and 'schedule' not in already_processed:
-            already_processed.append('schedule')
-            self.schedule = value
-    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
-        pass
-# end class burstMode
-
-
 class wideBandCorrelator(GeneratedsSuper):
-    """Configuration for the Station Board Wideband Correlator. Normally,
-    WBC products will be specified using Baseband IDs. Format that
-    uses Band IDs may be used for VLBI, or other input that have
-    more than one band in the input stream."""
+    """Configuration for the Station Board Wideband Correlator. For input
+    from EVLA antennas, WBC products will be specified using A/B
+    (Baseband pair IDs) Different format may be used for VLBI or
+    other input that have more than one band in the input stream."""
     subclass = None
     superclass = None
-    def __init__(self, wbcPolProduct=None):
-        if wbcPolProduct is None:
-            self.wbcPolProduct = []
+    def __init__(self, wpp=None):
+        if wpp is None:
+            self.wpp = []
         else:
-            self.wbcPolProduct = wbcPolProduct
+            self.wpp = wpp
     def factory(*args_, **kwargs_):
         if wideBandCorrelator.subclass:
             return wideBandCorrelator.subclass(*args_, **kwargs_)
         else:
             return wideBandCorrelator(*args_, **kwargs_)
     factory = staticmethod(factory)
-    def get_wbcPolProduct(self): return self.wbcPolProduct
-    def set_wbcPolProduct(self, wbcPolProduct): self.wbcPolProduct = wbcPolProduct
-    def add_wbcPolProduct(self, value): self.wbcPolProduct.append(value)
-    def insert_wbcPolProduct(self, index, value): self.wbcPolProduct[index] = value
+    def get_wpp(self): return self.wpp
+    def set_wpp(self, wpp): self.wpp = wpp
+    def add_wpp(self, value): self.wpp.append(value)
+    def insert_wpp(self, index, value): self.wpp[index] = value
     def export(self, outfile, level, namespace_='widar:', name_='wideBandCorrelator', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
@@ -5014,11 +4993,11 @@ class wideBandCorrelator(GeneratedsSuper):
     def exportAttributes(self, outfile, level, already_processed, namespace_='widar:', name_='wideBandCorrelator'):
         pass
     def exportChildren(self, outfile, level, namespace_='widar:', name_='wideBandCorrelator', fromsubclass_=False):
-        for wbcPolProduct_ in self.wbcPolProduct:
-            wbcPolProduct_.export(outfile, level, namespace_, name_='wbcPolProduct')
+        for wpp_ in self.wpp:
+            wpp_.export(outfile, level, namespace_, name_='wpp')
     def hasContent_(self):
         if (
-            self.wbcPolProduct
+            self.wpp
             ):
             return True
         else:
@@ -5032,12 +5011,12 @@ class wideBandCorrelator(GeneratedsSuper):
         pass
     def exportLiteralChildren(self, outfile, level, name_):
         showIndent(outfile, level)
-        outfile.write('wbcPolProduct=[\n')
+        outfile.write('wpp=[\n')
         level += 1
-        for wbcPolProduct_ in self.wbcPolProduct:
+        for wpp_ in self.wpp:
             showIndent(outfile, level)
-            outfile.write('model_.wbcPolProduct(\n')
-            wbcPolProduct_.exportLiteral(outfile, level)
+            outfile.write('model_.wpp(\n')
+            wpp_.exportLiteral(outfile, level)
             showIndent(outfile, level)
             outfile.write('),\n')
         level -= 1
@@ -5051,11 +5030,144 @@ class wideBandCorrelator(GeneratedsSuper):
     def buildAttributes(self, node, attrs, already_processed):
         pass
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
-        if nodeName_ == 'wbcPolProduct':
-            obj_ = wbcPolProduct.factory()
+        if nodeName_ == 'wpp':
+            obj_ = wpp.factory()
             obj_.build(child_)
-            self.wbcPolProduct.append(obj_)
+            self.wpp.append(obj_)
 # end class wideBandCorrelator
+
+
+class wpp(GeneratedsSuper):
+    """Polarization Product for the Station Board Wideband Correlator. Uses
+    A/B to identify which input data streams should be correlated.
+    Attribute correlation changed from required to optional, so that
+    correlation does not need to be specified for status=disable.
+    Added attribute status - so that user can disable individual
+    products. If not specified, CM assumes that product is enabled,
+    examples: Enable product A*A Enable product A*B Disable product
+    B*B Default values, enforced by CM: spectralChannels=64,
+    integFactor=100, status=enabled."""
+    subclass = None
+    superclass = None
+    def __init__(self, spectralChannels=None, integFactor=None, status=None, id=None, correlation=None):
+        self.spectralChannels = _cast(None, spectralChannels)
+        self.integFactor = _cast(int, integFactor)
+        self.status = _cast(None, status)
+        self.id = _cast(None, id)
+        self.correlation = _cast(None, correlation)
+        pass
+    def factory(*args_, **kwargs_):
+        if wpp.subclass:
+            return wpp.subclass(*args_, **kwargs_)
+        else:
+            return wpp(*args_, **kwargs_)
+    factory = staticmethod(factory)
+    def get_spectralChannels(self): return self.spectralChannels
+    def set_spectralChannels(self, spectralChannels): self.spectralChannels = spectralChannels
+    def get_integFactor(self): return self.integFactor
+    def set_integFactor(self, integFactor): self.integFactor = integFactor
+    def get_status(self): return self.status
+    def set_status(self, status): self.status = status
+    def get_id(self): return self.id
+    def set_id(self, id): self.id = id
+    def get_correlation(self): return self.correlation
+    def set_correlation(self, correlation): self.correlation = correlation
+    def export(self, outfile, level, namespace_='widar:', name_='wpp', namespacedef_=''):
+        showIndent(outfile, level)
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='wpp')
+        if self.hasContent_():
+            outfile.write('>\n')
+            self.exportChildren(outfile, level + 1, namespace_, name_)
+            outfile.write('</%s%s>\n' % (namespace_, name_))
+        else:
+            outfile.write('/>\n')
+    def exportAttributes(self, outfile, level, already_processed, namespace_='widar:', name_='wpp'):
+        if self.spectralChannels is not None and 'spectralChannels' not in already_processed:
+            already_processed.append('spectralChannels')
+            outfile.write(' spectralChannels=%s' % (quote_attrib(self.spectralChannels), ))
+        if self.integFactor is not None and 'integFactor' not in already_processed:
+            already_processed.append('integFactor')
+            outfile.write(' integFactor="%s"' % self.gds_format_integer(self.integFactor, input_name='integFactor'))
+        if self.status is not None and 'status' not in already_processed:
+            already_processed.append('status')
+            outfile.write(' status=%s' % (quote_attrib(self.status), ))
+        if self.id is not None and 'id' not in already_processed:
+            already_processed.append('id')
+            outfile.write(' id=%s' % (quote_attrib(self.id), ))
+        if self.correlation is not None and 'correlation' not in already_processed:
+            already_processed.append('correlation')
+            outfile.write(' correlation=%s' % (quote_attrib(self.correlation), ))
+    def exportChildren(self, outfile, level, namespace_='widar:', name_='wpp', fromsubclass_=False):
+        pass
+    def hasContent_(self):
+        if (
+
+            ):
+            return True
+        else:
+            return False
+    def exportLiteral(self, outfile, level, name_='wpp'):
+        level += 1
+        self.exportLiteralAttributes(outfile, level, [], name_)
+        if self.hasContent_():
+            self.exportLiteralChildren(outfile, level, name_)
+    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
+        if self.spectralChannels is not None and 'spectralChannels' not in already_processed:
+            already_processed.append('spectralChannels')
+            showIndent(outfile, level)
+            outfile.write('spectralChannels = %s,\n' % (self.spectralChannels,))
+        if self.integFactor is not None and 'integFactor' not in already_processed:
+            already_processed.append('integFactor')
+            showIndent(outfile, level)
+            outfile.write('integFactor = %d,\n' % (self.integFactor,))
+        if self.status is not None and 'status' not in already_processed:
+            already_processed.append('status')
+            showIndent(outfile, level)
+            outfile.write('status = %s,\n' % (self.status,))
+        if self.id is not None and 'id' not in already_processed:
+            already_processed.append('id')
+            showIndent(outfile, level)
+            outfile.write('id = %s,\n' % (self.id,))
+        if self.correlation is not None and 'correlation' not in already_processed:
+            already_processed.append('correlation')
+            showIndent(outfile, level)
+            outfile.write('correlation = %s,\n' % (self.correlation,))
+    def exportLiteralChildren(self, outfile, level, name_):
+        pass
+    def build(self, node):
+        self.buildAttributes(node, node.attrib, [])
+        for child in node:
+            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
+            self.buildChildren(child, node, nodeName_)
+    def buildAttributes(self, node, attrs, already_processed):
+        value = find_attr_value_('spectralChannels', node)
+        if value is not None and 'spectralChannels' not in already_processed:
+            already_processed.append('spectralChannels')
+            self.spectralChannels = value
+        value = find_attr_value_('integFactor', node)
+        if value is not None and 'integFactor' not in already_processed:
+            already_processed.append('integFactor')
+            try:
+                self.integFactor = int(value)
+            except ValueError, exp:
+                raise_parse_error(node, 'Bad integer attribute: %s' % exp)
+        value = find_attr_value_('status', node)
+        if value is not None and 'status' not in already_processed:
+            already_processed.append('status')
+            self.status = value
+        value = find_attr_value_('id', node)
+        if value is not None and 'id' not in already_processed:
+            already_processed.append('id')
+            self.id = value
+        value = find_attr_value_('correlation', node)
+        if value is not None and 'correlation' not in already_processed:
+            already_processed.append('correlation')
+            self.correlation = value
+    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
+        pass
+# end class wpp
 
 
 class baseline(GeneratedsSuper):
@@ -5342,7 +5454,8 @@ class productPacking(GeneratedsSuper):
 
 class autoCorrSubset(GeneratedsSuper):
     """The correlator can not obtain all auto-correlation products all the
-    time, select a desired subset of auto-correlation products."""
+    time, this is used to specify desired subset of auto-correlation
+    products."""
     subclass = None
     superclass = None
     def __init__(self, dwellTime='10', startFrom='lowestStId', algorithm=None):
@@ -5433,140 +5546,6 @@ class autoCorrSubset(GeneratedsSuper):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         pass
 # end class autoCorrSubset
-
-
-class autoCorrMode(GeneratedsSuper):
-    """Correlator Chip in auto-correlation mode uses all 16 CCCs to produce
-    one auto-correlation product (2048 lags). A whole row/colum of
-    Correlator Chips may be set in the auto-correlation mode."""
-    subclass = None
-    superclass = None
-    def __init__(self, status=None, blbProdIntegration=None, blbPair=None, blbSingle=None):
-        self.status = _cast(None, status)
-        self.blbProdIntegration = blbProdIntegration
-        if blbPair is None:
-            self.blbPair = []
-        else:
-            self.blbPair = blbPair
-        if blbSingle is None:
-            self.blbSingle = []
-        else:
-            self.blbSingle = blbSingle
-    def factory(*args_, **kwargs_):
-        if autoCorrMode.subclass:
-            return autoCorrMode.subclass(*args_, **kwargs_)
-        else:
-            return autoCorrMode(*args_, **kwargs_)
-    factory = staticmethod(factory)
-    def get_blbProdIntegration(self): return self.blbProdIntegration
-    def set_blbProdIntegration(self, blbProdIntegration): self.blbProdIntegration = blbProdIntegration
-    def get_blbPair(self): return self.blbPair
-    def set_blbPair(self, blbPair): self.blbPair = blbPair
-    def add_blbPair(self, value): self.blbPair.append(value)
-    def insert_blbPair(self, index, value): self.blbPair[index] = value
-    def get_blbSingle(self): return self.blbSingle
-    def set_blbSingle(self, blbSingle): self.blbSingle = blbSingle
-    def add_blbSingle(self, value): self.blbSingle.append(value)
-    def insert_blbSingle(self, index, value): self.blbSingle[index] = value
-    def get_status(self): return self.status
-    def set_status(self, status): self.status = status
-    def export(self, outfile, level, namespace_='widar:', name_='autoCorrMode', namespacedef_=''):
-        showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        already_processed = []
-        self.exportAttributes(outfile, level, already_processed, namespace_, name_='autoCorrMode')
-        if self.hasContent_():
-            outfile.write('>\n')
-            self.exportChildren(outfile, level + 1, namespace_, name_)
-            showIndent(outfile, level)
-            outfile.write('</%s%s>\n' % (namespace_, name_))
-        else:
-            outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, already_processed, namespace_='widar:', name_='autoCorrMode'):
-        if self.status is not None and 'status' not in already_processed:
-            already_processed.append('status')
-            outfile.write(' status=%s' % (quote_attrib(self.status), ))
-    def exportChildren(self, outfile, level, namespace_='widar:', name_='autoCorrMode', fromsubclass_=False):
-        if self.blbProdIntegration:
-            self.blbProdIntegration.export(outfile, level, namespace_, name_='blbProdIntegration')
-        for blbPair_ in self.blbPair:
-            blbPair_.export(outfile, level, namespace_, name_='blbPair')
-        for blbSingle_ in self.blbSingle:
-            blbSingle_.export(outfile, level, namespace_, name_='blbSingle')
-    def hasContent_(self):
-        if (
-            self.blbProdIntegration is not None or
-            self.blbPair or
-            self.blbSingle
-            ):
-            return True
-        else:
-            return False
-    def exportLiteral(self, outfile, level, name_='autoCorrMode'):
-        level += 1
-        self.exportLiteralAttributes(outfile, level, [], name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        if self.status is not None and 'status' not in already_processed:
-            already_processed.append('status')
-            showIndent(outfile, level)
-            outfile.write('status = %s,\n' % (self.status,))
-    def exportLiteralChildren(self, outfile, level, name_):
-        if self.blbProdIntegration is not None:
-            showIndent(outfile, level)
-            outfile.write('blbProdIntegration=model_.blbProdIntegration(\n')
-            self.blbProdIntegration.exportLiteral(outfile, level)
-            showIndent(outfile, level)
-            outfile.write('),\n')
-        showIndent(outfile, level)
-        outfile.write('blbPair=[\n')
-        level += 1
-        for blbPair_ in self.blbPair:
-            showIndent(outfile, level)
-            outfile.write('model_.blbPair(\n')
-            blbPair_.exportLiteral(outfile, level)
-            showIndent(outfile, level)
-            outfile.write('),\n')
-        level -= 1
-        showIndent(outfile, level)
-        outfile.write('],\n')
-        showIndent(outfile, level)
-        outfile.write('blbSingle=[\n')
-        level += 1
-        for blbSingle_ in self.blbSingle:
-            showIndent(outfile, level)
-            outfile.write('model_.blbSingle(\n')
-            blbSingle_.exportLiteral(outfile, level)
-            showIndent(outfile, level)
-            outfile.write('),\n')
-        level -= 1
-        showIndent(outfile, level)
-        outfile.write('],\n')
-    def build(self, node):
-        self.buildAttributes(node, node.attrib, [])
-        for child in node:
-            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
-            self.buildChildren(child, node, nodeName_)
-    def buildAttributes(self, node, attrs, already_processed):
-        value = find_attr_value_('status', node)
-        if value is not None and 'status' not in already_processed:
-            already_processed.append('status')
-            self.status = value
-    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
-        if nodeName_ == 'blbProdIntegration':
-            obj_ = blbProdIntegration.factory()
-            obj_.build(child_)
-            self.set_blbProdIntegration(obj_)
-        elif nodeName_ == 'blbPair':
-            obj_ = blbPair.factory()
-            obj_.build(child_)
-            self.blbPair.append(obj_)
-        elif nodeName_ == 'blbSingle':
-            obj_ = blbSingle.factory()
-            obj_.build(child_)
-            self.blbSingle.append(obj_)
-# end class autoCorrMode
 
 
 class antenna(GeneratedsSuper):
@@ -5667,236 +5646,6 @@ class antenna(GeneratedsSuper):
 # end class antenna
 
 
-class stbDataProducts(GeneratedsSuper):
-    """Station Board data products."""
-    subclass = None
-    superclass = None
-    def __init__(self, inputStateCounts=None, clipCounts=None, powerCounts=None, rfiCounts=None, outputStateCounts=None):
-        self.inputStateCounts = inputStateCounts
-        self.clipCounts = clipCounts
-        self.powerCounts = powerCounts
-        self.rfiCounts = rfiCounts
-        self.outputStateCounts = outputStateCounts
-    def factory(*args_, **kwargs_):
-        if stbDataProducts.subclass:
-            return stbDataProducts.subclass(*args_, **kwargs_)
-        else:
-            return stbDataProducts(*args_, **kwargs_)
-    factory = staticmethod(factory)
-    def get_inputStateCounts(self): return self.inputStateCounts
-    def set_inputStateCounts(self, inputStateCounts): self.inputStateCounts = inputStateCounts
-    def get_clipCounts(self): return self.clipCounts
-    def set_clipCounts(self, clipCounts): self.clipCounts = clipCounts
-    def get_powerCounts(self): return self.powerCounts
-    def set_powerCounts(self, powerCounts): self.powerCounts = powerCounts
-    def get_rfiCounts(self): return self.rfiCounts
-    def set_rfiCounts(self, rfiCounts): self.rfiCounts = rfiCounts
-    def get_outputStateCounts(self): return self.outputStateCounts
-    def set_outputStateCounts(self, outputStateCounts): self.outputStateCounts = outputStateCounts
-    def export(self, outfile, level, namespace_='widar:', name_='stbDataProducts', namespacedef_=''):
-        showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        already_processed = []
-        self.exportAttributes(outfile, level, already_processed, namespace_, name_='stbDataProducts')
-        if self.hasContent_():
-            outfile.write('>\n')
-            self.exportChildren(outfile, level + 1, namespace_, name_)
-            showIndent(outfile, level)
-            outfile.write('</%s%s>\n' % (namespace_, name_))
-        else:
-            outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, already_processed, namespace_='widar:', name_='stbDataProducts'):
-        pass
-    def exportChildren(self, outfile, level, namespace_='widar:', name_='stbDataProducts', fromsubclass_=False):
-        if self.inputStateCounts:
-            self.inputStateCounts.export(outfile, level, namespace_, name_='inputStateCounts')
-        if self.clipCounts:
-            self.clipCounts.export(outfile, level, namespace_, name_='clipCounts')
-        if self.powerCounts:
-            self.powerCounts.export(outfile, level, namespace_, name_='powerCounts')
-        if self.rfiCounts:
-            self.rfiCounts.export(outfile, level, namespace_, name_='rfiCounts')
-        if self.outputStateCounts:
-            self.outputStateCounts.export(outfile, level, namespace_, name_='outputStateCounts')
-    def hasContent_(self):
-        if (
-            self.inputStateCounts is not None or
-            self.clipCounts is not None or
-            self.powerCounts is not None or
-            self.rfiCounts is not None or
-            self.outputStateCounts is not None
-            ):
-            return True
-        else:
-            return False
-    def exportLiteral(self, outfile, level, name_='stbDataProducts'):
-        level += 1
-        self.exportLiteralAttributes(outfile, level, [], name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        pass
-    def exportLiteralChildren(self, outfile, level, name_):
-        if self.inputStateCounts is not None:
-            showIndent(outfile, level)
-            outfile.write('inputStateCounts=model_.inputStateCounts(\n')
-            self.inputStateCounts.exportLiteral(outfile, level)
-            showIndent(outfile, level)
-            outfile.write('),\n')
-        if self.clipCounts is not None:
-            showIndent(outfile, level)
-            outfile.write('clipCounts=model_.clipCounts(\n')
-            self.clipCounts.exportLiteral(outfile, level)
-            showIndent(outfile, level)
-            outfile.write('),\n')
-        if self.powerCounts is not None:
-            showIndent(outfile, level)
-            outfile.write('powerCounts=model_.powerCounts(\n')
-            self.powerCounts.exportLiteral(outfile, level)
-            showIndent(outfile, level)
-            outfile.write('),\n')
-        if self.rfiCounts is not None:
-            showIndent(outfile, level)
-            outfile.write('rfiCounts=model_.rfiCounts(\n')
-            self.rfiCounts.exportLiteral(outfile, level)
-            showIndent(outfile, level)
-            outfile.write('),\n')
-        if self.outputStateCounts is not None:
-            showIndent(outfile, level)
-            outfile.write('outputStateCounts=model_.outputStateCounts(\n')
-            self.outputStateCounts.exportLiteral(outfile, level)
-            showIndent(outfile, level)
-            outfile.write('),\n')
-    def build(self, node):
-        self.buildAttributes(node, node.attrib, [])
-        for child in node:
-            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
-            self.buildChildren(child, node, nodeName_)
-    def buildAttributes(self, node, attrs, already_processed):
-        pass
-    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
-        if nodeName_ == 'inputStateCounts':
-            obj_ = inputStateCounts.factory()
-            obj_.build(child_)
-            self.set_inputStateCounts(obj_)
-        elif nodeName_ == 'clipCounts':
-            obj_ = clipCounts.factory()
-            obj_.build(child_)
-            self.set_clipCounts(obj_)
-        elif nodeName_ == 'powerCounts':
-            obj_ = powerCounts.factory()
-            obj_.build(child_)
-            self.set_powerCounts(obj_)
-        elif nodeName_ == 'rfiCounts':
-            obj_ = rfiCounts.factory()
-            obj_.build(child_)
-            self.set_rfiCounts(obj_)
-        elif nodeName_ == 'outputStateCounts':
-            obj_ = outputStateCounts.factory()
-            obj_.build(child_)
-            self.set_outputStateCounts(obj_)
-# end class stbDataProducts
-
-
-class monitorData(GeneratedsSuper):
-    """Station Board monitor data."""
-    subclass = None
-    superclass = None
-    def __init__(self, tickIntervalCounts=None, errorCounts=None, crcTable=None):
-        self.tickIntervalCounts = tickIntervalCounts
-        self.errorCounts = errorCounts
-        self.crcTable = crcTable
-    def factory(*args_, **kwargs_):
-        if monitorData.subclass:
-            return monitorData.subclass(*args_, **kwargs_)
-        else:
-            return monitorData(*args_, **kwargs_)
-    factory = staticmethod(factory)
-    def get_tickIntervalCounts(self): return self.tickIntervalCounts
-    def set_tickIntervalCounts(self, tickIntervalCounts): self.tickIntervalCounts = tickIntervalCounts
-    def get_errorCounts(self): return self.errorCounts
-    def set_errorCounts(self, errorCounts): self.errorCounts = errorCounts
-    def get_crcTable(self): return self.crcTable
-    def set_crcTable(self, crcTable): self.crcTable = crcTable
-    def export(self, outfile, level, namespace_='widar:', name_='monitorData', namespacedef_=''):
-        showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        already_processed = []
-        self.exportAttributes(outfile, level, already_processed, namespace_, name_='monitorData')
-        if self.hasContent_():
-            outfile.write('>\n')
-            self.exportChildren(outfile, level + 1, namespace_, name_)
-            showIndent(outfile, level)
-            outfile.write('</%s%s>\n' % (namespace_, name_))
-        else:
-            outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, already_processed, namespace_='widar:', name_='monitorData'):
-        pass
-    def exportChildren(self, outfile, level, namespace_='widar:', name_='monitorData', fromsubclass_=False):
-        if self.tickIntervalCounts:
-            self.tickIntervalCounts.export(outfile, level, namespace_, name_='tickIntervalCounts')
-        if self.errorCounts:
-            self.errorCounts.export(outfile, level, namespace_, name_='errorCounts')
-        if self.crcTable:
-            self.crcTable.export(outfile, level, namespace_, name_='crcTable')
-    def hasContent_(self):
-        if (
-            self.tickIntervalCounts is not None or
-            self.errorCounts is not None or
-            self.crcTable is not None
-            ):
-            return True
-        else:
-            return False
-    def exportLiteral(self, outfile, level, name_='monitorData'):
-        level += 1
-        self.exportLiteralAttributes(outfile, level, [], name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        pass
-    def exportLiteralChildren(self, outfile, level, name_):
-        if self.tickIntervalCounts is not None:
-            showIndent(outfile, level)
-            outfile.write('tickIntervalCounts=model_.tickIntervalCounts(\n')
-            self.tickIntervalCounts.exportLiteral(outfile, level)
-            showIndent(outfile, level)
-            outfile.write('),\n')
-        if self.errorCounts is not None:
-            showIndent(outfile, level)
-            outfile.write('errorCounts=model_.errorCounts(\n')
-            self.errorCounts.exportLiteral(outfile, level)
-            showIndent(outfile, level)
-            outfile.write('),\n')
-        if self.crcTable is not None:
-            showIndent(outfile, level)
-            outfile.write('crcTable=model_.crcTable(\n')
-            self.crcTable.exportLiteral(outfile, level)
-            showIndent(outfile, level)
-            outfile.write('),\n')
-    def build(self, node):
-        self.buildAttributes(node, node.attrib, [])
-        for child in node:
-            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
-            self.buildChildren(child, node, nodeName_)
-    def buildAttributes(self, node, attrs, already_processed):
-        pass
-    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
-        if nodeName_ == 'tickIntervalCounts':
-            obj_ = tickIntervalCounts.factory()
-            obj_.build(child_)
-            self.set_tickIntervalCounts(obj_)
-        elif nodeName_ == 'errorCounts':
-            obj_ = errorCounts.factory()
-            obj_.build(child_)
-            self.set_errorCounts(obj_)
-        elif nodeName_ == 'crcTable':
-            obj_ = crcTable.factory()
-            obj_.build(child_)
-            self.set_crcTable(obj_)
-# end class monitorData
-
-
 class host(GeneratedsSuper):
     """Set of parameters that unequely define a WIDAR host computer. This
     element may be used in logs/Alarms and other messages, where it
@@ -5994,135 +5743,12 @@ class host(GeneratedsSuper):
 # end class host
 
 
-class wbcPolProduct(GeneratedsSuper):
-    """Wideband Correlator Product. Specifies the product ID and input data
-    streams that should be correlated. Baseband IDs are used to
-    identify data streams to be correlated."""
-    subclass = None
-    superclass = None
-    def __init__(self, laggedBBID=None, spectChannels=None, ppid=None, integFactor=1, promptBBID=None):
-        self.laggedBBID = _cast(None, laggedBBID)
-        self.spectChannels = _cast(None, spectChannels)
-        self.ppid = _cast(None, ppid)
-        self.integFactor = _cast(int, integFactor)
-        self.promptBBID = _cast(None, promptBBID)
-        pass
-    def factory(*args_, **kwargs_):
-        if wbcPolProduct.subclass:
-            return wbcPolProduct.subclass(*args_, **kwargs_)
-        else:
-            return wbcPolProduct(*args_, **kwargs_)
-    factory = staticmethod(factory)
-    def get_laggedBBID(self): return self.laggedBBID
-    def set_laggedBBID(self, laggedBBID): self.laggedBBID = laggedBBID
-    def get_spectChannels(self): return self.spectChannels
-    def set_spectChannels(self, spectChannels): self.spectChannels = spectChannels
-    def get_ppid(self): return self.ppid
-    def set_ppid(self, ppid): self.ppid = ppid
-    def get_integFactor(self): return self.integFactor
-    def set_integFactor(self, integFactor): self.integFactor = integFactor
-    def get_promptBBID(self): return self.promptBBID
-    def set_promptBBID(self, promptBBID): self.promptBBID = promptBBID
-    def export(self, outfile, level, namespace_='widar:', name_='wbcPolProduct', namespacedef_=''):
-        showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        already_processed = []
-        self.exportAttributes(outfile, level, already_processed, namespace_, name_='wbcPolProduct')
-        if self.hasContent_():
-            outfile.write('>\n')
-            self.exportChildren(outfile, level + 1, namespace_, name_)
-            outfile.write('</%s%s>\n' % (namespace_, name_))
-        else:
-            outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, already_processed, namespace_='widar:', name_='wbcPolProduct'):
-        if self.laggedBBID is not None and 'laggedBBID' not in already_processed:
-            already_processed.append('laggedBBID')
-            outfile.write(' laggedBBID=%s' % (quote_attrib(self.laggedBBID), ))
-        if self.spectChannels is not None and 'spectChannels' not in already_processed:
-            already_processed.append('spectChannels')
-            outfile.write(' spectChannels=%s' % (quote_attrib(self.spectChannels), ))
-        if self.ppid is not None and 'ppid' not in already_processed:
-            already_processed.append('ppid')
-            outfile.write(' ppid=%s' % (quote_attrib(self.ppid), ))
-        if self.integFactor is not None and 'integFactor' not in already_processed:
-            already_processed.append('integFactor')
-            outfile.write(' integFactor="%s"' % self.gds_format_integer(self.integFactor, input_name='integFactor'))
-        if self.promptBBID is not None and 'promptBBID' not in already_processed:
-            already_processed.append('promptBBID')
-            outfile.write(' promptBBID=%s' % (quote_attrib(self.promptBBID), ))
-    def exportChildren(self, outfile, level, namespace_='widar:', name_='wbcPolProduct', fromsubclass_=False):
-        pass
-    def hasContent_(self):
-        if (
-
-            ):
-            return True
-        else:
-            return False
-    def exportLiteral(self, outfile, level, name_='wbcPolProduct'):
-        level += 1
-        self.exportLiteralAttributes(outfile, level, [], name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        if self.laggedBBID is not None and 'laggedBBID' not in already_processed:
-            already_processed.append('laggedBBID')
-            showIndent(outfile, level)
-            outfile.write('laggedBBID = %s,\n' % (self.laggedBBID,))
-        if self.spectChannels is not None and 'spectChannels' not in already_processed:
-            already_processed.append('spectChannels')
-            showIndent(outfile, level)
-            outfile.write('spectChannels = %s,\n' % (self.spectChannels,))
-        if self.ppid is not None and 'ppid' not in already_processed:
-            already_processed.append('ppid')
-            showIndent(outfile, level)
-            outfile.write('ppid = %s,\n' % (self.ppid,))
-        if self.integFactor is not None and 'integFactor' not in already_processed:
-            already_processed.append('integFactor')
-            showIndent(outfile, level)
-            outfile.write('integFactor = %d,\n' % (self.integFactor,))
-        if self.promptBBID is not None and 'promptBBID' not in already_processed:
-            already_processed.append('promptBBID')
-            showIndent(outfile, level)
-            outfile.write('promptBBID = %s,\n' % (self.promptBBID,))
-    def exportLiteralChildren(self, outfile, level, name_):
-        pass
-    def build(self, node):
-        self.buildAttributes(node, node.attrib, [])
-        for child in node:
-            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
-            self.buildChildren(child, node, nodeName_)
-    def buildAttributes(self, node, attrs, already_processed):
-        value = find_attr_value_('laggedBBID', node)
-        if value is not None and 'laggedBBID' not in already_processed:
-            already_processed.append('laggedBBID')
-            self.laggedBBID = value
-        value = find_attr_value_('spectChannels', node)
-        if value is not None and 'spectChannels' not in already_processed:
-            already_processed.append('spectChannels')
-            self.spectChannels = value
-        value = find_attr_value_('ppid', node)
-        if value is not None and 'ppid' not in already_processed:
-            already_processed.append('ppid')
-            self.ppid = value
-        value = find_attr_value_('integFactor', node)
-        if value is not None and 'integFactor' not in already_processed:
-            already_processed.append('integFactor')
-            try:
-                self.integFactor = int(value)
-            except ValueError, exp:
-                raise_parse_error(node, 'Bad integer attribute: %s' % exp)
-        value = find_attr_value_('promptBBID', node)
-        if value is not None and 'promptBBID' not in already_processed:
-            already_processed.append('promptBBID')
-            self.promptBBID = value
-    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
-        pass
-# end class wbcPolProduct
-
-
 class radarMode(GeneratedsSuper):
-    """Raw data saving, also known as, radar mode. Narrow band output of a
+    """2012-02-29 Sonja.Vrcic@nrc.gc.ca: Radar Mode has not been
+    implemented. This element has been added for completness and to
+    record inital implementation ideas, but before implementing
+    this, use cases and detailed requirements should be defined. Raw
+    data saving, also known as, radar mode. Narrow band output of a
     single filter per Station Board Data Path (i.e. per filter bank)
     can be saved in the memory and sent to the specified location.
     Number of bits to be saved is equal to the number of bits in the
@@ -6227,26 +5853,33 @@ class radarMode(GeneratedsSuper):
 
 
 class cmMonitorControl(GeneratedsSuper):
-    """Global parameters of VCI Configuration Mapper."""
+    """Global parameters of VCI Configuration Mapper. 2012 October Replaced
+    attribute: *xs:attribute name="flushCmibQueues"
+    type="widar:YesNoType" use="optional" * with element
+    cmFlushCmibQueues"""
     subclass = None
     superclass = None
-    def __init__(self, vciSchemaValidation=None, sendConfigToCRM=None, sendConfigToBLBs=None, sendConfigToCBE=None, sendConfigToXBBs=None, query=None, flushCmibQueues=None, sendConfigToSTBs=None, queryCfgStatus=None, cfgQueue=None, actQueue=None, ctrlQueue=None, cmLogging=None, vciReporting=None, cmAlerts=None, cmDeleteSubarray=None):
-        self.vciSchemaValidation = _cast(None, vciSchemaValidation)
-        self.sendConfigToCRM = _cast(None, sendConfigToCRM)
+    def __init__(self, crmQuery=None, sendQueryToCRM=None, sendConfigToBLBs=None, enableAllComponents=None, sendConfigToCBE=None, vciSchemaValidation=None, sendConfigToXBBs=None, query=None, sendConfigToSTBs=None, queryCfgStatus=None, cfgQueue=None, actQueue=None, ctrlQueue=None, cbeOutputQueue=None, cmLogging=None, vciReporting=None, cmAlerts=None, cmDeleteSubarray=None, cmFlushCmibQueues=None, ifdDefault=None):
+        self.crmQuery = _cast(None, crmQuery)
+        self.sendQueryToCRM = _cast(None, sendQueryToCRM)
         self.sendConfigToBLBs = _cast(None, sendConfigToBLBs)
+        self.enableAllComponents = _cast(None, enableAllComponents)
         self.sendConfigToCBE = _cast(None, sendConfigToCBE)
+        self.vciSchemaValidation = _cast(None, vciSchemaValidation)
         self.sendConfigToXBBs = _cast(None, sendConfigToXBBs)
         self.query = _cast(None, query)
-        self.flushCmibQueues = _cast(None, flushCmibQueues)
         self.sendConfigToSTBs = _cast(None, sendConfigToSTBs)
         self.queryCfgStatus = queryCfgStatus
         self.cfgQueue = cfgQueue
         self.actQueue = actQueue
         self.ctrlQueue = ctrlQueue
+        self.cbeOutputQueue = cbeOutputQueue
         self.cmLogging = cmLogging
         self.vciReporting = vciReporting
         self.cmAlerts = cmAlerts
         self.cmDeleteSubarray = cmDeleteSubarray
+        self.cmFlushCmibQueues = cmFlushCmibQueues
+        self.ifdDefault = ifdDefault
     def factory(*args_, **kwargs_):
         if cmMonitorControl.subclass:
             return cmMonitorControl.subclass(*args_, **kwargs_)
@@ -6261,6 +5894,8 @@ class cmMonitorControl(GeneratedsSuper):
     def set_actQueue(self, actQueue): self.actQueue = actQueue
     def get_ctrlQueue(self): return self.ctrlQueue
     def set_ctrlQueue(self, ctrlQueue): self.ctrlQueue = ctrlQueue
+    def get_cbeOutputQueue(self): return self.cbeOutputQueue
+    def set_cbeOutputQueue(self, cbeOutputQueue): self.cbeOutputQueue = cbeOutputQueue
     def get_cmLogging(self): return self.cmLogging
     def set_cmLogging(self, cmLogging): self.cmLogging = cmLogging
     def get_vciReporting(self): return self.vciReporting
@@ -6269,20 +5904,26 @@ class cmMonitorControl(GeneratedsSuper):
     def set_cmAlerts(self, cmAlerts): self.cmAlerts = cmAlerts
     def get_cmDeleteSubarray(self): return self.cmDeleteSubarray
     def set_cmDeleteSubarray(self, cmDeleteSubarray): self.cmDeleteSubarray = cmDeleteSubarray
-    def get_vciSchemaValidation(self): return self.vciSchemaValidation
-    def set_vciSchemaValidation(self, vciSchemaValidation): self.vciSchemaValidation = vciSchemaValidation
-    def get_sendConfigToCRM(self): return self.sendConfigToCRM
-    def set_sendConfigToCRM(self, sendConfigToCRM): self.sendConfigToCRM = sendConfigToCRM
+    def get_cmFlushCmibQueues(self): return self.cmFlushCmibQueues
+    def set_cmFlushCmibQueues(self, cmFlushCmibQueues): self.cmFlushCmibQueues = cmFlushCmibQueues
+    def get_ifdDefault(self): return self.ifdDefault
+    def set_ifdDefault(self, ifdDefault): self.ifdDefault = ifdDefault
+    def get_crmQuery(self): return self.crmQuery
+    def set_crmQuery(self, crmQuery): self.crmQuery = crmQuery
+    def get_sendQueryToCRM(self): return self.sendQueryToCRM
+    def set_sendQueryToCRM(self, sendQueryToCRM): self.sendQueryToCRM = sendQueryToCRM
     def get_sendConfigToBLBs(self): return self.sendConfigToBLBs
     def set_sendConfigToBLBs(self, sendConfigToBLBs): self.sendConfigToBLBs = sendConfigToBLBs
+    def get_enableAllComponents(self): return self.enableAllComponents
+    def set_enableAllComponents(self, enableAllComponents): self.enableAllComponents = enableAllComponents
     def get_sendConfigToCBE(self): return self.sendConfigToCBE
     def set_sendConfigToCBE(self, sendConfigToCBE): self.sendConfigToCBE = sendConfigToCBE
+    def get_vciSchemaValidation(self): return self.vciSchemaValidation
+    def set_vciSchemaValidation(self, vciSchemaValidation): self.vciSchemaValidation = vciSchemaValidation
     def get_sendConfigToXBBs(self): return self.sendConfigToXBBs
     def set_sendConfigToXBBs(self, sendConfigToXBBs): self.sendConfigToXBBs = sendConfigToXBBs
     def get_query(self): return self.query
     def set_query(self, query): self.query = query
-    def get_flushCmibQueues(self): return self.flushCmibQueues
-    def set_flushCmibQueues(self, flushCmibQueues): self.flushCmibQueues = flushCmibQueues
     def get_sendConfigToSTBs(self): return self.sendConfigToSTBs
     def set_sendConfigToSTBs(self, sendConfigToSTBs): self.sendConfigToSTBs = sendConfigToSTBs
     def export(self, outfile, level, namespace_='widar:', name_='cmMonitorControl', namespacedef_=''):
@@ -6298,27 +5939,30 @@ class cmMonitorControl(GeneratedsSuper):
         else:
             outfile.write('/>\n')
     def exportAttributes(self, outfile, level, already_processed, namespace_='widar:', name_='cmMonitorControl'):
-        if self.vciSchemaValidation is not None and 'vciSchemaValidation' not in already_processed:
-            already_processed.append('vciSchemaValidation')
-            outfile.write(' vciSchemaValidation=%s' % (quote_attrib(self.vciSchemaValidation), ))
-        if self.sendConfigToCRM is not None and 'sendConfigToCRM' not in already_processed:
-            already_processed.append('sendConfigToCRM')
-            outfile.write(' sendConfigToCRM=%s' % (quote_attrib(self.sendConfigToCRM), ))
+        if self.crmQuery is not None and 'crmQuery' not in already_processed:
+            already_processed.append('crmQuery')
+            outfile.write(' crmQuery=%s' % (quote_attrib(self.crmQuery), ))
+        if self.sendQueryToCRM is not None and 'sendQueryToCRM' not in already_processed:
+            already_processed.append('sendQueryToCRM')
+            outfile.write(' sendQueryToCRM=%s' % (quote_attrib(self.sendQueryToCRM), ))
         if self.sendConfigToBLBs is not None and 'sendConfigToBLBs' not in already_processed:
             already_processed.append('sendConfigToBLBs')
             outfile.write(' sendConfigToBLBs=%s' % (quote_attrib(self.sendConfigToBLBs), ))
+        if self.enableAllComponents is not None and 'enableAllComponents' not in already_processed:
+            already_processed.append('enableAllComponents')
+            outfile.write(' enableAllComponents=%s' % (self.gds_format_string(quote_attrib(self.enableAllComponents).encode(ExternalEncoding), input_name='enableAllComponents'), ))
         if self.sendConfigToCBE is not None and 'sendConfigToCBE' not in already_processed:
             already_processed.append('sendConfigToCBE')
             outfile.write(' sendConfigToCBE=%s' % (quote_attrib(self.sendConfigToCBE), ))
+        if self.vciSchemaValidation is not None and 'vciSchemaValidation' not in already_processed:
+            already_processed.append('vciSchemaValidation')
+            outfile.write(' vciSchemaValidation=%s' % (quote_attrib(self.vciSchemaValidation), ))
         if self.sendConfigToXBBs is not None and 'sendConfigToXBBs' not in already_processed:
             already_processed.append('sendConfigToXBBs')
             outfile.write(' sendConfigToXBBs=%s' % (quote_attrib(self.sendConfigToXBBs), ))
         if self.query is not None and 'query' not in already_processed:
             already_processed.append('query')
             outfile.write(' query=%s' % (quote_attrib(self.query), ))
-        if self.flushCmibQueues is not None and 'flushCmibQueues' not in already_processed:
-            already_processed.append('flushCmibQueues')
-            outfile.write(' flushCmibQueues=%s' % (quote_attrib(self.flushCmibQueues), ))
         if self.sendConfigToSTBs is not None and 'sendConfigToSTBs' not in already_processed:
             already_processed.append('sendConfigToSTBs')
             outfile.write(' sendConfigToSTBs=%s' % (quote_attrib(self.sendConfigToSTBs), ))
@@ -6331,6 +5975,8 @@ class cmMonitorControl(GeneratedsSuper):
             self.actQueue.export(outfile, level, namespace_, name_='actQueue')
         if self.ctrlQueue:
             self.ctrlQueue.export(outfile, level, namespace_, name_='ctrlQueue')
+        if self.cbeOutputQueue:
+            self.cbeOutputQueue.export(outfile, level, namespace_, name_='cbeOutputQueue')
         if self.cmLogging:
             self.cmLogging.export(outfile, level, namespace_, name_='cmLogging')
         if self.vciReporting:
@@ -6339,16 +5985,23 @@ class cmMonitorControl(GeneratedsSuper):
             self.cmAlerts.export(outfile, level, namespace_, name_='cmAlerts')
         if self.cmDeleteSubarray:
             self.cmDeleteSubarray.export(outfile, level, namespace_, name_='cmDeleteSubarray')
+        if self.cmFlushCmibQueues:
+            self.cmFlushCmibQueues.export(outfile, level, namespace_, name_='cmFlushCmibQueues')
+        if self.ifdDefault:
+            self.ifdDefault.export(outfile, level, namespace_, name_='ifdDefault')
     def hasContent_(self):
         if (
             self.queryCfgStatus is not None or
             self.cfgQueue is not None or
             self.actQueue is not None or
             self.ctrlQueue is not None or
+            self.cbeOutputQueue is not None or
             self.cmLogging is not None or
             self.vciReporting is not None or
             self.cmAlerts is not None or
-            self.cmDeleteSubarray is not None
+            self.cmDeleteSubarray is not None or
+            self.cmFlushCmibQueues is not None or
+            self.ifdDefault is not None
             ):
             return True
         else:
@@ -6359,22 +6012,30 @@ class cmMonitorControl(GeneratedsSuper):
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
     def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        if self.vciSchemaValidation is not None and 'vciSchemaValidation' not in already_processed:
-            already_processed.append('vciSchemaValidation')
+        if self.crmQuery is not None and 'crmQuery' not in already_processed:
+            already_processed.append('crmQuery')
             showIndent(outfile, level)
-            outfile.write('vciSchemaValidation = %s,\n' % (self.vciSchemaValidation,))
-        if self.sendConfigToCRM is not None and 'sendConfigToCRM' not in already_processed:
-            already_processed.append('sendConfigToCRM')
+            outfile.write('crmQuery = %s,\n' % (self.crmQuery,))
+        if self.sendQueryToCRM is not None and 'sendQueryToCRM' not in already_processed:
+            already_processed.append('sendQueryToCRM')
             showIndent(outfile, level)
-            outfile.write('sendConfigToCRM = %s,\n' % (self.sendConfigToCRM,))
+            outfile.write('sendQueryToCRM = %s,\n' % (self.sendQueryToCRM,))
         if self.sendConfigToBLBs is not None and 'sendConfigToBLBs' not in already_processed:
             already_processed.append('sendConfigToBLBs')
             showIndent(outfile, level)
             outfile.write('sendConfigToBLBs = %s,\n' % (self.sendConfigToBLBs,))
+        if self.enableAllComponents is not None and 'enableAllComponents' not in already_processed:
+            already_processed.append('enableAllComponents')
+            showIndent(outfile, level)
+            outfile.write('enableAllComponents = "%s",\n' % (self.enableAllComponents,))
         if self.sendConfigToCBE is not None and 'sendConfigToCBE' not in already_processed:
             already_processed.append('sendConfigToCBE')
             showIndent(outfile, level)
             outfile.write('sendConfigToCBE = %s,\n' % (self.sendConfigToCBE,))
+        if self.vciSchemaValidation is not None and 'vciSchemaValidation' not in already_processed:
+            already_processed.append('vciSchemaValidation')
+            showIndent(outfile, level)
+            outfile.write('vciSchemaValidation = %s,\n' % (self.vciSchemaValidation,))
         if self.sendConfigToXBBs is not None and 'sendConfigToXBBs' not in already_processed:
             already_processed.append('sendConfigToXBBs')
             showIndent(outfile, level)
@@ -6383,10 +6044,6 @@ class cmMonitorControl(GeneratedsSuper):
             already_processed.append('query')
             showIndent(outfile, level)
             outfile.write('query = %s,\n' % (self.query,))
-        if self.flushCmibQueues is not None and 'flushCmibQueues' not in already_processed:
-            already_processed.append('flushCmibQueues')
-            showIndent(outfile, level)
-            outfile.write('flushCmibQueues = %s,\n' % (self.flushCmibQueues,))
         if self.sendConfigToSTBs is not None and 'sendConfigToSTBs' not in already_processed:
             already_processed.append('sendConfigToSTBs')
             showIndent(outfile, level)
@@ -6416,6 +6073,12 @@ class cmMonitorControl(GeneratedsSuper):
             self.ctrlQueue.exportLiteral(outfile, level)
             showIndent(outfile, level)
             outfile.write('),\n')
+        if self.cbeOutputQueue is not None:
+            showIndent(outfile, level)
+            outfile.write('cbeOutputQueue=model_.cbeOutputQueue(\n')
+            self.cbeOutputQueue.exportLiteral(outfile, level)
+            showIndent(outfile, level)
+            outfile.write('),\n')
         if self.cmLogging is not None:
             showIndent(outfile, level)
             outfile.write('cmLogging=model_.cmLogging(\n')
@@ -6440,28 +6103,48 @@ class cmMonitorControl(GeneratedsSuper):
             self.cmDeleteSubarray.exportLiteral(outfile, level)
             showIndent(outfile, level)
             outfile.write('),\n')
+        if self.cmFlushCmibQueues is not None:
+            showIndent(outfile, level)
+            outfile.write('cmFlushCmibQueues=model_.cmFlushCmibQueues(\n')
+            self.cmFlushCmibQueues.exportLiteral(outfile, level)
+            showIndent(outfile, level)
+            outfile.write('),\n')
+        if self.ifdDefault is not None:
+            showIndent(outfile, level)
+            outfile.write('ifdDefault=model_.ifdDefault(\n')
+            self.ifdDefault.exportLiteral(outfile, level)
+            showIndent(outfile, level)
+            outfile.write('),\n')
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
     def buildAttributes(self, node, attrs, already_processed):
-        value = find_attr_value_('vciSchemaValidation', node)
-        if value is not None and 'vciSchemaValidation' not in already_processed:
-            already_processed.append('vciSchemaValidation')
-            self.vciSchemaValidation = value
-        value = find_attr_value_('sendConfigToCRM', node)
-        if value is not None and 'sendConfigToCRM' not in already_processed:
-            already_processed.append('sendConfigToCRM')
-            self.sendConfigToCRM = value
+        value = find_attr_value_('crmQuery', node)
+        if value is not None and 'crmQuery' not in already_processed:
+            already_processed.append('crmQuery')
+            self.crmQuery = value
+        value = find_attr_value_('sendQueryToCRM', node)
+        if value is not None and 'sendQueryToCRM' not in already_processed:
+            already_processed.append('sendQueryToCRM')
+            self.sendQueryToCRM = value
         value = find_attr_value_('sendConfigToBLBs', node)
         if value is not None and 'sendConfigToBLBs' not in already_processed:
             already_processed.append('sendConfigToBLBs')
             self.sendConfigToBLBs = value
+        value = find_attr_value_('enableAllComponents', node)
+        if value is not None and 'enableAllComponents' not in already_processed:
+            already_processed.append('enableAllComponents')
+            self.enableAllComponents = value
         value = find_attr_value_('sendConfigToCBE', node)
         if value is not None and 'sendConfigToCBE' not in already_processed:
             already_processed.append('sendConfigToCBE')
             self.sendConfigToCBE = value
+        value = find_attr_value_('vciSchemaValidation', node)
+        if value is not None and 'vciSchemaValidation' not in already_processed:
+            already_processed.append('vciSchemaValidation')
+            self.vciSchemaValidation = value
         value = find_attr_value_('sendConfigToXBBs', node)
         if value is not None and 'sendConfigToXBBs' not in already_processed:
             already_processed.append('sendConfigToXBBs')
@@ -6470,10 +6153,6 @@ class cmMonitorControl(GeneratedsSuper):
         if value is not None and 'query' not in already_processed:
             already_processed.append('query')
             self.query = value
-        value = find_attr_value_('flushCmibQueues', node)
-        if value is not None and 'flushCmibQueues' not in already_processed:
-            already_processed.append('flushCmibQueues')
-            self.flushCmibQueues = value
         value = find_attr_value_('sendConfigToSTBs', node)
         if value is not None and 'sendConfigToSTBs' not in already_processed:
             already_processed.append('sendConfigToSTBs')
@@ -6495,6 +6174,10 @@ class cmMonitorControl(GeneratedsSuper):
             obj_ = ctrlQueue.factory()
             obj_.build(child_)
             self.set_ctrlQueue(obj_)
+        elif nodeName_ == 'cbeOutputQueue':
+            obj_ = cbeOutputQueue.factory()
+            obj_.build(child_)
+            self.set_cbeOutputQueue(obj_)
         elif nodeName_ == 'cmLogging':
             obj_ = cmLogging.factory()
             obj_.build(child_)
@@ -6511,6 +6194,14 @@ class cmMonitorControl(GeneratedsSuper):
             obj_ = cmDeleteSubarray.factory()
             obj_.build(child_)
             self.set_cmDeleteSubarray(obj_)
+        elif nodeName_ == 'cmFlushCmibQueues':
+            obj_ = cmFlushCmibQueues.factory()
+            obj_.build(child_)
+            self.set_cmFlushCmibQueues(obj_)
+        elif nodeName_ == 'ifdDefault':
+            obj_ = ifdDefault.factory()
+            obj_.build(child_)
+            self.set_ifdDefault(obj_)
 # end class cmMonitorControl
 
 
@@ -6613,14 +6304,11 @@ class vciReporting(GeneratedsSuper):
 
 
 class cmAlerts(GeneratedsSuper):
-    """Specify destination address and port for xAlerts. Enable/disable
-    transmission of xAlerts."""
+    """Enable/disable transmission of xAlerts."""
     subclass = None
     superclass = None
-    def __init__(self, transmit=None, destIpAddress=None, destPort=None):
+    def __init__(self, transmit=None):
         self.transmit = _cast(None, transmit)
-        self.destIpAddress = _cast(None, destIpAddress)
-        self.destPort = _cast(int, destPort)
         pass
     def factory(*args_, **kwargs_):
         if cmAlerts.subclass:
@@ -6630,10 +6318,6 @@ class cmAlerts(GeneratedsSuper):
     factory = staticmethod(factory)
     def get_transmit(self): return self.transmit
     def set_transmit(self, transmit): self.transmit = transmit
-    def get_destIpAddress(self): return self.destIpAddress
-    def set_destIpAddress(self, destIpAddress): self.destIpAddress = destIpAddress
-    def get_destPort(self): return self.destPort
-    def set_destPort(self, destPort): self.destPort = destPort
     def export(self, outfile, level, namespace_='widar:', name_='cmAlerts', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
@@ -6649,12 +6333,6 @@ class cmAlerts(GeneratedsSuper):
         if self.transmit is not None and 'transmit' not in already_processed:
             already_processed.append('transmit')
             outfile.write(' transmit=%s' % (quote_attrib(self.transmit), ))
-        if self.destIpAddress is not None and 'destIpAddress' not in already_processed:
-            already_processed.append('destIpAddress')
-            outfile.write(' destIpAddress=%s' % (self.gds_format_string(quote_attrib(self.destIpAddress).encode(ExternalEncoding), input_name='destIpAddress'), ))
-        if self.destPort is not None and 'destPort' not in already_processed:
-            already_processed.append('destPort')
-            outfile.write(' destPort="%s"' % self.gds_format_integer(self.destPort, input_name='destPort'))
     def exportChildren(self, outfile, level, namespace_='widar:', name_='cmAlerts', fromsubclass_=False):
         pass
     def hasContent_(self):
@@ -6674,14 +6352,6 @@ class cmAlerts(GeneratedsSuper):
             already_processed.append('transmit')
             showIndent(outfile, level)
             outfile.write('transmit = %s,\n' % (self.transmit,))
-        if self.destIpAddress is not None and 'destIpAddress' not in already_processed:
-            already_processed.append('destIpAddress')
-            showIndent(outfile, level)
-            outfile.write('destIpAddress = "%s",\n' % (self.destIpAddress,))
-        if self.destPort is not None and 'destPort' not in already_processed:
-            already_processed.append('destPort')
-            showIndent(outfile, level)
-            outfile.write('destPort = %d,\n' % (self.destPort,))
     def exportLiteralChildren(self, outfile, level, name_):
         pass
     def build(self, node):
@@ -6694,17 +6364,6 @@ class cmAlerts(GeneratedsSuper):
         if value is not None and 'transmit' not in already_processed:
             already_processed.append('transmit')
             self.transmit = value
-        value = find_attr_value_('destIpAddress', node)
-        if value is not None and 'destIpAddress' not in already_processed:
-            already_processed.append('destIpAddress')
-            self.destIpAddress = value
-        value = find_attr_value_('destPort', node)
-        if value is not None and 'destPort' not in already_processed:
-            already_processed.append('destPort')
-            try:
-                self.destPort = int(value)
-            except ValueError, exp:
-                raise_parse_error(node, 'Bad integer attribute: %s' % exp)
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         pass
 # end class cmAlerts
@@ -7026,6 +6685,465 @@ class ctrlQueue(GeneratedsSuper):
 # end class ctrlQueue
 
 
+class cbeOutputQueue(GeneratedsSuper):
+    """Monitor and control for the queue that contains messages for CBE."""
+    subclass = None
+    superclass = None
+    def __init__(self, action=None, valueOf_=None):
+        self.action = _cast(None, action)
+        self.valueOf_ = valueOf_
+    def factory(*args_, **kwargs_):
+        if cbeOutputQueue.subclass:
+            return cbeOutputQueue.subclass(*args_, **kwargs_)
+        else:
+            return cbeOutputQueue(*args_, **kwargs_)
+    factory = staticmethod(factory)
+    def get_action(self): return self.action
+    def set_action(self, action): self.action = action
+    def get_valueOf_(self): return self.valueOf_
+    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
+    def export(self, outfile, level, namespace_='widar:', name_='cbeOutputQueue', namespacedef_=''):
+        showIndent(outfile, level)
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='cbeOutputQueue')
+        if self.hasContent_():
+            outfile.write('>')
+            outfile.write(str(self.valueOf_).encode(ExternalEncoding))
+            self.exportChildren(outfile, level + 1, namespace_, name_)
+            outfile.write('</%s%s>\n' % (namespace_, name_))
+        else:
+            outfile.write('/>\n')
+    def exportAttributes(self, outfile, level, already_processed, namespace_='widar:', name_='cbeOutputQueue'):
+        if self.action is not None and 'action' not in already_processed:
+            already_processed.append('action')
+            outfile.write(' action=%s' % (quote_attrib(self.action), ))
+    def exportChildren(self, outfile, level, namespace_='widar:', name_='cbeOutputQueue', fromsubclass_=False):
+        pass
+    def hasContent_(self):
+        if (
+            self.valueOf_
+            ):
+            return True
+        else:
+            return False
+    def exportLiteral(self, outfile, level, name_='cbeOutputQueue'):
+        level += 1
+        self.exportLiteralAttributes(outfile, level, [], name_)
+        if self.hasContent_():
+            self.exportLiteralChildren(outfile, level, name_)
+        showIndent(outfile, level)
+        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
+    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
+        if self.action is not None and 'action' not in already_processed:
+            already_processed.append('action')
+            showIndent(outfile, level)
+            outfile.write('action = %s,\n' % (self.action,))
+    def exportLiteralChildren(self, outfile, level, name_):
+        pass
+    def build(self, node):
+        self.buildAttributes(node, node.attrib, [])
+        self.valueOf_ = get_all_text_(node)
+        for child in node:
+            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
+            self.buildChildren(child, node, nodeName_)
+    def buildAttributes(self, node, attrs, already_processed):
+        value = find_attr_value_('action', node)
+        if value is not None and 'action' not in already_processed:
+            already_processed.append('action')
+            self.action = value
+    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
+        pass
+# end class cbeOutputQueue
+
+
+class ifdDefault(GeneratedsSuper):
+    """Default values for inter-frame delay."""
+    subclass = None
+    superclass = None
+    def __init__(self, delay=None, mode=None, randomOn=None):
+        self.delay = _cast(int, delay)
+        self.mode = _cast(None, mode)
+        self.randomOn = _cast(None, randomOn)
+        pass
+    def factory(*args_, **kwargs_):
+        if ifdDefault.subclass:
+            return ifdDefault.subclass(*args_, **kwargs_)
+        else:
+            return ifdDefault(*args_, **kwargs_)
+    factory = staticmethod(factory)
+    def get_delay(self): return self.delay
+    def set_delay(self, delay): self.delay = delay
+    def get_mode(self): return self.mode
+    def set_mode(self, mode): self.mode = mode
+    def get_randomOn(self): return self.randomOn
+    def set_randomOn(self, randomOn): self.randomOn = randomOn
+    def export(self, outfile, level, namespace_='widar:', name_='ifdDefault', namespacedef_=''):
+        showIndent(outfile, level)
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='ifdDefault')
+        if self.hasContent_():
+            outfile.write('>\n')
+            self.exportChildren(outfile, level + 1, namespace_, name_)
+            outfile.write('</%s%s>\n' % (namespace_, name_))
+        else:
+            outfile.write('/>\n')
+    def exportAttributes(self, outfile, level, already_processed, namespace_='widar:', name_='ifdDefault'):
+        if self.delay is not None and 'delay' not in already_processed:
+            already_processed.append('delay')
+            outfile.write(' delay="%s"' % self.gds_format_integer(self.delay, input_name='delay'))
+        if self.mode is not None and 'mode' not in already_processed:
+            already_processed.append('mode')
+            outfile.write(' mode=%s' % (quote_attrib(self.mode), ))
+        if self.randomOn is not None and 'randomOn' not in already_processed:
+            already_processed.append('randomOn')
+            outfile.write(' randomOn=%s' % (quote_attrib(self.randomOn), ))
+    def exportChildren(self, outfile, level, namespace_='widar:', name_='ifdDefault', fromsubclass_=False):
+        pass
+    def hasContent_(self):
+        if (
+
+            ):
+            return True
+        else:
+            return False
+    def exportLiteral(self, outfile, level, name_='ifdDefault'):
+        level += 1
+        self.exportLiteralAttributes(outfile, level, [], name_)
+        if self.hasContent_():
+            self.exportLiteralChildren(outfile, level, name_)
+    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
+        if self.delay is not None and 'delay' not in already_processed:
+            already_processed.append('delay')
+            showIndent(outfile, level)
+            outfile.write('delay = %d,\n' % (self.delay,))
+        if self.mode is not None and 'mode' not in already_processed:
+            already_processed.append('mode')
+            showIndent(outfile, level)
+            outfile.write('mode = %s,\n' % (self.mode,))
+        if self.randomOn is not None and 'randomOn' not in already_processed:
+            already_processed.append('randomOn')
+            showIndent(outfile, level)
+            outfile.write('randomOn = %s,\n' % (self.randomOn,))
+    def exportLiteralChildren(self, outfile, level, name_):
+        pass
+    def build(self, node):
+        self.buildAttributes(node, node.attrib, [])
+        for child in node:
+            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
+            self.buildChildren(child, node, nodeName_)
+    def buildAttributes(self, node, attrs, already_processed):
+        value = find_attr_value_('delay', node)
+        if value is not None and 'delay' not in already_processed:
+            already_processed.append('delay')
+            try:
+                self.delay = int(value)
+            except ValueError, exp:
+                raise_parse_error(node, 'Bad integer attribute: %s' % exp)
+        value = find_attr_value_('mode', node)
+        if value is not None and 'mode' not in already_processed:
+            already_processed.append('mode')
+            self.mode = value
+        value = find_attr_value_('randomOn', node)
+        if value is not None and 'randomOn' not in already_processed:
+            already_processed.append('randomOn')
+            self.randomOn = value
+    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
+        pass
+# end class ifdDefault
+
+
+class cmFlushCmibQueues(GeneratedsSuper):
+    """Flush CMIB configuration(input) queue in specified racks."""
+    subclass = None
+    superclass = None
+    def __init__(self, all='no', b108='no', b103='no', b102='no', b101='no', b107='no', b106='no', b105='no', b104='no', s005='no', s004='no', s007='no', s006='no', s001='no', s003='no', s002='no', s008='no'):
+        self.all = _cast(None, all)
+        self.b108 = _cast(None, b108)
+        self.b103 = _cast(None, b103)
+        self.b102 = _cast(None, b102)
+        self.b101 = _cast(None, b101)
+        self.b107 = _cast(None, b107)
+        self.b106 = _cast(None, b106)
+        self.b105 = _cast(None, b105)
+        self.b104 = _cast(None, b104)
+        self.s005 = _cast(None, s005)
+        self.s004 = _cast(None, s004)
+        self.s007 = _cast(None, s007)
+        self.s006 = _cast(None, s006)
+        self.s001 = _cast(None, s001)
+        self.s003 = _cast(None, s003)
+        self.s002 = _cast(None, s002)
+        self.s008 = _cast(None, s008)
+        pass
+    def factory(*args_, **kwargs_):
+        if cmFlushCmibQueues.subclass:
+            return cmFlushCmibQueues.subclass(*args_, **kwargs_)
+        else:
+            return cmFlushCmibQueues(*args_, **kwargs_)
+    factory = staticmethod(factory)
+    def get_all(self): return self.all
+    def set_all(self, all): self.all = all
+    def get_b108(self): return self.b108
+    def set_b108(self, b108): self.b108 = b108
+    def get_b103(self): return self.b103
+    def set_b103(self, b103): self.b103 = b103
+    def get_b102(self): return self.b102
+    def set_b102(self, b102): self.b102 = b102
+    def get_b101(self): return self.b101
+    def set_b101(self, b101): self.b101 = b101
+    def get_b107(self): return self.b107
+    def set_b107(self, b107): self.b107 = b107
+    def get_b106(self): return self.b106
+    def set_b106(self, b106): self.b106 = b106
+    def get_b105(self): return self.b105
+    def set_b105(self, b105): self.b105 = b105
+    def get_b104(self): return self.b104
+    def set_b104(self, b104): self.b104 = b104
+    def get_s005(self): return self.s005
+    def set_s005(self, s005): self.s005 = s005
+    def get_s004(self): return self.s004
+    def set_s004(self, s004): self.s004 = s004
+    def get_s007(self): return self.s007
+    def set_s007(self, s007): self.s007 = s007
+    def get_s006(self): return self.s006
+    def set_s006(self, s006): self.s006 = s006
+    def get_s001(self): return self.s001
+    def set_s001(self, s001): self.s001 = s001
+    def get_s003(self): return self.s003
+    def set_s003(self, s003): self.s003 = s003
+    def get_s002(self): return self.s002
+    def set_s002(self, s002): self.s002 = s002
+    def get_s008(self): return self.s008
+    def set_s008(self, s008): self.s008 = s008
+    def export(self, outfile, level, namespace_='widar:', name_='cmFlushCmibQueues', namespacedef_=''):
+        showIndent(outfile, level)
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='cmFlushCmibQueues')
+        if self.hasContent_():
+            outfile.write('>\n')
+            self.exportChildren(outfile, level + 1, namespace_, name_)
+            outfile.write('</%s%s>\n' % (namespace_, name_))
+        else:
+            outfile.write('/>\n')
+    def exportAttributes(self, outfile, level, already_processed, namespace_='widar:', name_='cmFlushCmibQueues'):
+        if self.all is not None and 'all' not in already_processed:
+            already_processed.append('all')
+            outfile.write(' all=%s' % (quote_attrib(self.all), ))
+        if self.b108 is not None and 'b108' not in already_processed:
+            already_processed.append('b108')
+            outfile.write(' b108=%s' % (quote_attrib(self.b108), ))
+        if self.b103 is not None and 'b103' not in already_processed:
+            already_processed.append('b103')
+            outfile.write(' b103=%s' % (quote_attrib(self.b103), ))
+        if self.b102 is not None and 'b102' not in already_processed:
+            already_processed.append('b102')
+            outfile.write(' b102=%s' % (quote_attrib(self.b102), ))
+        if self.b101 is not None and 'b101' not in already_processed:
+            already_processed.append('b101')
+            outfile.write(' b101=%s' % (quote_attrib(self.b101), ))
+        if self.b107 is not None and 'b107' not in already_processed:
+            already_processed.append('b107')
+            outfile.write(' b107=%s' % (quote_attrib(self.b107), ))
+        if self.b106 is not None and 'b106' not in already_processed:
+            already_processed.append('b106')
+            outfile.write(' b106=%s' % (quote_attrib(self.b106), ))
+        if self.b105 is not None and 'b105' not in already_processed:
+            already_processed.append('b105')
+            outfile.write(' b105=%s' % (quote_attrib(self.b105), ))
+        if self.b104 is not None and 'b104' not in already_processed:
+            already_processed.append('b104')
+            outfile.write(' b104=%s' % (quote_attrib(self.b104), ))
+        if self.s005 is not None and 's005' not in already_processed:
+            already_processed.append('s005')
+            outfile.write(' s005=%s' % (quote_attrib(self.s005), ))
+        if self.s004 is not None and 's004' not in already_processed:
+            already_processed.append('s004')
+            outfile.write(' s004=%s' % (quote_attrib(self.s004), ))
+        if self.s007 is not None and 's007' not in already_processed:
+            already_processed.append('s007')
+            outfile.write(' s007=%s' % (quote_attrib(self.s007), ))
+        if self.s006 is not None and 's006' not in already_processed:
+            already_processed.append('s006')
+            outfile.write(' s006=%s' % (quote_attrib(self.s006), ))
+        if self.s001 is not None and 's001' not in already_processed:
+            already_processed.append('s001')
+            outfile.write(' s001=%s' % (quote_attrib(self.s001), ))
+        if self.s003 is not None and 's003' not in already_processed:
+            already_processed.append('s003')
+            outfile.write(' s003=%s' % (quote_attrib(self.s003), ))
+        if self.s002 is not None and 's002' not in already_processed:
+            already_processed.append('s002')
+            outfile.write(' s002=%s' % (quote_attrib(self.s002), ))
+        if self.s008 is not None and 's008' not in already_processed:
+            already_processed.append('s008')
+            outfile.write(' s008=%s' % (quote_attrib(self.s008), ))
+    def exportChildren(self, outfile, level, namespace_='widar:', name_='cmFlushCmibQueues', fromsubclass_=False):
+        pass
+    def hasContent_(self):
+        if (
+
+            ):
+            return True
+        else:
+            return False
+    def exportLiteral(self, outfile, level, name_='cmFlushCmibQueues'):
+        level += 1
+        self.exportLiteralAttributes(outfile, level, [], name_)
+        if self.hasContent_():
+            self.exportLiteralChildren(outfile, level, name_)
+    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
+        if self.all is not None and 'all' not in already_processed:
+            already_processed.append('all')
+            showIndent(outfile, level)
+            outfile.write('all = %s,\n' % (self.all,))
+        if self.b108 is not None and 'b108' not in already_processed:
+            already_processed.append('b108')
+            showIndent(outfile, level)
+            outfile.write('b108 = %s,\n' % (self.b108,))
+        if self.b103 is not None and 'b103' not in already_processed:
+            already_processed.append('b103')
+            showIndent(outfile, level)
+            outfile.write('b103 = %s,\n' % (self.b103,))
+        if self.b102 is not None and 'b102' not in already_processed:
+            already_processed.append('b102')
+            showIndent(outfile, level)
+            outfile.write('b102 = %s,\n' % (self.b102,))
+        if self.b101 is not None and 'b101' not in already_processed:
+            already_processed.append('b101')
+            showIndent(outfile, level)
+            outfile.write('b101 = %s,\n' % (self.b101,))
+        if self.b107 is not None and 'b107' not in already_processed:
+            already_processed.append('b107')
+            showIndent(outfile, level)
+            outfile.write('b107 = %s,\n' % (self.b107,))
+        if self.b106 is not None and 'b106' not in already_processed:
+            already_processed.append('b106')
+            showIndent(outfile, level)
+            outfile.write('b106 = %s,\n' % (self.b106,))
+        if self.b105 is not None and 'b105' not in already_processed:
+            already_processed.append('b105')
+            showIndent(outfile, level)
+            outfile.write('b105 = %s,\n' % (self.b105,))
+        if self.b104 is not None and 'b104' not in already_processed:
+            already_processed.append('b104')
+            showIndent(outfile, level)
+            outfile.write('b104 = %s,\n' % (self.b104,))
+        if self.s005 is not None and 's005' not in already_processed:
+            already_processed.append('s005')
+            showIndent(outfile, level)
+            outfile.write('s005 = %s,\n' % (self.s005,))
+        if self.s004 is not None and 's004' not in already_processed:
+            already_processed.append('s004')
+            showIndent(outfile, level)
+            outfile.write('s004 = %s,\n' % (self.s004,))
+        if self.s007 is not None and 's007' not in already_processed:
+            already_processed.append('s007')
+            showIndent(outfile, level)
+            outfile.write('s007 = %s,\n' % (self.s007,))
+        if self.s006 is not None and 's006' not in already_processed:
+            already_processed.append('s006')
+            showIndent(outfile, level)
+            outfile.write('s006 = %s,\n' % (self.s006,))
+        if self.s001 is not None and 's001' not in already_processed:
+            already_processed.append('s001')
+            showIndent(outfile, level)
+            outfile.write('s001 = %s,\n' % (self.s001,))
+        if self.s003 is not None and 's003' not in already_processed:
+            already_processed.append('s003')
+            showIndent(outfile, level)
+            outfile.write('s003 = %s,\n' % (self.s003,))
+        if self.s002 is not None and 's002' not in already_processed:
+            already_processed.append('s002')
+            showIndent(outfile, level)
+            outfile.write('s002 = %s,\n' % (self.s002,))
+        if self.s008 is not None and 's008' not in already_processed:
+            already_processed.append('s008')
+            showIndent(outfile, level)
+            outfile.write('s008 = %s,\n' % (self.s008,))
+    def exportLiteralChildren(self, outfile, level, name_):
+        pass
+    def build(self, node):
+        self.buildAttributes(node, node.attrib, [])
+        for child in node:
+            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
+            self.buildChildren(child, node, nodeName_)
+    def buildAttributes(self, node, attrs, already_processed):
+        value = find_attr_value_('all', node)
+        if value is not None and 'all' not in already_processed:
+            already_processed.append('all')
+            self.all = value
+        value = find_attr_value_('b108', node)
+        if value is not None and 'b108' not in already_processed:
+            already_processed.append('b108')
+            self.b108 = value
+        value = find_attr_value_('b103', node)
+        if value is not None and 'b103' not in already_processed:
+            already_processed.append('b103')
+            self.b103 = value
+        value = find_attr_value_('b102', node)
+        if value is not None and 'b102' not in already_processed:
+            already_processed.append('b102')
+            self.b102 = value
+        value = find_attr_value_('b101', node)
+        if value is not None and 'b101' not in already_processed:
+            already_processed.append('b101')
+            self.b101 = value
+        value = find_attr_value_('b107', node)
+        if value is not None and 'b107' not in already_processed:
+            already_processed.append('b107')
+            self.b107 = value
+        value = find_attr_value_('b106', node)
+        if value is not None and 'b106' not in already_processed:
+            already_processed.append('b106')
+            self.b106 = value
+        value = find_attr_value_('b105', node)
+        if value is not None and 'b105' not in already_processed:
+            already_processed.append('b105')
+            self.b105 = value
+        value = find_attr_value_('b104', node)
+        if value is not None and 'b104' not in already_processed:
+            already_processed.append('b104')
+            self.b104 = value
+        value = find_attr_value_('s005', node)
+        if value is not None and 's005' not in already_processed:
+            already_processed.append('s005')
+            self.s005 = value
+        value = find_attr_value_('s004', node)
+        if value is not None and 's004' not in already_processed:
+            already_processed.append('s004')
+            self.s004 = value
+        value = find_attr_value_('s007', node)
+        if value is not None and 's007' not in already_processed:
+            already_processed.append('s007')
+            self.s007 = value
+        value = find_attr_value_('s006', node)
+        if value is not None and 's006' not in already_processed:
+            already_processed.append('s006')
+            self.s006 = value
+        value = find_attr_value_('s001', node)
+        if value is not None and 's001' not in already_processed:
+            already_processed.append('s001')
+            self.s001 = value
+        value = find_attr_value_('s003', node)
+        if value is not None and 's003' not in already_processed:
+            already_processed.append('s003')
+            self.s003 = value
+        value = find_attr_value_('s002', node)
+        if value is not None and 's002' not in already_processed:
+            already_processed.append('s002')
+            self.s002 = value
+        value = find_attr_value_('s008', node)
+        if value is not None and 's008' not in already_processed:
+            already_processed.append('s008')
+            self.s008 = value
+    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
+        pass
+# end class cmFlushCmibQueues
+
+
 class cmDeleteSubarray(GeneratedsSuper):
     """Delete subarray with the specified Config ID. If configId==all
     delete all subarrays. This command is used when usr does not
@@ -7105,6 +7223,7 @@ class cmDeleteSubarray(GeneratedsSuper):
 
 
 class cmLogging(GeneratedsSuper):
+    
     subclass = None
     superclass = None
     def __init__(self, level=None, logCrmMessages=None, logToFile=None, logCbeMessages=None, logBlbMessages=None, logXAlerts=None, logVciMessages=None, logStbMessages=None, logXbbMessages=None):
@@ -8204,774 +8323,8 @@ class moduleLocation(GeneratedsSuper):
 # end class moduleLocation
 
 
-class inputStateCounts(GeneratedsSuper):
-    """control input state count monitoring"""
-    subclass = None
-    superclass = None
-    def __init__(self, status=None, destination=None, integFactor='10'):
-        self.status = _cast(None, status)
-        self.destination = _cast(None, destination)
-        self.integFactor = _cast(None, integFactor)
-        pass
-    def factory(*args_, **kwargs_):
-        if inputStateCounts.subclass:
-            return inputStateCounts.subclass(*args_, **kwargs_)
-        else:
-            return inputStateCounts(*args_, **kwargs_)
-    factory = staticmethod(factory)
-    def get_status(self): return self.status
-    def set_status(self, status): self.status = status
-    def get_destination(self): return self.destination
-    def set_destination(self, destination): self.destination = destination
-    def get_integFactor(self): return self.integFactor
-    def set_integFactor(self, integFactor): self.integFactor = integFactor
-    def export(self, outfile, level, namespace_='widar:', name_='inputStateCounts', namespacedef_=''):
-        showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        already_processed = []
-        self.exportAttributes(outfile, level, already_processed, namespace_, name_='inputStateCounts')
-        if self.hasContent_():
-            outfile.write('>\n')
-            self.exportChildren(outfile, level + 1, namespace_, name_)
-            outfile.write('</%s%s>\n' % (namespace_, name_))
-        else:
-            outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, already_processed, namespace_='widar:', name_='inputStateCounts'):
-        if self.status is not None and 'status' not in already_processed:
-            already_processed.append('status')
-            outfile.write(' status=%s' % (quote_attrib(self.status), ))
-        if self.destination is not None and 'destination' not in already_processed:
-            already_processed.append('destination')
-            outfile.write(' destination=%s' % (self.gds_format_string(quote_attrib(self.destination).encode(ExternalEncoding), input_name='destination'), ))
-        if self.integFactor is not None and 'integFactor' not in already_processed:
-            already_processed.append('integFactor')
-            outfile.write(' integFactor=%s' % (quote_attrib(self.integFactor), ))
-    def exportChildren(self, outfile, level, namespace_='widar:', name_='inputStateCounts', fromsubclass_=False):
-        pass
-    def hasContent_(self):
-        if (
-
-            ):
-            return True
-        else:
-            return False
-    def exportLiteral(self, outfile, level, name_='inputStateCounts'):
-        level += 1
-        self.exportLiteralAttributes(outfile, level, [], name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        if self.status is not None and 'status' not in already_processed:
-            already_processed.append('status')
-            showIndent(outfile, level)
-            outfile.write('status = %s,\n' % (self.status,))
-        if self.destination is not None and 'destination' not in already_processed:
-            already_processed.append('destination')
-            showIndent(outfile, level)
-            outfile.write('destination = "%s",\n' % (self.destination,))
-        if self.integFactor is not None and 'integFactor' not in already_processed:
-            already_processed.append('integFactor')
-            showIndent(outfile, level)
-            outfile.write('integFactor = %s,\n' % (self.integFactor,))
-    def exportLiteralChildren(self, outfile, level, name_):
-        pass
-    def build(self, node):
-        self.buildAttributes(node, node.attrib, [])
-        for child in node:
-            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
-            self.buildChildren(child, node, nodeName_)
-    def buildAttributes(self, node, attrs, already_processed):
-        value = find_attr_value_('status', node)
-        if value is not None and 'status' not in already_processed:
-            already_processed.append('status')
-            self.status = value
-        value = find_attr_value_('destination', node)
-        if value is not None and 'destination' not in already_processed:
-            already_processed.append('destination')
-            self.destination = value
-        value = find_attr_value_('integFactor', node)
-        if value is not None and 'integFactor' not in already_processed:
-            already_processed.append('integFactor')
-            self.integFactor = value
-    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
-        pass
-# end class inputStateCounts
-
-
-class tickIntervalCounts(GeneratedsSuper):
-    """control tick interval monitoring"""
-    subclass = None
-    superclass = None
-    def __init__(self, status=None, destination=None, integFactor='10'):
-        self.status = _cast(None, status)
-        self.destination = _cast(None, destination)
-        self.integFactor = _cast(None, integFactor)
-        pass
-    def factory(*args_, **kwargs_):
-        if tickIntervalCounts.subclass:
-            return tickIntervalCounts.subclass(*args_, **kwargs_)
-        else:
-            return tickIntervalCounts(*args_, **kwargs_)
-    factory = staticmethod(factory)
-    def get_status(self): return self.status
-    def set_status(self, status): self.status = status
-    def get_destination(self): return self.destination
-    def set_destination(self, destination): self.destination = destination
-    def get_integFactor(self): return self.integFactor
-    def set_integFactor(self, integFactor): self.integFactor = integFactor
-    def export(self, outfile, level, namespace_='widar:', name_='tickIntervalCounts', namespacedef_=''):
-        showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        already_processed = []
-        self.exportAttributes(outfile, level, already_processed, namespace_, name_='tickIntervalCounts')
-        if self.hasContent_():
-            outfile.write('>\n')
-            self.exportChildren(outfile, level + 1, namespace_, name_)
-            outfile.write('</%s%s>\n' % (namespace_, name_))
-        else:
-            outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, already_processed, namespace_='widar:', name_='tickIntervalCounts'):
-        if self.status is not None and 'status' not in already_processed:
-            already_processed.append('status')
-            outfile.write(' status=%s' % (quote_attrib(self.status), ))
-        if self.destination is not None and 'destination' not in already_processed:
-            already_processed.append('destination')
-            outfile.write(' destination=%s' % (self.gds_format_string(quote_attrib(self.destination).encode(ExternalEncoding), input_name='destination'), ))
-        if self.integFactor is not None and 'integFactor' not in already_processed:
-            already_processed.append('integFactor')
-            outfile.write(' integFactor=%s' % (quote_attrib(self.integFactor), ))
-    def exportChildren(self, outfile, level, namespace_='widar:', name_='tickIntervalCounts', fromsubclass_=False):
-        pass
-    def hasContent_(self):
-        if (
-
-            ):
-            return True
-        else:
-            return False
-    def exportLiteral(self, outfile, level, name_='tickIntervalCounts'):
-        level += 1
-        self.exportLiteralAttributes(outfile, level, [], name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        if self.status is not None and 'status' not in already_processed:
-            already_processed.append('status')
-            showIndent(outfile, level)
-            outfile.write('status = %s,\n' % (self.status,))
-        if self.destination is not None and 'destination' not in already_processed:
-            already_processed.append('destination')
-            showIndent(outfile, level)
-            outfile.write('destination = "%s",\n' % (self.destination,))
-        if self.integFactor is not None and 'integFactor' not in already_processed:
-            already_processed.append('integFactor')
-            showIndent(outfile, level)
-            outfile.write('integFactor = %s,\n' % (self.integFactor,))
-    def exportLiteralChildren(self, outfile, level, name_):
-        pass
-    def build(self, node):
-        self.buildAttributes(node, node.attrib, [])
-        for child in node:
-            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
-            self.buildChildren(child, node, nodeName_)
-    def buildAttributes(self, node, attrs, already_processed):
-        value = find_attr_value_('status', node)
-        if value is not None and 'status' not in already_processed:
-            already_processed.append('status')
-            self.status = value
-        value = find_attr_value_('destination', node)
-        if value is not None and 'destination' not in already_processed:
-            already_processed.append('destination')
-            self.destination = value
-        value = find_attr_value_('integFactor', node)
-        if value is not None and 'integFactor' not in already_processed:
-            already_processed.append('integFactor')
-            self.integFactor = value
-    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
-        pass
-# end class tickIntervalCounts
-
-
-class clipCounts(GeneratedsSuper):
-    """control sampler clip monitoring"""
-    subclass = None
-    superclass = None
-    def __init__(self, status=None, destination=None, integFactor='10'):
-        self.status = _cast(None, status)
-        self.destination = _cast(None, destination)
-        self.integFactor = _cast(None, integFactor)
-        pass
-    def factory(*args_, **kwargs_):
-        if clipCounts.subclass:
-            return clipCounts.subclass(*args_, **kwargs_)
-        else:
-            return clipCounts(*args_, **kwargs_)
-    factory = staticmethod(factory)
-    def get_status(self): return self.status
-    def set_status(self, status): self.status = status
-    def get_destination(self): return self.destination
-    def set_destination(self, destination): self.destination = destination
-    def get_integFactor(self): return self.integFactor
-    def set_integFactor(self, integFactor): self.integFactor = integFactor
-    def export(self, outfile, level, namespace_='widar:', name_='clipCounts', namespacedef_=''):
-        showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        already_processed = []
-        self.exportAttributes(outfile, level, already_processed, namespace_, name_='clipCounts')
-        if self.hasContent_():
-            outfile.write('>\n')
-            self.exportChildren(outfile, level + 1, namespace_, name_)
-            outfile.write('</%s%s>\n' % (namespace_, name_))
-        else:
-            outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, already_processed, namespace_='widar:', name_='clipCounts'):
-        if self.status is not None and 'status' not in already_processed:
-            already_processed.append('status')
-            outfile.write(' status=%s' % (quote_attrib(self.status), ))
-        if self.destination is not None and 'destination' not in already_processed:
-            already_processed.append('destination')
-            outfile.write(' destination=%s' % (self.gds_format_string(quote_attrib(self.destination).encode(ExternalEncoding), input_name='destination'), ))
-        if self.integFactor is not None and 'integFactor' not in already_processed:
-            already_processed.append('integFactor')
-            outfile.write(' integFactor=%s' % (quote_attrib(self.integFactor), ))
-    def exportChildren(self, outfile, level, namespace_='widar:', name_='clipCounts', fromsubclass_=False):
-        pass
-    def hasContent_(self):
-        if (
-
-            ):
-            return True
-        else:
-            return False
-    def exportLiteral(self, outfile, level, name_='clipCounts'):
-        level += 1
-        self.exportLiteralAttributes(outfile, level, [], name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        if self.status is not None and 'status' not in already_processed:
-            already_processed.append('status')
-            showIndent(outfile, level)
-            outfile.write('status = %s,\n' % (self.status,))
-        if self.destination is not None and 'destination' not in already_processed:
-            already_processed.append('destination')
-            showIndent(outfile, level)
-            outfile.write('destination = "%s",\n' % (self.destination,))
-        if self.integFactor is not None and 'integFactor' not in already_processed:
-            already_processed.append('integFactor')
-            showIndent(outfile, level)
-            outfile.write('integFactor = %s,\n' % (self.integFactor,))
-    def exportLiteralChildren(self, outfile, level, name_):
-        pass
-    def build(self, node):
-        self.buildAttributes(node, node.attrib, [])
-        for child in node:
-            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
-            self.buildChildren(child, node, nodeName_)
-    def buildAttributes(self, node, attrs, already_processed):
-        value = find_attr_value_('status', node)
-        if value is not None and 'status' not in already_processed:
-            already_processed.append('status')
-            self.status = value
-        value = find_attr_value_('destination', node)
-        if value is not None and 'destination' not in already_processed:
-            already_processed.append('destination')
-            self.destination = value
-        value = find_attr_value_('integFactor', node)
-        if value is not None and 'integFactor' not in already_processed:
-            already_processed.append('integFactor')
-            self.integFactor = value
-    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
-        pass
-# end class clipCounts
-
-
-class powerCounts(GeneratedsSuper):
-    """control power monitoring"""
-    subclass = None
-    superclass = None
-    def __init__(self, status=None, destination=None, integFactor='10'):
-        self.status = _cast(None, status)
-        self.destination = _cast(None, destination)
-        self.integFactor = _cast(None, integFactor)
-        pass
-    def factory(*args_, **kwargs_):
-        if powerCounts.subclass:
-            return powerCounts.subclass(*args_, **kwargs_)
-        else:
-            return powerCounts(*args_, **kwargs_)
-    factory = staticmethod(factory)
-    def get_status(self): return self.status
-    def set_status(self, status): self.status = status
-    def get_destination(self): return self.destination
-    def set_destination(self, destination): self.destination = destination
-    def get_integFactor(self): return self.integFactor
-    def set_integFactor(self, integFactor): self.integFactor = integFactor
-    def export(self, outfile, level, namespace_='widar:', name_='powerCounts', namespacedef_=''):
-        showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        already_processed = []
-        self.exportAttributes(outfile, level, already_processed, namespace_, name_='powerCounts')
-        if self.hasContent_():
-            outfile.write('>\n')
-            self.exportChildren(outfile, level + 1, namespace_, name_)
-            outfile.write('</%s%s>\n' % (namespace_, name_))
-        else:
-            outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, already_processed, namespace_='widar:', name_='powerCounts'):
-        if self.status is not None and 'status' not in already_processed:
-            already_processed.append('status')
-            outfile.write(' status=%s' % (quote_attrib(self.status), ))
-        if self.destination is not None and 'destination' not in already_processed:
-            already_processed.append('destination')
-            outfile.write(' destination=%s' % (self.gds_format_string(quote_attrib(self.destination).encode(ExternalEncoding), input_name='destination'), ))
-        if self.integFactor is not None and 'integFactor' not in already_processed:
-            already_processed.append('integFactor')
-            outfile.write(' integFactor=%s' % (quote_attrib(self.integFactor), ))
-    def exportChildren(self, outfile, level, namespace_='widar:', name_='powerCounts', fromsubclass_=False):
-        pass
-    def hasContent_(self):
-        if (
-
-            ):
-            return True
-        else:
-            return False
-    def exportLiteral(self, outfile, level, name_='powerCounts'):
-        level += 1
-        self.exportLiteralAttributes(outfile, level, [], name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        if self.status is not None and 'status' not in already_processed:
-            already_processed.append('status')
-            showIndent(outfile, level)
-            outfile.write('status = %s,\n' % (self.status,))
-        if self.destination is not None and 'destination' not in already_processed:
-            already_processed.append('destination')
-            showIndent(outfile, level)
-            outfile.write('destination = "%s",\n' % (self.destination,))
-        if self.integFactor is not None and 'integFactor' not in already_processed:
-            already_processed.append('integFactor')
-            showIndent(outfile, level)
-            outfile.write('integFactor = %s,\n' % (self.integFactor,))
-    def exportLiteralChildren(self, outfile, level, name_):
-        pass
-    def build(self, node):
-        self.buildAttributes(node, node.attrib, [])
-        for child in node:
-            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
-            self.buildChildren(child, node, nodeName_)
-    def buildAttributes(self, node, attrs, already_processed):
-        value = find_attr_value_('status', node)
-        if value is not None and 'status' not in already_processed:
-            already_processed.append('status')
-            self.status = value
-        value = find_attr_value_('destination', node)
-        if value is not None and 'destination' not in already_processed:
-            already_processed.append('destination')
-            self.destination = value
-        value = find_attr_value_('integFactor', node)
-        if value is not None and 'integFactor' not in already_processed:
-            already_processed.append('integFactor')
-            self.integFactor = value
-    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
-        pass
-# end class powerCounts
-
-
-class errorCounts(GeneratedsSuper):
-    """error counts"""
-    subclass = None
-    superclass = None
-    def __init__(self, status=None, destination=None, integFactor='10'):
-        self.status = _cast(None, status)
-        self.destination = _cast(None, destination)
-        self.integFactor = _cast(None, integFactor)
-        pass
-    def factory(*args_, **kwargs_):
-        if errorCounts.subclass:
-            return errorCounts.subclass(*args_, **kwargs_)
-        else:
-            return errorCounts(*args_, **kwargs_)
-    factory = staticmethod(factory)
-    def get_status(self): return self.status
-    def set_status(self, status): self.status = status
-    def get_destination(self): return self.destination
-    def set_destination(self, destination): self.destination = destination
-    def get_integFactor(self): return self.integFactor
-    def set_integFactor(self, integFactor): self.integFactor = integFactor
-    def export(self, outfile, level, namespace_='widar:', name_='errorCounts', namespacedef_=''):
-        showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        already_processed = []
-        self.exportAttributes(outfile, level, already_processed, namespace_, name_='errorCounts')
-        if self.hasContent_():
-            outfile.write('>\n')
-            self.exportChildren(outfile, level + 1, namespace_, name_)
-            outfile.write('</%s%s>\n' % (namespace_, name_))
-        else:
-            outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, already_processed, namespace_='widar:', name_='errorCounts'):
-        if self.status is not None and 'status' not in already_processed:
-            already_processed.append('status')
-            outfile.write(' status=%s' % (quote_attrib(self.status), ))
-        if self.destination is not None and 'destination' not in already_processed:
-            already_processed.append('destination')
-            outfile.write(' destination=%s' % (self.gds_format_string(quote_attrib(self.destination).encode(ExternalEncoding), input_name='destination'), ))
-        if self.integFactor is not None and 'integFactor' not in already_processed:
-            already_processed.append('integFactor')
-            outfile.write(' integFactor=%s' % (quote_attrib(self.integFactor), ))
-    def exportChildren(self, outfile, level, namespace_='widar:', name_='errorCounts', fromsubclass_=False):
-        pass
-    def hasContent_(self):
-        if (
-
-            ):
-            return True
-        else:
-            return False
-    def exportLiteral(self, outfile, level, name_='errorCounts'):
-        level += 1
-        self.exportLiteralAttributes(outfile, level, [], name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        if self.status is not None and 'status' not in already_processed:
-            already_processed.append('status')
-            showIndent(outfile, level)
-            outfile.write('status = %s,\n' % (self.status,))
-        if self.destination is not None and 'destination' not in already_processed:
-            already_processed.append('destination')
-            showIndent(outfile, level)
-            outfile.write('destination = "%s",\n' % (self.destination,))
-        if self.integFactor is not None and 'integFactor' not in already_processed:
-            already_processed.append('integFactor')
-            showIndent(outfile, level)
-            outfile.write('integFactor = %s,\n' % (self.integFactor,))
-    def exportLiteralChildren(self, outfile, level, name_):
-        pass
-    def build(self, node):
-        self.buildAttributes(node, node.attrib, [])
-        for child in node:
-            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
-            self.buildChildren(child, node, nodeName_)
-    def buildAttributes(self, node, attrs, already_processed):
-        value = find_attr_value_('status', node)
-        if value is not None and 'status' not in already_processed:
-            already_processed.append('status')
-            self.status = value
-        value = find_attr_value_('destination', node)
-        if value is not None and 'destination' not in already_processed:
-            already_processed.append('destination')
-            self.destination = value
-        value = find_attr_value_('integFactor', node)
-        if value is not None and 'integFactor' not in already_processed:
-            already_processed.append('integFactor')
-            self.integFactor = value
-    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
-        pass
-# end class errorCounts
-
-
-class rfiCounts(GeneratedsSuper):
-    """control radio frequency interference monitoring"""
-    subclass = None
-    superclass = None
-    def __init__(self, status=None, destination=None, integFactor='10'):
-        self.status = _cast(None, status)
-        self.destination = _cast(None, destination)
-        self.integFactor = _cast(None, integFactor)
-        pass
-    def factory(*args_, **kwargs_):
-        if rfiCounts.subclass:
-            return rfiCounts.subclass(*args_, **kwargs_)
-        else:
-            return rfiCounts(*args_, **kwargs_)
-    factory = staticmethod(factory)
-    def get_status(self): return self.status
-    def set_status(self, status): self.status = status
-    def get_destination(self): return self.destination
-    def set_destination(self, destination): self.destination = destination
-    def get_integFactor(self): return self.integFactor
-    def set_integFactor(self, integFactor): self.integFactor = integFactor
-    def export(self, outfile, level, namespace_='widar:', name_='rfiCounts', namespacedef_=''):
-        showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        already_processed = []
-        self.exportAttributes(outfile, level, already_processed, namespace_, name_='rfiCounts')
-        if self.hasContent_():
-            outfile.write('>\n')
-            self.exportChildren(outfile, level + 1, namespace_, name_)
-            outfile.write('</%s%s>\n' % (namespace_, name_))
-        else:
-            outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, already_processed, namespace_='widar:', name_='rfiCounts'):
-        if self.status is not None and 'status' not in already_processed:
-            already_processed.append('status')
-            outfile.write(' status=%s' % (quote_attrib(self.status), ))
-        if self.destination is not None and 'destination' not in already_processed:
-            already_processed.append('destination')
-            outfile.write(' destination=%s' % (self.gds_format_string(quote_attrib(self.destination).encode(ExternalEncoding), input_name='destination'), ))
-        if self.integFactor is not None and 'integFactor' not in already_processed:
-            already_processed.append('integFactor')
-            outfile.write(' integFactor=%s' % (quote_attrib(self.integFactor), ))
-    def exportChildren(self, outfile, level, namespace_='widar:', name_='rfiCounts', fromsubclass_=False):
-        pass
-    def hasContent_(self):
-        if (
-
-            ):
-            return True
-        else:
-            return False
-    def exportLiteral(self, outfile, level, name_='rfiCounts'):
-        level += 1
-        self.exportLiteralAttributes(outfile, level, [], name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        if self.status is not None and 'status' not in already_processed:
-            already_processed.append('status')
-            showIndent(outfile, level)
-            outfile.write('status = %s,\n' % (self.status,))
-        if self.destination is not None and 'destination' not in already_processed:
-            already_processed.append('destination')
-            showIndent(outfile, level)
-            outfile.write('destination = "%s",\n' % (self.destination,))
-        if self.integFactor is not None and 'integFactor' not in already_processed:
-            already_processed.append('integFactor')
-            showIndent(outfile, level)
-            outfile.write('integFactor = %s,\n' % (self.integFactor,))
-    def exportLiteralChildren(self, outfile, level, name_):
-        pass
-    def build(self, node):
-        self.buildAttributes(node, node.attrib, [])
-        for child in node:
-            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
-            self.buildChildren(child, node, nodeName_)
-    def buildAttributes(self, node, attrs, already_processed):
-        value = find_attr_value_('status', node)
-        if value is not None and 'status' not in already_processed:
-            already_processed.append('status')
-            self.status = value
-        value = find_attr_value_('destination', node)
-        if value is not None and 'destination' not in already_processed:
-            already_processed.append('destination')
-            self.destination = value
-        value = find_attr_value_('integFactor', node)
-        if value is not None and 'integFactor' not in already_processed:
-            already_processed.append('integFactor')
-            self.integFactor = value
-    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
-        pass
-# end class rfiCounts
-
-
-class outputStateCounts(GeneratedsSuper):
-    """control output state count monitoring"""
-    subclass = None
-    superclass = None
-    def __init__(self, status=None, destination=None, integFactor='10'):
-        self.status = _cast(None, status)
-        self.destination = _cast(None, destination)
-        self.integFactor = _cast(None, integFactor)
-        pass
-    def factory(*args_, **kwargs_):
-        if outputStateCounts.subclass:
-            return outputStateCounts.subclass(*args_, **kwargs_)
-        else:
-            return outputStateCounts(*args_, **kwargs_)
-    factory = staticmethod(factory)
-    def get_status(self): return self.status
-    def set_status(self, status): self.status = status
-    def get_destination(self): return self.destination
-    def set_destination(self, destination): self.destination = destination
-    def get_integFactor(self): return self.integFactor
-    def set_integFactor(self, integFactor): self.integFactor = integFactor
-    def export(self, outfile, level, namespace_='widar:', name_='outputStateCounts', namespacedef_=''):
-        showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        already_processed = []
-        self.exportAttributes(outfile, level, already_processed, namespace_, name_='outputStateCounts')
-        if self.hasContent_():
-            outfile.write('>\n')
-            self.exportChildren(outfile, level + 1, namespace_, name_)
-            outfile.write('</%s%s>\n' % (namespace_, name_))
-        else:
-            outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, already_processed, namespace_='widar:', name_='outputStateCounts'):
-        if self.status is not None and 'status' not in already_processed:
-            already_processed.append('status')
-            outfile.write(' status=%s' % (quote_attrib(self.status), ))
-        if self.destination is not None and 'destination' not in already_processed:
-            already_processed.append('destination')
-            outfile.write(' destination=%s' % (self.gds_format_string(quote_attrib(self.destination).encode(ExternalEncoding), input_name='destination'), ))
-        if self.integFactor is not None and 'integFactor' not in already_processed:
-            already_processed.append('integFactor')
-            outfile.write(' integFactor=%s' % (quote_attrib(self.integFactor), ))
-    def exportChildren(self, outfile, level, namespace_='widar:', name_='outputStateCounts', fromsubclass_=False):
-        pass
-    def hasContent_(self):
-        if (
-
-            ):
-            return True
-        else:
-            return False
-    def exportLiteral(self, outfile, level, name_='outputStateCounts'):
-        level += 1
-        self.exportLiteralAttributes(outfile, level, [], name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        if self.status is not None and 'status' not in already_processed:
-            already_processed.append('status')
-            showIndent(outfile, level)
-            outfile.write('status = %s,\n' % (self.status,))
-        if self.destination is not None and 'destination' not in already_processed:
-            already_processed.append('destination')
-            showIndent(outfile, level)
-            outfile.write('destination = "%s",\n' % (self.destination,))
-        if self.integFactor is not None and 'integFactor' not in already_processed:
-            already_processed.append('integFactor')
-            showIndent(outfile, level)
-            outfile.write('integFactor = %s,\n' % (self.integFactor,))
-    def exportLiteralChildren(self, outfile, level, name_):
-        pass
-    def build(self, node):
-        self.buildAttributes(node, node.attrib, [])
-        for child in node:
-            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
-            self.buildChildren(child, node, nodeName_)
-    def buildAttributes(self, node, attrs, already_processed):
-        value = find_attr_value_('status', node)
-        if value is not None and 'status' not in already_processed:
-            already_processed.append('status')
-            self.status = value
-        value = find_attr_value_('destination', node)
-        if value is not None and 'destination' not in already_processed:
-            already_processed.append('destination')
-            self.destination = value
-        value = find_attr_value_('integFactor', node)
-        if value is not None and 'integFactor' not in already_processed:
-            already_processed.append('integFactor')
-            self.integFactor = value
-    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
-        pass
-# end class outputStateCounts
-
-
-class crcTable(GeneratedsSuper):
-    """control CRC status monitoring"""
-    subclass = None
-    superclass = None
-    def __init__(self, status=None, destination=None, resetAction=None, integFactor='10'):
-        self.status = _cast(None, status)
-        self.destination = _cast(None, destination)
-        self.resetAction = _cast(None, resetAction)
-        self.integFactor = _cast(None, integFactor)
-        pass
-    def factory(*args_, **kwargs_):
-        if crcTable.subclass:
-            return crcTable.subclass(*args_, **kwargs_)
-        else:
-            return crcTable(*args_, **kwargs_)
-    factory = staticmethod(factory)
-    def get_status(self): return self.status
-    def set_status(self, status): self.status = status
-    def get_destination(self): return self.destination
-    def set_destination(self, destination): self.destination = destination
-    def get_resetAction(self): return self.resetAction
-    def set_resetAction(self, resetAction): self.resetAction = resetAction
-    def get_integFactor(self): return self.integFactor
-    def set_integFactor(self, integFactor): self.integFactor = integFactor
-    def export(self, outfile, level, namespace_='widar:', name_='crcTable', namespacedef_=''):
-        showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        already_processed = []
-        self.exportAttributes(outfile, level, already_processed, namespace_, name_='crcTable')
-        if self.hasContent_():
-            outfile.write('>\n')
-            self.exportChildren(outfile, level + 1, namespace_, name_)
-            outfile.write('</%s%s>\n' % (namespace_, name_))
-        else:
-            outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, already_processed, namespace_='widar:', name_='crcTable'):
-        if self.status is not None and 'status' not in already_processed:
-            already_processed.append('status')
-            outfile.write(' status=%s' % (quote_attrib(self.status), ))
-        if self.destination is not None and 'destination' not in already_processed:
-            already_processed.append('destination')
-            outfile.write(' destination=%s' % (self.gds_format_string(quote_attrib(self.destination).encode(ExternalEncoding), input_name='destination'), ))
-        if self.resetAction is not None and 'resetAction' not in already_processed:
-            already_processed.append('resetAction')
-            outfile.write(' resetAction=%s' % (self.gds_format_string(quote_attrib(self.resetAction).encode(ExternalEncoding), input_name='resetAction'), ))
-        if self.integFactor is not None and 'integFactor' not in already_processed:
-            already_processed.append('integFactor')
-            outfile.write(' integFactor=%s' % (quote_attrib(self.integFactor), ))
-    def exportChildren(self, outfile, level, namespace_='widar:', name_='crcTable', fromsubclass_=False):
-        pass
-    def hasContent_(self):
-        if (
-
-            ):
-            return True
-        else:
-            return False
-    def exportLiteral(self, outfile, level, name_='crcTable'):
-        level += 1
-        self.exportLiteralAttributes(outfile, level, [], name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        if self.status is not None and 'status' not in already_processed:
-            already_processed.append('status')
-            showIndent(outfile, level)
-            outfile.write('status = %s,\n' % (self.status,))
-        if self.destination is not None and 'destination' not in already_processed:
-            already_processed.append('destination')
-            showIndent(outfile, level)
-            outfile.write('destination = "%s",\n' % (self.destination,))
-        if self.resetAction is not None and 'resetAction' not in already_processed:
-            already_processed.append('resetAction')
-            showIndent(outfile, level)
-            outfile.write('resetAction = "%s",\n' % (self.resetAction,))
-        if self.integFactor is not None and 'integFactor' not in already_processed:
-            already_processed.append('integFactor')
-            showIndent(outfile, level)
-            outfile.write('integFactor = %s,\n' % (self.integFactor,))
-    def exportLiteralChildren(self, outfile, level, name_):
-        pass
-    def build(self, node):
-        self.buildAttributes(node, node.attrib, [])
-        for child in node:
-            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
-            self.buildChildren(child, node, nodeName_)
-    def buildAttributes(self, node, attrs, already_processed):
-        value = find_attr_value_('status', node)
-        if value is not None and 'status' not in already_processed:
-            already_processed.append('status')
-            self.status = value
-        value = find_attr_value_('destination', node)
-        if value is not None and 'destination' not in already_processed:
-            already_processed.append('destination')
-            self.destination = value
-        value = find_attr_value_('resetAction', node)
-        if value is not None and 'resetAction' not in already_processed:
-            already_processed.append('resetAction')
-            self.resetAction = value
-        value = find_attr_value_('integFactor', node)
-        if value is not None and 'integFactor' not in already_processed:
-            already_processed.append('integFactor')
-            self.integFactor = value
-    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
-        pass
-# end class crcTable
-
-
 class toneExtraction(GeneratedsSuper):
-    """control CRC status monitoring"""
+    """2012-02-29 Sonja.Vrcic@nrc.gc.ca: Tone extraction not implemented."""
     subclass = None
     superclass = None
     def __init__(self, status=None, destination=None, numTones=None, integFactor='10', dwellTime=None):
@@ -9545,163 +8898,6 @@ class modelCoeff(GeneratedsSuper):
 # end class modelCoeff
 
 
-class wbcProductByBandId(GeneratedsSuper):
-    """Wideband Correlator Product. Specifies the product ID and input data
-    streams that should be correlated. This format is used when
-    there are multiple basebands in a Station Board input data
-    stream. Data path and input band identifiers are used to specify
-    the product."""
-    subclass = None
-    superclass = None
-    def __init__(self, spectChannels=None, laggedDpId=None, promptDpId=None, promptBandId=None, laggedBandId=None, prodId=None, integFactor=1):
-        self.spectChannels = _cast(None, spectChannels)
-        self.laggedDpId = _cast(None, laggedDpId)
-        self.promptDpId = _cast(None, promptDpId)
-        self.promptBandId = _cast(None, promptBandId)
-        self.laggedBandId = _cast(None, laggedBandId)
-        self.prodId = _cast(None, prodId)
-        self.integFactor = _cast(int, integFactor)
-        pass
-    def factory(*args_, **kwargs_):
-        if wbcProductByBandId.subclass:
-            return wbcProductByBandId.subclass(*args_, **kwargs_)
-        else:
-            return wbcProductByBandId(*args_, **kwargs_)
-    factory = staticmethod(factory)
-    def get_spectChannels(self): return self.spectChannels
-    def set_spectChannels(self, spectChannels): self.spectChannels = spectChannels
-    def get_laggedDpId(self): return self.laggedDpId
-    def set_laggedDpId(self, laggedDpId): self.laggedDpId = laggedDpId
-    def get_promptDpId(self): return self.promptDpId
-    def set_promptDpId(self, promptDpId): self.promptDpId = promptDpId
-    def get_promptBandId(self): return self.promptBandId
-    def set_promptBandId(self, promptBandId): self.promptBandId = promptBandId
-    def get_laggedBandId(self): return self.laggedBandId
-    def set_laggedBandId(self, laggedBandId): self.laggedBandId = laggedBandId
-    def get_prodId(self): return self.prodId
-    def set_prodId(self, prodId): self.prodId = prodId
-    def get_integFactor(self): return self.integFactor
-    def set_integFactor(self, integFactor): self.integFactor = integFactor
-    def export(self, outfile, level, namespace_='widar:', name_='wbcProductByBandId', namespacedef_=''):
-        showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        already_processed = []
-        self.exportAttributes(outfile, level, already_processed, namespace_, name_='wbcProductByBandId')
-        if self.hasContent_():
-            outfile.write('>\n')
-            self.exportChildren(outfile, level + 1, namespace_, name_)
-            outfile.write('</%s%s>\n' % (namespace_, name_))
-        else:
-            outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, already_processed, namespace_='widar:', name_='wbcProductByBandId'):
-        if self.spectChannels is not None and 'spectChannels' not in already_processed:
-            already_processed.append('spectChannels')
-            outfile.write(' spectChannels=%s' % (quote_attrib(self.spectChannels), ))
-        if self.laggedDpId is not None and 'laggedDpId' not in already_processed:
-            already_processed.append('laggedDpId')
-            outfile.write(' laggedDpId=%s' % (quote_attrib(self.laggedDpId), ))
-        if self.promptDpId is not None and 'promptDpId' not in already_processed:
-            already_processed.append('promptDpId')
-            outfile.write(' promptDpId=%s' % (quote_attrib(self.promptDpId), ))
-        if self.promptBandId is not None and 'promptBandId' not in already_processed:
-            already_processed.append('promptBandId')
-            outfile.write(' promptBandId=%s' % (quote_attrib(self.promptBandId), ))
-        if self.laggedBandId is not None and 'laggedBandId' not in already_processed:
-            already_processed.append('laggedBandId')
-            outfile.write(' laggedBandId=%s' % (quote_attrib(self.laggedBandId), ))
-        if self.prodId is not None and 'prodId' not in already_processed:
-            already_processed.append('prodId')
-            outfile.write(' prodId=%s' % (quote_attrib(self.prodId), ))
-        if self.integFactor is not None and 'integFactor' not in already_processed:
-            already_processed.append('integFactor')
-            outfile.write(' integFactor="%s"' % self.gds_format_integer(self.integFactor, input_name='integFactor'))
-    def exportChildren(self, outfile, level, namespace_='widar:', name_='wbcProductByBandId', fromsubclass_=False):
-        pass
-    def hasContent_(self):
-        if (
-
-            ):
-            return True
-        else:
-            return False
-    def exportLiteral(self, outfile, level, name_='wbcProductByBandId'):
-        level += 1
-        self.exportLiteralAttributes(outfile, level, [], name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        if self.spectChannels is not None and 'spectChannels' not in already_processed:
-            already_processed.append('spectChannels')
-            showIndent(outfile, level)
-            outfile.write('spectChannels = %s,\n' % (self.spectChannels,))
-        if self.laggedDpId is not None and 'laggedDpId' not in already_processed:
-            already_processed.append('laggedDpId')
-            showIndent(outfile, level)
-            outfile.write('laggedDpId = %s,\n' % (self.laggedDpId,))
-        if self.promptDpId is not None and 'promptDpId' not in already_processed:
-            already_processed.append('promptDpId')
-            showIndent(outfile, level)
-            outfile.write('promptDpId = %s,\n' % (self.promptDpId,))
-        if self.promptBandId is not None and 'promptBandId' not in already_processed:
-            already_processed.append('promptBandId')
-            showIndent(outfile, level)
-            outfile.write('promptBandId = %s,\n' % (self.promptBandId,))
-        if self.laggedBandId is not None and 'laggedBandId' not in already_processed:
-            already_processed.append('laggedBandId')
-            showIndent(outfile, level)
-            outfile.write('laggedBandId = %s,\n' % (self.laggedBandId,))
-        if self.prodId is not None and 'prodId' not in already_processed:
-            already_processed.append('prodId')
-            showIndent(outfile, level)
-            outfile.write('prodId = %s,\n' % (self.prodId,))
-        if self.integFactor is not None and 'integFactor' not in already_processed:
-            already_processed.append('integFactor')
-            showIndent(outfile, level)
-            outfile.write('integFactor = %d,\n' % (self.integFactor,))
-    def exportLiteralChildren(self, outfile, level, name_):
-        pass
-    def build(self, node):
-        self.buildAttributes(node, node.attrib, [])
-        for child in node:
-            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
-            self.buildChildren(child, node, nodeName_)
-    def buildAttributes(self, node, attrs, already_processed):
-        value = find_attr_value_('spectChannels', node)
-        if value is not None and 'spectChannels' not in already_processed:
-            already_processed.append('spectChannels')
-            self.spectChannels = value
-        value = find_attr_value_('laggedDpId', node)
-        if value is not None and 'laggedDpId' not in already_processed:
-            already_processed.append('laggedDpId')
-            self.laggedDpId = value
-        value = find_attr_value_('promptDpId', node)
-        if value is not None and 'promptDpId' not in already_processed:
-            already_processed.append('promptDpId')
-            self.promptDpId = value
-        value = find_attr_value_('promptBandId', node)
-        if value is not None and 'promptBandId' not in already_processed:
-            already_processed.append('promptBandId')
-            self.promptBandId = value
-        value = find_attr_value_('laggedBandId', node)
-        if value is not None and 'laggedBandId' not in already_processed:
-            already_processed.append('laggedBandId')
-            self.laggedBandId = value
-        value = find_attr_value_('prodId', node)
-        if value is not None and 'prodId' not in already_processed:
-            already_processed.append('prodId')
-            self.prodId = value
-        value = find_attr_value_('integFactor', node)
-        if value is not None and 'integFactor' not in already_processed:
-            already_processed.append('integFactor')
-            try:
-                self.integFactor = int(value)
-            except ValueError, exp:
-                raise_parse_error(node, 'Bad integer attribute: %s' % exp)
-    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
-        pass
-# end class wbcProductByBandId
-
-
 USAGE_TEXT = """
 Usage: python <Parser>.py [ -s ] <in_xml_file>
 """
@@ -9790,7 +8986,6 @@ __all__ = [
     "activationTrigger",
     "affectedComponent",
     "antenna",
-    "autoCorrMode",
     "autoCorrSubset",
     "baseBand",
     "baseBandHw",
@@ -9799,57 +8994,50 @@ __all__ = [
     "bbParams",
     "blbPair",
     "blbProdIntegration",
-    "blbSingle",
-    "burstMode",
+    "cbeOutputQueue",
     "cc",
     "cfgQueue",
-    "clipCounts",
     "cmAlerts",
     "cmDeleteSubarray",
+    "cmFlushCmibQueues",
     "cmLogging",
     "cmMonitorControl",
     "component",
-    "crcTable",
     "ctrlQueue",
-    "errorCounts",
     "gateModel",
     "host",
-    "inputStateCounts",
+    "ifdDefault",
     "listOfStations",
     "modelCoeff",
     "modifySummedArray",
     "moduleLocation",
-    "monitorData",
     "noiseDiode",
     "originator",
-    "outputStateCounts",
     "polProducts",
-    "powerCounts",
     "pp",
     "productPacking",
     "property",
-    "pulsarBinning",
+    "pulsarBinSet",
+    "pulsarBins",
     "pulsarGating",
+    "pulsarModelCff",
+    "pulsarTiming",
     "queryCfgStatus",
     "radarMode",
-    "rfiCounts",
     "sbParams",
     "station",
     "stationHw",
     "stationInputOutput",
     "stationPacking",
-    "stbDataProducts",
     "subArray",
     "subBand",
     "summedArray",
-    "tickIntervalCounts",
     "toneExtraction",
     "trowable",
     "vciReporting",
     "vciRequest",
     "vdif",
-    "wbcPolProduct",
-    "wbcProductByBandId",
     "widarHost",
-    "wideBandCorrelator"
+    "wideBandCorrelator",
+    "wpp"
     ]

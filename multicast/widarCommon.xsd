@@ -4,12 +4,11 @@
 		<xs:documentation> 
 		File: widarCommon.xsd (XML Schema)
 		Author:	Sonja.Vrcic@nrc.gc.ca
-		Copyright:  National Research Council of Canada, NRC-HIA-DRAO 2008
+		Copyright:  National Research Council of Canada and Associated Universities Inc., 2008 - 2013
 		Description: Elements and type defintions for the WIDAR Correlator Schemata.
-		Version of the protocol: DRAO Document: VCI Protocol Specification, A25201N0000, Revision 3.5, 
-		target namespace has been defined for VCI schemata. Additional changes are due as result of the VCI review.
-		$Date: 2010-10-05 00:35:02 +0000 (Tue, 05 Oct 2010) $
-		$Revision: 4744 $
+		Version of the protocol: DRAO Document: VCI Protocol Specification, A25201N0000, Revision 3.15, 
+		$Date: 2013-07-05 17:59:28 -0700 (Fri, 05 Jul 2013) $
+		$Revision: 6404 $
 	    </xs:documentation>
 	</xs:annotation>
 	<xs:element name="component">
@@ -208,6 +207,16 @@
 			<xs:enumeration value="DelayModuleTestVector"/>
 		</xs:restriction>
 	</xs:simpleType>
+	<xs:simpleType name="SwBbType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="A1C1_3BIT"/>
+			<xs:enumeration value="A2C2_3BIT"/>
+			<xs:enumeration value="AC_8BIT"/>
+			<xs:enumeration value="B1D1_3BIT"/>
+			<xs:enumeration value="B2D2_3BIT"/>
+			<xs:enumeration value="BD_8BIT"/>
+		</xs:restriction>
+	</xs:simpleType>	
 	<xs:simpleType name="PolarizationType">
 		<xs:annotation>
 			<xs:documentation>
@@ -738,7 +747,7 @@
 			</xs:documentation>
 		</xs:annotation>
 		<xs:restriction base="xs:int">
-			<xs:minInclusive value="1"/>
+			<xs:minInclusive value="0"/>
 			<xs:maxInclusive value="32"/>
 		</xs:restriction>
 	</xs:simpleType>
@@ -828,6 +837,24 @@
 			<xs:enumeration value="minPack"/>
 		</xs:restriction>
 	</xs:simpleType>
+	<xs:simpleType name="StationPackType">
+		<xs:annotation>
+			<xs:documentation>
+			Station packing algorithm.
+			Values maxPack and minPack are supported for backwards compatibility.
+			maxPack = fourPerRowColumn
+			minPack = onePerRowColumn
+			</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:token">
+			<xs:enumeration value="onePerRowColumn"/>
+			<xs:enumeration value="twoPerRowColumn"/>
+			<xs:enumeration value="fourPerRowColumn"/>		    
+			<xs:enumeration value="maxPack"/>
+			<xs:enumeration value="midPack"/>
+			<xs:enumeration value="minPack"/>
+		</xs:restriction>
+	</xs:simpleType>
 	<xs:simpleType name="AutoCorrAlgorithmType">
 		<xs:annotation>
 			<xs:documentation>
@@ -914,81 +941,9 @@
 		<xs:attribute name="integFactor" type="widar:IntegrationFactorType" use="optional" default="10"/>
 		<xs:attribute name="destination" type="xs:anyURI" use="optional"/>
 	</xs:attributeGroup>
-	<xs:element name="inputStateCounts">
-		<xs:annotation>
-			<xs:documentation>control input state count monitoring</xs:documentation>
-		</xs:annotation>
-		<xs:complexType>
-			<xs:attributeGroup ref="widar:outputDataControl"/>
-		</xs:complexType>
-	</xs:element>
-	<xs:element name="tickIntervalCounts">
-		<xs:annotation>
-			<xs:documentation>control tick interval monitoring</xs:documentation>
-		</xs:annotation>
-		<xs:complexType>
-			<xs:attributeGroup ref="widar:outputDataControl"/>
-		</xs:complexType>
-	</xs:element>
-	<xs:element name="clipCounts">
-		<xs:annotation>
-			<xs:documentation>control sampler clip monitoring</xs:documentation>
-		</xs:annotation>
-		<xs:complexType>
-			<xs:attributeGroup ref="widar:outputDataControl"/>
-		</xs:complexType>
-	</xs:element>
-	<xs:element name="powerCounts">
-		<xs:annotation>
-			<xs:documentation>control power monitoring</xs:documentation>
-		</xs:annotation>
-		<xs:complexType>
-			<xs:attributeGroup ref="widar:outputDataControl"/>
-		</xs:complexType>
-	</xs:element>
-	<xs:element name="errorCounts">
-		<xs:annotation>
-			<xs:documentation>error counts</xs:documentation>
-		</xs:annotation>
-		<xs:complexType>
-			<xs:attributeGroup ref="widar:outputDataControl"/>
-		</xs:complexType>
-	</xs:element>
-	<xs:element name="rfiCounts">
-		<xs:annotation>
-			<xs:documentation>control radio frequency interference monitoring</xs:documentation>
-		</xs:annotation>
-		<xs:complexType>
-			<xs:attributeGroup ref="widar:outputDataControl"/>
-		</xs:complexType>
-	</xs:element>
-	<xs:element name="outputStateCounts">
-		<xs:annotation>
-			<xs:documentation>control output state count monitoring</xs:documentation>
-		</xs:annotation>
-		<xs:complexType>
-			<xs:attributeGroup ref="widar:outputDataControl"/>
-		</xs:complexType>
-	</xs:element>
-	<xs:element name="crcTable">
-		<xs:annotation>
-			<xs:documentation>control CRC status monitoring</xs:documentation>
-		</xs:annotation>
-		<xs:complexType>
-			<xs:attributeGroup ref="widar:outputDataControl"/>
-			<xs:attribute name="resetAction">
-				<xs:simpleType>
-					<xs:restriction base="xs:string">
-						<xs:enumeration value="autoClear"/>
-						<xs:enumeration value="accumulate"/>
-					</xs:restriction>
-				</xs:simpleType>
-			</xs:attribute>
-		</xs:complexType>
-	</xs:element>
 	<xs:element name="toneExtraction">
 		<xs:annotation>
-			<xs:documentation>control CRC status monitoring</xs:documentation>
+			<xs:documentation>2012-02-29 Sonja.Vrcic@nrc.gc.ca: Tone extraction not implemented.</xs:documentation>
 		</xs:annotation>
 		<xs:complexType>
 			<xs:attributeGroup ref="widar:outputDataControl"/>
@@ -1076,37 +1031,6 @@
 			<xs:attribute name="cff" type="xs:double" use="required"/>
 		</xs:complexType>
 	</xs:element>
-	<xs:element name="wbcProductByBandId">
-		<xs:annotation>
-			<xs:documentation>Wideband Correlator Product. Specifies the product ID and input data streams that should
-			 be correlated. This format is used when there are multiple basebands in a  Station Board input data stream.
-			 Data path and input band identifiers are used to specify the product. 
-			 </xs:documentation>
-		</xs:annotation>
-		<xs:complexType>
-			<xs:attribute name="prodId" type="widar:ProductIdType" use="required"/>
-			<xs:attribute name="spectChannels" type="widar:WbcNumSpectChanType" use="required"/>
-			<xs:attribute name="integFactor" type="xs:int" use="optional" default="1"/>
-			<xs:attribute name="promptDpId" type="widar:StbDataPathIdType" use="required"/>
-			<xs:attribute name="promptBandId" type="widar:StbInputBandIdType" use="required"/>
-			<xs:attribute name="laggedDpId" type="widar:StbDataPathIdType" use="required"/>
-			<xs:attribute name="laggedBandId" type="widar:StbInputBandIdType" use="required"/>
-		</xs:complexType>
-	</xs:element>
-	<xs:simpleType name="WbcNumSpectChanType">
-		<xs:annotation>
-			<xs:documentation>
-			Wideband Correlator: Number of spectral channels.
-			Must be multiple of 64.
-			Max. 4096 is specified in the stationBoard schema.
-			Should the maximum be 524288 (and why) ? 
-			</xs:documentation>
-		</xs:annotation>
-		<xs:restriction base="xs:int">
-			<xs:minInclusive value="64"/>
-			<xs:maxInclusive value="4096"/>
-		</xs:restriction>
-	</xs:simpleType>
 	<xs:simpleType name="StbInputBandIdType">
 		<xs:annotation>
 			<xs:documentation>
@@ -1128,4 +1052,73 @@
 		<xs:attribute name="mixerPhaseErrorCorr" type="widar:YesNoType" use="optional" default="no"/>
 		<xs:attribute name="signalToNoise" type="widar:SignalToNoiseType" default="0"/>
 	</xs:attributeGroup>
+	
+	<xs:simpleType name="IntRangeZeroTo63Type">
+		<xs:annotation>
+			<xs:documentation>
+			Rack Identifier
+			</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:int">
+			<xs:minInclusive value="0"/>
+			<xs:maxInclusive value="63"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="IntRangeZeroTo255Type">
+		<xs:annotation>
+			<xs:documentation>
+			Rack Identifier
+			</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:int">
+			<xs:minInclusive value="0"/>
+			<xs:maxInclusive value="255"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="IntRangeZeroTo1023Type">
+		<xs:annotation>
+			<xs:documentation>
+			Rack Identifier
+			</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:int">
+			<xs:minInclusive value="0"/>
+			<xs:maxInclusive value="1023"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="IntRangeZeroTo32767Type">
+		<xs:annotation>
+			<xs:documentation>
+			Rack Identifier
+			</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:int">
+			<xs:minInclusive value="0"/>
+			<xs:maxInclusive value="32767"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="IntRangeZeroTo65535Type">
+		<xs:annotation>
+			<xs:documentation>
+			Rack Identifier
+			</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:int">
+			<xs:minInclusive value="0"/>
+			<xs:maxInclusive value="65535"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="IntRange250To2000Type">
+		<xs:annotation>
+			<xs:documentation>
+			Rack Identifier
+			</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:int">
+			<xs:minInclusive value="250"/>
+			<xs:maxInclusive value="2000"/>
+		</xs:restriction>
+	</xs:simpleType>
+	
+	
 </xs:schema>
