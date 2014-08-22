@@ -66,8 +66,8 @@ for summedarray in vciroot.iter(pfx+'summedArray'):
     nic2 = node + '-2'
 
     # Find bandwidth, use to set number of bits
-    bw = abs(float(summedarray.getparent().attrib['bw'])
-    if bw>32e6: nbit = '2'
+    bw = abs(float(summedarray.getparent().attrib['bw']))
+    if bw > 32.0e6: nbit = '2'
     else: nbit = '8'
 
     # Clear the vdif tag and refill with appropriate values
