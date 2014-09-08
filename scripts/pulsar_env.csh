@@ -4,6 +4,7 @@ setenv PSRLOGS /lustre/evla/pulsar/log
 setenv TEMPO ${PSR}/src/tempo
 setenv PRESTO ${PSR}/src/presto
 setenv GUPPI_DIR ${PSR}/src/guppi_daq
+setenv YUPPI_DIR ${PSR}/src/yuppi_gluer
 setenv PGPLOT_DIR ${PSR}/lib/pgplot
 setenv PGPLOT_DEV /xs
 setenv PATH ${PATH}:${PSR}/bin:${GUPPI_DIR}/bin:${PRESTO}/bin

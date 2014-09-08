@@ -4,6 +4,7 @@ export PSRLOGS=/lustre/evla/pulsar/log
 export TEMPO=$PSR/src/tempo
 export PRESTO=$PSR/src/presto
 export GUPPI_DIR=$PSR/src/guppi_daq
+export YUPPI_DIR=$PSR/src/yuppi_gluer
 export PGPLOT_DIR=$PSR/lib/pgplot
 export PGPLOT_DEV=/xs
 export PATH=$PATH:$PSR/bin:$GUPPI_DIR/bin
