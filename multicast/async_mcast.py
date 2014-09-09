@@ -159,7 +159,7 @@ def generate_obs_command(conf):
                     conf.foldbins, output_file)
     elif 'PULSAR_SEARCH' in conf.scan_intent:
         # Search command line
-        acclen = int(conf.timeres*conf.bandwidth*1e6/conf.nchan)
+        acclen = int(abs(conf.timeres*conf.bandwidth*1e6/conf.nchan))
         command = 'digifil -threads 8 -B64 -F%d -t%d -b%d -c -o%s.fil' % (conf.nchan, 
                 acclen, conf.nbitsout, output_file)
     elif 'PULSAR_MONITOR' in conf.scan_intent:

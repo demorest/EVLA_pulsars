@@ -69,10 +69,11 @@ class EVLA_config:
         self.backend = "YUPPI"
         # Do these ever vary with IF??
         self.receiver = o.sslo[0].Receiver
-        self.sideband = o.sslo[0].Sideband
         self.bandedge = {}
+        self.sideband = {}
         for s in o.sslo:
             self.bandedge[s.IFid] = s.freq
+            self.sideband[s.IFid] = s.Sideband
 
     def parse_vci(self,match_ips=[]):
         v = self.vci
@@ -114,8 +115,8 @@ class EVLA_config:
             isub = 0
             bb = self.subbands[isub].baseBandName
             # Both results should be MHz:
-            self.bandwidth = 1e-6 * self.sideband * self.subbands[isub].bw
-            self.skyctrfreq = self.bandedge[bb] + 1e-6 * self.sideband * \
+            self.bandwidth = 1e-6 * self.sideband[bb] * self.subbands[isub].bw
+            self.skyctrfreq = self.bandedge[bb] + 1e-6 * self.sideband[bb] * \
                               self.subbands[isub].centralFreq
 
 if __name__ == "__main__":
