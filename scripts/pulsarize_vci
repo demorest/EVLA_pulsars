@@ -46,6 +46,8 @@ for subband in vciroot.iter(pfx+'subBand'):
         subband.attrib['centralFreq'] = freq_int
     except:
         pass
+    subband.attrib['frameSchedulingAlgorithm'] = 'setDelay'
+    subband.attrib['interFrameDelay'] = '400'
 print "VCI: %d subBands" % n_subband
 print "VCI: %d summedArrays" % n_summedarray
 
