@@ -74,7 +74,8 @@ for summedarray in vciroot.iter(pfx+'summedArray'):
 
     # Clear the vdif tag and refill with appropriate values
     vdif.clear()
-    vdif.attrib['agcEnabled'] = 'false'
+    if nbit=='2': vdif.attrib['agcEnabled'] = 'true'
+    else: vdif.attrib['agcEnabled'] = 'false'
     vdif.attrib['vdifEnableB'] = 'true'
     vdif.attrib['vdifEnableA'] = 'true'
     vdif.attrib['aPacketDelay'] = '0'
