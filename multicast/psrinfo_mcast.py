@@ -114,8 +114,11 @@ class EVLA_config:
         if len(self.subbands)>0:
             isub = 0
             bb = self.subbands[isub].baseBandName
+            # Note, subbands are _always_ USB regardless of overall sense.
+            # Old (wrong) version):
+            #self.bandwidth = 1e-6 * self.sideband[bb] * self.subbands[isub].bw
             # Both results should be MHz:
-            self.bandwidth = 1e-6 * self.sideband[bb] * self.subbands[isub].bw
+            self.bandwidth = 1e-6 * self.subbands[isub].bw
             self.skyctrfreq = self.bandedge[bb] + 1e-6 * self.sideband[bb] * \
                               self.subbands[isub].centralFreq
 
