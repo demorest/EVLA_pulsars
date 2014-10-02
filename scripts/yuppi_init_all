@@ -14,7 +14,7 @@ check_guppi_databuf -c -i1 -n8 -s128 > /dev/null 2>>$PSRLOGS/yuppi_init.`hostnam
 guppi_set_params --force --evla --src="Init" --freq=1400 --ra=00:00:00.0 --dec=+00:00:00.0
 
 # Start guppi_daq_server in background
-( guppi_daq_server >> $PSRLOGS/guppi_daq_server.`hostname`.log 2>&1 ) & 
+( guppi_daq_server >> $PSRLOGS/guppi_daq_server.`hostname`.`date +%Y%m%d`.log 2>&1 ) & 
 
 # Start packet-sniffer
-( $PSR/src/EVLA_pulsars/multicast/async_mcast.py >> $PSRLOGS/async_mcast.`hostname`.log 2>&1 ) &
+( $PSR/src/EVLA_pulsars/multicast/async_mcast.py >> $PSRLOGS/async_mcast.`hostname`.`date +%Y%m%d`.log 2>&1 ) &
