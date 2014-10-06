@@ -71,7 +71,7 @@ def do_display(scr):
 
             # Build status string
             try:
-                dp = (shmem['DAQPULSE'].split(' '))[3]
+                dp = filter(bool,shmem['DAQPULSE'].split(' '))[3]
             except KeyError:
                 dp = "unk"
 
