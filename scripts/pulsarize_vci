@@ -63,6 +63,9 @@ for summedarray in vciroot.iter(pfx+'summedArray'):
         print "ERROR: summedArray section missing vdif component"
         sys.exit(1)
 
+    # To enable extra headroom on quantization (not tested)
+    #summedarray.attrib['headroom6dB'] = 'true'
+
     node = 'cbe-node-%02d' % inode
     nic1 = node + '-1'
     nic2 = node + '-2'
@@ -76,6 +79,7 @@ for summedarray in vciroot.iter(pfx+'summedArray'):
     vdif.clear()
     if nbit=='2': vdif.attrib['agcEnabled'] = 'true'
     else: vdif.attrib['agcEnabled'] = 'false'
+    #vdif.attrib['requantGain'] = '123' # Set gain directly
     vdif.attrib['vdifEnableB'] = 'true'
     vdif.attrib['vdifEnableA'] = 'true'
     vdif.attrib['aPacketDelay'] = '0'
