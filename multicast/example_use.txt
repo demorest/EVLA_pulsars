@@ -1,10 +1,10 @@
 import psrinfo_mcast
 import async_mcast
-import vcirequest_mcast
-import observation_mcast
+import vcixml_parser
+import obsxml_parser
 from pulsar_packets import *
-async_mcast.add_config(vcirequest_mcast.parseString(vci), "vci")
-async_mcast.add_config(observation_mcast.parseString(obs), "obs")
+async_mcast.add_config(vcixml_parser.parseString(vci), "vci")
+async_mcast.add_config(obsxml_parser.parseString(obs), "obs")
 #print async_mcast.configs
 #x = async_mcast.configs[async_mcast.configs.keys()[0]]
 #print x.observer

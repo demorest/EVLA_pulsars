@@ -12,7 +12,7 @@ group = '239.192.3.2'
 
 from datetime import datetime
 import time, struct, socket, sys
-import observation_mcast
+import obsxml_parser
 
 def parse_intent(intent):
     d = {}
@@ -56,7 +56,7 @@ def receiver(group, port):
 if __name__ == '__main__':
     while True:
         mcast_str = receiver(group, port)
-        obs = observation_mcast.parseString(mcast_str)
+        obs = obsxml_parser.parseString(mcast_str)
         intent = parse_intent(obs.intent)
         print "Processed a new Observation multicast (%d bytes)..." % len(mcast_str)
         print obs.__dict__
