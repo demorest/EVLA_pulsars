@@ -1,3 +1,4 @@
+import ast
 import angles
 
 def get_val(d,key,default=None):
@@ -17,31 +18,52 @@ class subband:
         self.vdif = vdif
         self.baseBandName = BBname
 
-class EVLA_config:
-    
-    def parse_obs_intent(self, intent):
-        d = {}
-        for item in intent:
-            k, v = item.split("=")
-            if v[0] is "'" or v[0] is '"':
-                d[k] = eval(v)
-            else:
-                d[k] = v
-        return d
+class EVLAConfig(object):
+    """This class defines a complete EVLA observing config, which in 
+    practice means both a VCI document and OBS document have been 
+    received."""
 
-    def parse_vci_subbands(self, intent):
+    def __init__(self, vci=None, obs=None):
+        self.set_vci(vci)
+        self.set_obs(obs)
+
+    def has_vci(self):
+        return self.vci is not None
+
+    def has_obs(self):
+        return self.obs is not None
+
+    def is_complete(self):
+        return self.has_vci() and self.has_obs()
+
+    def set_vci(self,vci):
+        self.vci = vci
+
+    def set_obs(self,obs):
+        self.obs = obs
+        if self.obs is None:
+            self.intents = {}
+        else:
+            self.intents = self.parse_intents(obs.intent)
+
+    @staticmethod
+    def parse_intents(intents):
         d = {}
-        for item in intent:
+        for item in intents:
             k, v = item.split("=")
             if v[0] is "'" or v[0] is '"':
-                d[k] = eval(v)
+                d[k] = ast.literal_eval(v)
+                # Or maybe we should just strip quotes?
             else:
                 d[k] = v
         return d
 
     def parse_obs(self):
         o = self.obs
-        intent = self.parse_obs_intent(o.intent)
+        ## TODO turn most of the stuff below into properties
+        ## rather than having a 'parse' function
+        #intent = self.parse_obs_intent(o.intent)
+        intent = self.intents # XXX temp
         self.observer = get_val(intent,"ObserverName","Unknown")
         self.projid = get_val(intent,"ProjectID","Unknown")
         self.scan_intent = get_val(intent,"ScanIntent","None")

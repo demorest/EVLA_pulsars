@@ -97,7 +97,7 @@ def is_pulsar_intent(intent):
 def add_config(obj, type):
     global configs
     if not configs.has_key(obj.configId):
-        configs[obj.configId] = EVLA_config()
+        configs[obj.configId] = EVLAConfig()
     if type in mcast_types:
         setattr(configs[obj.configId], type, obj)
     else:
