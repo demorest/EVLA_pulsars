@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #from collections import OrderedDict 
 from ordereddict import OrderedDict # For python 2.6
-from psrinfo_mcast import *
+from evla_config import *
 from guppi_daq import guppi_utils
 from guppi_daq.astro_utils import current_MJD
 import time, struct, socket, sys, asyncore, subprocess, os

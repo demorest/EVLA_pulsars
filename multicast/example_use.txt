@@ -1,4 +1,4 @@
-import psrinfo_mcast
+import evla_config
 import async_mcast
 import vcixml_parser
 import obsxml_parser
