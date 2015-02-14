@@ -1,12 +1,6 @@
 import ast
 import angles
 
-def get_val(d,key,default=None):
-    try:
-        return d[key]
-    except KeyError:
-        return default
-
 class subband:
 
     def __init__(self, subBand, vdif=None, BBname=""):
@@ -21,7 +15,8 @@ class subband:
 class EVLAConfig(object):
     """This class defines a complete EVLA observing config, which in 
     practice means both a VCI document and OBS document have been 
-    received."""
+    received.  Quantities relevant for pulsar processing are taken
+    from the VCI and OBS and returned."""
 
     def __init__(self, vci=None, obs=None):
         self.set_vci(vci)
@@ -58,44 +53,107 @@ class EVLAConfig(object):
                 d[k] = v
         return d
 
-    def parse_obs(self):
-        o = self.obs
-        ## TODO turn most of the stuff below into properties
-        ## rather than having a 'parse' function
-        #intent = self.parse_obs_intent(o.intent)
-        intent = self.intents # XXX temp
-        self.observer = get_val(intent,"ObserverName","Unknown")
-        self.projid = get_val(intent,"ProjectID","Unknown")
-        self.scan_intent = get_val(intent,"ScanIntent","None")
-        # TODO what about checking bounds on some of these...
-        self.nchan = int(get_val(intent,"PsrNumChan",32))
-        self.npol = int(get_val(intent,"PsrNumPol",4))
-        self.foldtime = float(get_val(intent,"PsrFoldIntTime",10.0))
-        self.foldbins = int(get_val(intent,"PsrFoldNumBins",2048))
-        self.timeres = float(get_val(intent,"PsrSearchTimeRes",1e-3))
-        self.nbitsout = int(get_val(intent,"PsrSearchNumBits",8))
-        self.parfile = get_val(intent,"TempoFileName",None)
-        self.source = o.name
-        self.ra_deg = angles.r2d(o.ra)
-        self.ra_hrs = angles.r2h(o.ra)
-        self.ra_str = angles.fmt_angle(self.ra_hrs, ":", ":").lstrip('+-')
-        self.dec_deg = angles.r2d(o.dec)
-        self.dec_str = angles.fmt_angle(self.dec_deg, ":", ":")
-        self.startLST = o.startLST * 86400.0
-        if hasattr(o, 'startTime'):
-            self.startMJD = float(o.startTime)
-        else:
-            self.startMJD = 0.0
-        self.seq = o.seq
-        self.telescope = "VLA"
-        self.backend = "YUPPI"
+    def get_intent(self,key,default=None):
+        try:
+            return self.intents[key]
+        except KeyError:
+            return default
+
+    @property
+    def observer(self):
+        return self.get_intent("ObserverName","Unknown")
+
+    @property
+    def projid(self):
+        return self.getintent("ProjectID","Unknown")
+
+    @property
+    def scan_intent(self):
+        return self.get_intent("ScanIntent","None")
+
+    @property
+    def nchan(self):
+        return int(self.get_intent("PsrNumChan",32))
+
+    @property
+    def npol(self):
+        return int(self.get_intent("PsrNumPol",4))
+
+    @property
+    def foldtime(self):
+        return float(self.get_intent("PsrFoldIntTime",10.0))
+
+    @property
+    def foldbins(self):
+        return int(self.get_intent("PsrFoldNumBins",2048))
+
+    @property
+    def timeres(self):
+        return float(self.get_intent("PsrSearchTimeRes",1e-3))
+
+    @property
+    def nbitsout(self):
+        return = int(self.get_intent("PsrSearchNumBits",8))
+
+    @property
+    def parfile(self):
+        return get_intent("TempoFileName",None)
+
+    @property
+    def source(self):
+        return self.obs.name
+
+    @property
+    def ra_deg(self):
+        return angles.r2d(self.obs.ra)
+
+    @property
+    def ra_hrs(self):
+        return angles.r2h(self.obs.ra)
+
+    @property
+    def ra_str(self):
+        return angles.fmt_angle(self.ra_hrs, ":", ":").lstrip('+-')
+
+    @property
+    def dec_deg(self):
+        return angles.r2d(self.obs.dec)
+
+    @property
+    def dec_str(self):
+        return angles.fmt_angle(self.dec_deg, ":", ":")
+
+    @property
+    def startLST(self):
+        return self.obs.startLST * 86400.0
+
+    @property
+    def startTime(self):
+        try:
+            return float(self.obs.startTime)
+        except AttributeError:
+            return 0.0
+
+    @property
+    def seq(self):
+        return self.obs.seq
+
+    @property
+    def telescope(self):
+        return "VLA"
+
+    @property
+    def backend(self):
+        return "YUPPI"
+
+
         # Do these ever vary with IF??
-        self.receiver = o.sslo[0].Receiver
-        self.bandedge = {}
-        self.sideband = {}
-        for s in o.sslo:
-            self.bandedge[s.IFid] = s.freq
-            self.sideband[s.IFid] = s.Sideband
+        #self.receiver = o.sslo[0].Receiver
+        #self.bandedge = {}
+        #self.sideband = {}
+        #for s in o.sslo:
+        #    self.bandedge[s.IFid] = s.freq
+        #    self.sideband[s.IFid] = s.Sideband
 
     def parse_vci(self,match_ips=[]):
         v = self.vci
