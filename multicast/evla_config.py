@@ -97,7 +97,7 @@ class EVLAConfig(object):
 
     @property
     def nbitsout(self):
-        return = int(self.get_intent("PsrSearchNumBits",8))
+        return int(self.get_intent("PsrSearchNumBits",8))
 
     @property
     def parfile(self):
@@ -151,7 +151,7 @@ class EVLAConfig(object):
         return "YUPPI"
 
     def get_sslo(self,IFid):
-        """Return the SSLO frequency for the given IFid in MHz.  This will
+        """Return the SSLO frequency in MHz for the given IFid.  This will
         correspond to the edge of the baseband.  Uses IFid naming convention 
         as in OBS XML."""
         for sslo in self.obs.sslo:
@@ -174,14 +174,6 @@ class EVLAConfig(object):
             if sslo.IFid == IFid:
                 return sslo.Receiver
         return None
-
-        # Do these ever vary with IF??
-        #self.receiver = o.sslo[0].Receiver
-        #self.bandedge = {}
-        #self.sideband = {}
-        #for s in o.sslo:
-        #    self.bandedge[s.IFid] = s.freq
-        #    self.sideband[s.IFid] = s.Sideband
 
     @staticmethod
     def swbbName_to_IFid(swbbName):
@@ -268,9 +260,9 @@ class SubBand(object):
     """
 
     def __init__(self, subBand, config, IFid, vdif=None):
-        self.swIndex = subBand.swIndex
-        self.sbid = subBand.sbid
         self.IFid = IFid
+        self.swIndex = int(subBand.swIndex)
+        self.sbid = int(subBand.sbid)
         self.vdif = vdif
         # Note, all frequencies are in MHz here
         self.bw = 1e-6 * float(subBand.bw)
@@ -285,4 +277,17 @@ class SubBand(object):
 
 # Should put a test program here
 if __name__ == "__main__":
-    pass
+    import sys
+    import vcixml_parser
+    import obsxml_parser
+    vcifile = sys.argv[1]
+    obsfile = sys.argv[2]
+    print "Parsing vci='%s' obs='%s'" % (vcifile, obsfile)
+    vci = vcixml_parser.parse(vcifile)
+    obs = obsxml_parser.parse(obsfile)
+    config = EVLAConfig(vci=vci,obs=obs)
+    print "Found these subbands:"
+    for sub in config.get_subbands(only_vdif=False):
+        print "  IFid=%s swindex=%d sbid=%d vdif=%s bw=%.1f freq=%.1f" % (
+                sub.IFid, sub.swIndex, sub.sbid, sub.vdif is not None, 
+                sub.bw, sub.sky_center_freq)
