@@ -1,16 +1,20 @@
+#! /usr/bin/env python
+
+# evla_config.py -- P. Demorest, 2015/02
+#
+# Code heavily based on earlier psrinfo_mcast.py by PD and S. Ransom.
+#
+# The main point of this part of the code is to take information from
+# the vci and obs data structures (which are a literal parsing of the XML
+# documents) and return relevant information in a more directly usable
+# form for pulsar processing.  This includes picking out subbands that
+# are configured to send VDIF to certain IP addresses, and performing
+# the relevant sky frequency calculations for each.  Pulsar-related
+# intents in the obs XML are parsed to recover the requested processing
+# parameters as well.
+
 import ast
 import angles
-
-class subband:
-
-    def __init__(self, subBand, vdif=None, BBname=""):
-        self.swIndex = subBand.swIndex
-        self.sbid = subBand.sbid
-        self.bw = float(subBand.bw)
-        self.centralFreq = subBand.centralFreq
-        self.summedArray = subBand.summedArray
-        self.vdif = vdif
-        self.baseBandName = BBname
 
 class EVLAConfig(object):
     """This class defines a complete EVLA observing config, which in 
@@ -146,6 +150,30 @@ class EVLAConfig(object):
     def backend(self):
         return "YUPPI"
 
+    def get_sslo(self,IFid):
+        """Return the SSLO frequency for the given IFid in MHz.  This will
+        correspond to the edge of the baseband.  Uses IFid naming convention 
+        as in OBS XML."""
+        for sslo in self.obs.sslo:
+            if sslo.IFid == IFid:
+                return sslo.freq # These are in MHz
+        return None
+
+    def get_sideband(self,IFid):
+        """Return the sideband sense (int; +1 or -1) for the given IFid.
+        Uses IFid naming convention as in OBS XML."""
+        for sslo in self.obs.sslo:
+            if sslo.IFid == IFid:
+                return sslo.Sideband # 1 or -1
+        return None
+
+    def get_receiver(self,IFid):
+        """Return the receiver name for the given IFid.
+        Uses IFid naming convention as in OBS XML."""
+        for sslo in self.obs.sslo:
+            if sslo.IFid == IFid:
+                return sslo.Receiver
+        return None
 
         # Do these ever vary with IF??
         #self.receiver = o.sslo[0].Receiver
@@ -155,61 +183,106 @@ class EVLAConfig(object):
         #    self.bandedge[s.IFid] = s.freq
         #    self.sideband[s.IFid] = s.Sideband
 
-    def parse_vci(self,match_ips=[]):
-        v = self.vci
-        nsIOs = len(v.stationInputOutput)
-        sIO = v.stationInputOutput[0]
-        nBBs = len(sIO.baseBand)
-        # Grab only matching subbands
-        self.subbands = []
-        nSBs = 0
-        for BB in sIO.baseBand:
-            nSBs += len(BB.subBand)
-            bbname = BB.swbbName.split('_')[0]
-            if bbname=="A1C1": bbname="AC1"
-            if bbname=="A2C2": bbname="AC2"
-            if bbname=="B1D1": bbname="BD1"
-            if bbname=="B2D2": bbname="BD2"
-            if len(match_ips)==0:
-                self.subbands += [subband(x, BBname=BB.bbname) 
-                        for x in BB.subBand]
-            else:
-                for sb in BB.subBand:
-                    for sa in sb.summedArray:
-                        if sa.vdif:
-                            v = sa.vdif
-                            if (v.aDestIP in match_ips) or (v.bDestIP 
-                                    in match_ips):
-                                self.subbands += [subband(sb,vdif=v,
-                                    BBname=bbname)]
-        print "Found %d station IOs, %d basebands, and %d total subbands" % \
-              (nsIOs, nBBs, nSBs)
-        if len(match_ips):
-            print "Found %d matching subbands" % (len(self.subbands))
+    @staticmethod
+    def swbbName_to_IFid(swbbName):
+        """Converts values found in the VCI baseBand.swbbName property to
+        matching values as used in the OBS sslo.IFid property. 
+        
+        swbbNames are like AC_8BIT, A1C1_3BIT, etc.
+        IFids are like AC, AC1, etc."""
 
-    def parse(self,match_ips=[]):
-        self.parse_obs()
-        self.parse_vci(match_ips)
-        # Might need a list of these...  this assumes 1 subband
-        if len(self.subbands)>0:
-            isub = 0
-            bb = self.subbands[isub].baseBandName
-            # Note, subbands are _always_ USB regardless of overall sense.
-            # Old (wrong) version):
-            #self.bandwidth = 1e-6 * self.sideband[bb] * self.subbands[isub].bw
-            # Both results should be MHz:
-            self.bandwidth = 1e-6 * self.subbands[isub].bw
-            self.skyctrfreq = self.bandedge[bb] + 1e-6 * self.sideband[bb] * \
-                              self.subbands[isub].centralFreq
+        conversions = {
+                'A1C1': 'AC1',
+                'A2C2': 'AC2',
+                'B1D1': 'BD1',
+                'B2D2': 'BD2'
+                }
 
+        (bbname, bits) = swbbName.split('_')
+
+        if bbname in conversions:
+            return conversions[bbname]
+
+        return bbname
+
+    def get_subbands(self,only_vdif=True,match_ips=[]):
+        """Return a list of SubBand objects for all matching subbands.
+        Inputs:
+
+          only_vdif: if True, return only subbands with VDIF output enabled.
+                     (default: True)
+                     
+          match_ips: Only return subbands with VDIF output routed to one of
+                     the specified IP addresses.  If empty, all subbands
+                     are returned.  non-empty match_ips implies only_vdif
+                     always.
+                     (default: [])
+        """
+
+        # TODO: raise an exception, or just return empty list?
+        if not self.is_complete():
+            raise RuntimeError("Complete configuration not available: "  
+                    + "has_vci=" + self.has_vci() 
+                    + " has_obs=" + self.has_obs())
+
+        subs = []
+
+        # NOTE, assumes only one stationInputOutput .. is this legit?
+        for baseBand in self.vci.stationInputOutput[0].baseBand:
+            swbbName = baseBand.swbbName
+            IFid = self.swbbName_to_IFid(swbbName)
+            for subBand in baseBand.subBand:
+                if len(match_ips) or only_vdif:
+                    # Need to get at vdif elements
+                    # Not really sure what more than 1 summedArray means..
+                    for summedArray in subBand.summedArray:
+                        vdif = summedArray.vdif
+                        if vdif:
+                            if len(match_ips):
+                                if (v.aDestIP in match_ips) or (v.bDestIP 
+                                        in match_ips):
+                                    # IPs match, add to list
+                                    subs += [SubBand(subBand,self,IFid,vdif),]
+                            else:
+                                # No IP list specified, keep all subbands
+                                subs += [SubBand(subBand,self,IFid,vdif),]
+                else:
+                    # No VDIF or IP list given, just keep everything
+                    subs += [SubBand(subBand,self,IFid,vdif=None),]
+
+        return subs
+
+class SubBand(object):
+    """This class defines relevant info for real-time pulsar processing
+    of a single subband.  Most info is contained in the VCI subBand element,
+    some is copied out for convenience.  Also the corresponding sky frequency
+    is calculated, this depends on the baseBand properties, and LO settings
+    (the latter only available in the OBS XML document).  Note, all frequencies
+    coming out of this class are in MHz.
+    
+    Inputs:
+        subBand: The VCI subBand element
+        config:  The original EVLAConfig object
+        vdif:    The summedArray.vdif VCI element (optional)
+        IFid:    The IF identification (as in OBS xml)
+    """
+
+    def __init__(self, subBand, config, IFid, vdif=None):
+        self.swIndex = subBand.swIndex
+        self.sbid = subBand.sbid
+        self.IFid = IFid
+        self.vdif = vdif
+        # Note, all frequencies are in MHz here
+        self.bw = 1e-6 * float(subBand.bw)
+        self.bb_center_freq = 1e-6 * subBand.centralFreq # within the baseband
+        ## The (original) infamous frequency calculation, copied here
+        ## for posterity:
+        ##self.skyctrfreq = self.bandedge[bb] + 1e-6 * self.sideband[bb] * \
+        ##                  self.subbands[isub].centralFreq
+        self.sky_center_freq = config.get_sslo(IFid) \
+                + config.get_sideband(IFid) * self.bb_center_freq
+        self.receiver = config.get_receiver(IFid)
+
+# Should put a test program here
 if __name__ == "__main__":
-    g = guppi_status()
-    g.show()
-
-    print
-    print 'keys:', g.keys()
-    print
-    print 'values:', g.values()
-    print
-    print 'items:', g.items()
-    print
+    pass
