@@ -12,7 +12,7 @@ group = '239.192.3.1'
 
 from datetime import datetime
 import time, struct, socket, sys
-import vcirequest_mcast
+import vcixml_parser
 
 def receiver(group, port):
     # Look up multicast group address in name server and find out IP version
@@ -53,6 +53,6 @@ if __name__ == '__main__':
         mcast_str = receiver(group, port)
         print mcast_str
         if 1 and not "AntennaPropertyTable" in mcast_str:
-            vci = vcirequest_mcast.parseString(mcast_str)
+            vci = vcixml_parser.parseString(mcast_str)
             print "Processed a new VCI multicast (%d bytes)..." % len(mcast_str)
             print vci.__dict__

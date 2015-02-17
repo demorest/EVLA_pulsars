@@ -5,8 +5,8 @@ from psrinfo_mcast import *
 from guppi_daq import guppi_utils
 from guppi_daq.astro_utils import current_MJD
 import time, struct, socket, sys, asyncore, subprocess, os
-import vcirequest_mcast
-import observation_mcast
+import vcixml_parser
+import obsxml_parser
 import netifaces
 import threading
 
@@ -220,11 +220,11 @@ class mcast_client(asyncore.dispatcher):
         self.lastread = self.read
         self.read = self.recv(100000)
         if (self.type=="obs"):
-            obj = observation_mcast.parseString(self.read)
+            obj = obsxml_parser.parseString(self.read)
             if debugout: print self.type, ":", obj.configId, obj.seq
             add_config(obj, self.type)
         elif (self.type=="vci" and not "AntennaPropertyTable" in self.read):
-            obj = vcirequest_mcast.parseString(self.read)
+            obj = vcixml_parser.parseString(self.read)
             if debugout: print self.type, ":", obj.configId
             add_config(obj, self.type)
         else:
