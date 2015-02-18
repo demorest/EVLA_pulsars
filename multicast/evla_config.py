@@ -146,10 +146,6 @@ class EVLAConfig(object):
     def telescope(self):
         return "VLA"
 
-    @property
-    def backend(self):
-        return "YUPPI"
-
     def get_sslo(self,IFid):
         """Return the SSLO frequency in MHz for the given IFid.  This will
         correspond to the edge of the baseband.  Uses IFid naming convention 
@@ -275,7 +271,7 @@ class SubBand(object):
                 + config.get_sideband(IFid) * self.bb_center_freq
         self.receiver = config.get_receiver(IFid)
 
-# Should put a test program here
+# Test program
 if __name__ == "__main__":
     import sys
     import vcixml_parser
