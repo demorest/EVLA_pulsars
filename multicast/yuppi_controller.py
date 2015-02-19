@@ -8,20 +8,24 @@
 # XML data, and launches pulsar observations as appropriate.
 
 import os
+import struct
 import logging
-import netifaces
 import asyncore, socket
-from ordereddict import OrderedDict
+try:
+    from collections import OrderedDict
+except ImportError:
+    from ordereddict import OrderedDict
 import vcixml_parser
 import obsxml_parser
 from evla_config import EVLAConfig, SubBand
 from yuppi_observation import YUPPIObs
 
 logging.basicConfig(format="%(asctime)-15s %(levelname)8s %(message)s",
-        level=logging.INFO)
+        level=logging.DEBUG)
 
 # Get the list of IP addresses on which VDIF data may come
 data_ips = []
+import netifaces
 for nic in netifaces.interfaces():
     if 'p2p' in nic:
         data_ips += [netifaces.ifaddresses(nic)[netifaces.AF_INET][0]['addr']]
@@ -33,7 +37,7 @@ class McastClient(asyncore.dispatcher):
     """Generic class to receive the multicast XML docs."""
 
     def __init__(self, group, port, name=""):
-        super(McastClient,self).__init__()
+        asyncore.dispatcher.__init__(self)
         self.name = name
         self.group = group
         self.port = port
@@ -51,7 +55,7 @@ class McastClient(asyncore.dispatcher):
         logging.debug('connect %s group=%s port=%d' % (self.name, 
             self.group, self.port))
 
-    def handle_close(self)
+    def handle_close(self):
         logging.debug('close %s group=%s port=%d' % (self,name, 
             self.group, self.port))
 
@@ -67,7 +71,7 @@ class ObsClient(McastClient):
     """Receives Observation XML."""
 
     def __init__(self):
-        super(ObsClient,self).__init__('239.192.3.2',53001,'obs')
+        McastClient.__init__(self,'239.192.3.2',53001,'obs')
 
     def parse(self):
         obs = obsxml_parser.parseString(self.read)
@@ -79,7 +83,7 @@ class VCIClient(McastClient):
     """Receives VCI XML."""
 
     def __init__(self):
-        super(VCIClient,self).__init__('239.192.3.1',53000,'vci')
+        McastClient.__init__(self,'239.192.3.1',53000,'vci')
 
     def parse(self):
         vci = vcixml_parser.parseString(self.read)
