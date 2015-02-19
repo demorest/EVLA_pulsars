@@ -32,13 +32,17 @@ class YUPPIObs(object):
     """
 
     def __init__(self, evla_conf, subband, dry_run=False):
-        logging.basicConfig(format="%(asctime)-15s %(levelname)8s %(message)s")
+        logging.basicConfig(format="%(asctime)-15s %(levelname)8s %(message)s",
+                level=logging.INFO)
         generate_shmem_config(self, evla_conf, subband)
         generate_obs_command(self, evla_conf, subband)
         self.dry = dry_run
         if self.dry:
             logging.warning("dry run mode enabled")
         self.process = None
+        self.timer = None
+        self.startMJD = evla_conf.startTime
+        self.set_timer()
 
     def generate_shmem_config(self, evla_conf, subband):
         """Given a EVLAConfig and SubBand, generate the relevant shared
@@ -155,7 +159,21 @@ class YUPPIObs(object):
 
     def stop(self):
         logging.info('stop observation')
-        self.timer.cancel() # in case not started yet
+        try:
+            self.timer.cancel() # in case not started yet
+        except AttributeError:
+            pass
         self.guppi_daq_command('STOP')
-        self.process.send_signal(signal.SIGINT)
+        try:
+            self.process.send_signal(signal.SIGINT)
+        except AttributeError:
+            pass
+
+    def set_timer(self):
+        diff = (self.startMJD - current_MJD())
+        if diff<0.0: diff=0.0
+        logging.info("will start obs at mjd=%f in %.1fs" % (self.startMJD,
+            diff))
+        self.timer = threading.Timer(diff, self.start)
+        self.timer.start()
 
