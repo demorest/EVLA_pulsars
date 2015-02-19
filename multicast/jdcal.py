@@ -47,6 +47,15 @@ __version__ = "1.0"
 MJD_0 = 2400000.5
 MJD_JD2000 = 51544.5
 
+# Current MJD func 2015/02/19 PBD
+import time
+def mjd_now():
+    # Note, only good to 1 sec
+    gt = time.gmtime()
+    mjd = gcal2jd(gt.tm_year, gt.tm_mon, gt.tm_mday)[1]
+    mjd += gt.tm_hour/24.0 + gt.tm_min/(24.0*60.0) + gt.tm_sec/(24.0*3600.0)
+    return mjd
+
 
 def fpart(x):
     """Return fractional part of given number."""
