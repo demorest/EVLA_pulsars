@@ -15,6 +15,7 @@
 
 import ast
 import angles
+from jdcal import mjd_now
 
 class EVLAConfig(object):
     """This class defines a complete EVLA observing config, which in 
@@ -62,6 +63,10 @@ class EVLAConfig(object):
             return self.intents[key]
         except KeyError:
             return default
+
+    @property
+    def Id(self):
+        return self.obs.configId
 
     @property
     def observer(self):
@@ -137,6 +142,13 @@ class EVLAConfig(object):
             return float(self.obs.startTime)
         except AttributeError:
             return 0.0
+
+    @property
+    def wait_time_sec(self):
+        if self.startTime==0.0:
+            return None
+        else:
+            return 86400.0*(self.startTime - mjd_now())
 
     @property
     def seq(self):
