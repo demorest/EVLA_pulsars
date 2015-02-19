@@ -19,15 +19,29 @@ import vcixml_parser
 import obsxml_parser
 from evla_config import EVLAConfig, SubBand
 
-listen_only = True # Do not try to launch anything, just report XML
+from optparse import OptionParser
+cmdline = OptionParser()
+cmdline.add_option('-v', '--verbose', dest="verbose",
+        action="store_true", default=False,
+        help="More verbose output")
+cmdline.add_option('-l', '--listen', dest="listen",
+        action="store_true", default=True,
+        help="Only listen to multicast, don't launch anything") 
+(opt,args) = cmdline.parse_args()
+
+# Set up verbosity level for log
+loglevel = logging.INFO
+if opt.verbose:
+    loglevel = logging.DEBUG
 
 logging.basicConfig(format="%(asctime)-15s %(levelname)8s %(message)s",
-        level=logging.DEBUG)
+        level=loglevel)
+
 logging.info('yuppi_controller started')
 
 data_ips = []
-if listen_only:
-    logging.info('runnning in listen_only mode')
+if opt.listen:
+    logging.info('runnning in listen-only mode')
 else:
     # Get the list of IP addresses on which VDIF data may come
     import netifaces
@@ -83,37 +97,97 @@ class McastClient(asyncore.dispatcher):
 class ObsClient(McastClient):
     """Receives Observation XML."""
 
-    def __init__(self):
+    def __init__(self,controller):
         McastClient.__init__(self,'239.192.3.2',53001,'obs')
+        self.controller = controller
 
     def parse(self):
         obs = obsxml_parser.parseString(self.read)
         logging.info("read obs configId='%s' seq=%d" % (obs.configId,
             obs.seq))
-        # TODO connect to configs...
+        self.controller.add_obs(obs)
 
 class VCIClient(McastClient):
     """Receives VCI XML."""
 
-    def __init__(self):
+    def __init__(self,controller):
         McastClient.__init__(self,'239.192.3.1',53000,'vci')
+        self.controller = controller
 
     def parse(self):
         vci = vcixml_parser.parseString(self.read)
-        if type(vci) == vcixmlparser.subArray:
+        if type(vci) == vcixml_parser.subArray:
             logging.info("read vci configId='%s'" % vci.configId)
-            # TODO connect to configs...
+            self.controller.add_vci(vci)
         else:
             logging.info("read vci non-subArray, ignoring" % vci.configId)
 
-# Store the past few configs...?
-# or make a new class for this..
-configs = OrderedDict()
-max_configs = 5
+class YUPPIController(object):
+    """Stores received VCI and Obs structures and pairs them up by
+    matching configId.  Generates EVLAConfig and (when necessary) 
+    YUPPIObs objects from each matching pair."""
+
+    def __init__(self, max_vci_store=5):
+        self.max_vci_store = max_vci_store
+        self.vci = OrderedDict()
+        self.orphan_configs = [] # Configs with no matching VCI
+        self.observations = []   # Ongoing/upcoming observations
+
+    def add_vci(self,vci):
+        # Add it to the list
+        self.vci[vci.configId] = vci
+        # Check if this matches any of the orphan configs
+        for config in self.orphan_configs:
+            if config.Id == vci.configId:
+                config.set_vci(vci)
+                self.handle_config(config)
+        # Strip complete entries from the orphan list
+        self.orphan_configs = [c for c in self.orphan_configs 
+                if not c.is_complete()]
+        # Remove old VCIs
+        while len(self.vci) > self.max_vci_store:
+            self.vci.popitem(last=False)
+        # Remove timed-out obs
+        self.clear_orphans()
+
+    def add_obs(self,obs):
+        config = EVLAConfig(obs=obs)
+        if obs.configId in self.vci:
+            config.set_vci(self.vci[obs.configId])
+            self.handle_config(config)
+        else:
+            logging.info("got orphan obs configId='%s' seq=%d wait=%+.1fs" % (
+                config.Id, config.seq, config.wait_time_sec))
+            self.orphan_configs += [config,]
+        # Remove timed-out obs
+        self.clear_orphans()
+
+    def clear_orphans(self):
+        # Clear any orphan configs with start time greater than 10s(?)
+        # in the past.
+        for idx, config in enumerate(self.orphan_configs):
+            if config.wait_time_sec < -10.0:
+                logging.info("dropping orphan configId='%s' seq=%d" % (
+                    config.Id, config.seq))
+                self.orphan_configs[idx] = None
+        self.orphan_configs = [c for c in self.orphan_configs if c is not None]
+
+    def handle_config(self,config):
+        if not config.is_complete():
+            logging.error('handle_config called on incomplete configuration')
+            return
+
+        logging.info("complete config Id='%s' seq=%d intent='%s' wait=%+.1fs" % (
+            config.obs.configId, config.seq, config.scan_intent,
+            config.wait_time_sec))
+
+        # TODO actually do something
+
 
 # This starts the receiving/handling loop
-vci_client = VCIClient()
-obs_client = ObsClient()
+controller = YUPPIController()
+vci_client = VCIClient(controller)
+obs_client = ObsClient(controller)
 try:
     asyncore.loop()
 except KeyboardInterrupt:
