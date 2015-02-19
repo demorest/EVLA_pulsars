@@ -25,15 +25,14 @@ from guppi_daq import guppi_utils
 from guppi_daq.astro_utils import current_MJD
 
 class YUPPIObs(object):
-    """This class represents a YUPPI observation...
-    Initialize with a EVLAConfig object and a specific subband...
+    """This class represents a YUPPI observation, ie real-time
+    processing of VDIF packets from one subband.  Initialize with 
+    appropriate EVLAConfig and SubBand objects.
     dry_run = True means emit log messages about what would have 
     happened, but do not actually touch shmem or run commands.
     """
 
     def __init__(self, evla_conf, subband, dry_run=False):
-        logging.basicConfig(format="%(asctime)-15s %(levelname)8s %(message)s",
-                level=logging.INFO)
         generate_shmem_config(self, evla_conf, subband)
         generate_obs_command(self, evla_conf, subband)
         self.dry = dry_run
