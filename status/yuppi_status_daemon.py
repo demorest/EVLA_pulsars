@@ -41,6 +41,7 @@ class yuppi_node_status:
         # TODO do something with ps to get the processes we want
         self.processes = []
 
+Pyro4.config.SERVERTYPE = 'multiplex'
 Pyro4.config.HMAC_KEY='blahblahblah'
 stat = yuppi_node_status()
 # Retry until connected, this waits for the previous copy of the
