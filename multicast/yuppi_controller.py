@@ -18,18 +18,25 @@ except ImportError:
 import vcixml_parser
 import obsxml_parser
 from evla_config import EVLAConfig, SubBand
-from yuppi_observation import YUPPIObs
+
+listen_only = True # Do not try to launch anything, just report XML
 
 logging.basicConfig(format="%(asctime)-15s %(levelname)8s %(message)s",
         level=logging.DEBUG)
+logging.info('yuppi_controller started')
 
-# Get the list of IP addresses on which VDIF data may come
 data_ips = []
-import netifaces
-for nic in netifaces.interfaces():
-    if 'p2p' in nic:
-        data_ips += [netifaces.ifaddresses(nic)[netifaces.AF_INET][0]['addr']]
-logging.info('found data IPs: ' + str(data_ips))
+if listen_only:
+    logging.info('runnning in listen_only mode')
+else:
+    # Get the list of IP addresses on which VDIF data may come
+    import netifaces
+    from yuppi_observation import YUPPIObs
+    for nic in netifaces.interfaces():
+        if 'p2p' in nic:
+            data_ips += \
+                    [netifaces.ifaddresses(nic)[netifaces.AF_INET][0]['addr']]
+    logging.info('found data IPs: ' + str(data_ips))
 
 node = os.uname()[1]
 
@@ -56,7 +63,7 @@ class McastClient(asyncore.dispatcher):
             self.group, self.port))
 
     def handle_close(self):
-        logging.debug('close %s group=%s port=%d' % (self,name, 
+        logging.debug('close %s group=%s port=%d' % (self.name, 
             self.group, self.port))
 
     def writeable(self):
@@ -65,7 +72,10 @@ class McastClient(asyncore.dispatcher):
     def handle_read(self):
         self.read = self.recv(100000)
         logging.debug('read ' + self.name + ' ' + self.read)
-        self.parse()
+        try:
+            self.parse()
+        except Exception as e:
+            logging.error('error handling message: ' + repr(e))
 
 class ObsClient(McastClient):
     """Receives Observation XML."""
@@ -87,8 +97,11 @@ class VCIClient(McastClient):
 
     def parse(self):
         vci = vcixml_parser.parseString(self.read)
-        logging.info("read vci configId='%s'" % vci.configId)
-        # TODO connect to configs...
+        if type(vci) == vcixmlparser.subArray:
+            logging.info("read vci configId='%s'" % vci.configId)
+            # TODO connect to configs...
+        else:
+            logging.info("read vci non-subArray, ignoring" % vci.configId)
 
 # Store the past few configs...?
 # or make a new class for this..
