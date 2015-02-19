@@ -77,6 +77,9 @@ class McastClient(asyncore.dispatcher):
         except Exception as e:
             logging.error('error handling message: ' + repr(e))
 
+    def handle_error(self, type, val, trace):
+        logging.error('unhandled exception: ' + repr(val))
+
 class ObsClient(McastClient):
     """Receives Observation XML."""
 
@@ -111,4 +114,9 @@ max_configs = 5
 # This starts the receiving/handling loop
 vci_client = VCIClient()
 obs_client = ObsClient()
-asyncore.loop()
+try:
+    asyncore.loop()
+except KeyboardInterrupt:
+    # Just exit without the trace barf
+    logging.info('yuppi_controller got SIGINT, exiting')
+    pass
