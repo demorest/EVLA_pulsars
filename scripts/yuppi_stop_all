@@ -16,7 +16,7 @@ pkill -KILL -f dspsr
 pkill -KILL -f digifil
 
 # stop packet sniff
-pkill -KILL -f async_mcast.py
+pkill -INT -f yuppi_controller.py
 
 # Clear shared mem buffers
 clean_guppi_shmem
