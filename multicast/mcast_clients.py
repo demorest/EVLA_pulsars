@@ -55,7 +55,11 @@ class McastClient(asyncore.dispatcher):
         logging.error('unhandled exception: ' + repr(val))
 
 class ObsClient(McastClient):
-    """Receives Observation XML."""
+    """Receives Observation XML.
+
+    If the controller input is given, the controller.add_obs(obs) method will
+    be called for every document received.
+    """
 
     def __init__(self,controller=None):
         McastClient.__init__(self,'239.192.3.2',53001,'obs')
@@ -69,7 +73,11 @@ class ObsClient(McastClient):
             self.controller.add_obs(obs)
 
 class VCIClient(McastClient):
-    """Receives VCI XML."""
+    """Receives VCI XML.
+    
+    If the controller input is given, the controller.add_vci(vci) method will
+    be called for every document received.
+    """
 
     def __init__(self,controller=None):
         McastClient.__init__(self,'239.192.3.1',53000,'vci')
@@ -84,7 +92,9 @@ class VCIClient(McastClient):
         else:
             logging.info("read vci non-subArray, ignoring" % vci.configId)
 
-# This is how these should be used in a program:
+# This is how these would be used in a program.  Note that no controller
+# is passed, so the only action taken here is to print log messages when
+# each XML document comes in.
 if __name__ == '__main__':
     logging.basicConfig(format="%(asctime)-15s %(levelname)8s %(message)s",
             level=logging.DEBUG)
