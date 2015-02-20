@@ -45,6 +45,8 @@ for table in tables_to_expand:
         if table=='SpectralWindow': 
             name = row.find('name')
             orig_name = name.text
+            freq = row.find('chanFreqStart')
+            orig_freq = float(freq.text)
         if table=='DataDescription':
             pol_id = row.find('polOrHoloId').text
         for ibin in range(nbin):
@@ -52,6 +54,7 @@ for table in tables_to_expand:
             spw_id.text = 'SpectralWindow_%d' % new_id
             if table=='SpectralWindow':
                 name.text = orig_name + '#P%d' % ibin
+                freq.text = '%.11E' % (orig_freq + float(ibin))
             if table=='DataDescription':
                 dd_text = 'DataDescription_%d' % dd_id
                 row.find('dataDescriptionId').text = dd_text
@@ -96,14 +99,35 @@ write_xml(asdm,'ASDM.xml')
 
 ########### Mess with the BDFs
 import glob
-import email
+#import email
 bdfs = glob.glob('ASDMBinary/*')
+
+# Return a tuple containing (mime_header_string, xml header string, 
+# rest of file).  The BDFs sometimes seem to break python's email
+# package, this is a workaround with that.
+def bdf_split(fname):
+    f = open(fname)
+    first = ""
+    xml = ""
+    rest = ""
+    gotit = False
+    while not gotit:
+        l = f.readline()
+        if l.startswith('<sdmDataHeader '):
+            xml = l
+            gotit = True
+        else:
+            first += l
+    rest = f.read()
+    return (first,xml,rest)
 
 for bdf_name in bdfs:
     print "Updating BDF '%s'" % bdf_name
-    bdf = email.message_from_file(open(bdf_name,'r'))
-    hdr = bdf.get_payload(0)
-    hdr_tree = etree.fromstring(hdr.get_payload())
+    #bdf = email.message_from_file(open(bdf_name,'r'))
+    #hdr = bdf.get_payload(0)
+    #hdr_tree = etree.fromstring(hdr.get_payload())
+    (bdf_start, hdr_string, bdf_end) = bdf_split(bdf_name)
+    hdr_tree = etree.fromstring(hdr_string)
     pfx = '{' + hdr_tree.nsmap[None] + '}'
     # Iterate over spectralwindow tags
     for spw in hdr_tree.iter(pfx+'spectralWindow'):
@@ -120,7 +144,13 @@ for bdf_name in bdfs:
                 spw_new.attrib['sw'] = '%d' % swidx
                 last_spw.addnext(spw_new)
                 last_spw = spw_new
-    hdr.set_payload(etree.tostring(hdr_tree, xml_declaration=True,
-        encoding='UTF-8', standalone=True))
-    open(bdf_name,'w').write(bdf.as_string())
+    #hdr.set_payload(etree.tostring(hdr_tree, xml_declaration=True,
+    #    encoding='UTF-8', standalone=True))
+    #open(bdf_name,'w').write(bdf.as_string())
+    hdr_string = etree.tostring(hdr_tree,xml_declaration=False) + '\n'
+    fout = open(bdf_name,'w')
+    fout.write(bdf_start)
+    fout.write(hdr_string)
+    fout.write(bdf_end)
+    fout.close()
 

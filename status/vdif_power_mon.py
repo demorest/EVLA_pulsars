@@ -95,7 +95,7 @@ if __name__ == "__main__":
     ax.grid()
 
     def mjd2date(mjd):
-        return mpldates.num2date(mjd + 678576.0)
+        return mpldates.num2date(numpy.array(mjd) + 678576.0)
 
     def update_line(stuff):
         (t_mjd,p0,p1) = stuff
