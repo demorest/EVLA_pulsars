@@ -22,7 +22,7 @@ import logging
 import signal
 import subprocess
 from guppi_daq import guppi_utils
-from guppi_daq.astro_utils import current_MJD
+from jdcal import mjd_now
 
 class YUPPIObs(object):
     """This class represents a YUPPI observation, ie real-time
@@ -41,6 +41,7 @@ class YUPPIObs(object):
         self.process = None
         self.timer = None
         self.startMJD = evla_conf.startTime
+        self.id = evla_conf.Id + '.' + evla_conf.seq
         self.set_timer()
 
     def generate_shmem_config(self, evla_conf, subband):
@@ -160,19 +161,28 @@ class YUPPIObs(object):
         logging.info('stop observation')
         try:
             self.timer.cancel() # in case not started yet
+            self.timer = None
         except AttributeError:
             pass
-        self.guppi_daq_command('STOP')
-        try:
-            self.process.send_signal(signal.SIGINT)
-        except AttributeError:
-            pass
+        if not self.dry:
+            self.guppi_daq_command('STOP')
+            try:
+                self.process.send_signal(signal.SIGINT)
+                self.process = None
+            except AttributeError:
+                pass
 
     def set_timer(self):
-        diff = (self.startMJD - current_MJD())
+        diff = (self.startMJD - mjd_now())
         if diff<0.0: diff=0.0
         logging.info("will start obs at mjd=%f in %.1fs" % (self.startMJD,
             diff))
         self.timer = threading.Timer(diff, self.start)
         self.timer.start()
+
+    def stop_at(self,mjd):
+        diff = (mjd - mjd_now())
+        if diff<0.0: diff=0.0
+        logging.info("will stop obs at mjd=%f in %.1fs" % (mjd, diff))
+        threading.Timer(diff, self.stop).start()
 
