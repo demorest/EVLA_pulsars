@@ -111,16 +111,39 @@ class YUPPIController(object):
             config.obs.configId, config.seq, config.scan_intent,
             config.wait_time_sec))
 
-        # TODO actually do something
+        if 'PULSAR_' in config.scan_intent:
 
+            subbands = config.get_subbands(match_ips=data_ips)
+            logging.info("found %d matching subbands" % len(subbands))
 
-# This starts the receiving/handling loop
-controller = YUPPIController()
-vci_client = VCIClient(controller)
-obs_client = ObsClient(controller)
-try:
-    asyncore.loop()
-except KeyboardInterrupt:
-    # Just exit without the trace barf
-    logging.info('yuppi_controller got SIGINT, exiting')
-    pass
+            # TODO allow multiple subbands somehow
+            sub = subbands[0]
+            logging.info("configuring subband %s-%d %.1fMHz" % (sub.IFid,
+                sub.sbid, sub.sky_center_freq))
+
+            # TODO if there is a running observation we need to stop it..
+
+            # Launch observation at the right time
+            self.observations += [YUPPIObs(config,sub),]
+
+        else:
+
+            # Non-pulsar config, send stop to all running obs at the
+            # appropriate time
+            for observation in self.observations:
+                logging.info('stopping obs %s in %.1fs' % (observation.id,
+                    config.wait_time_sec))
+                observation.stop_at(config.startTime)
+
+            # TODO clear stopped observations from the list
+
+if __name__ == '__main__':
+    # This starts the receiving/handling loop
+    controller = YUPPIController()
+    vci_client = VCIClient(controller)
+    obs_client = ObsClient(controller)
+    try:
+        asyncore.loop()
+    except KeyboardInterrupt:
+        # Just exit without the trace barf
+        logging.info('yuppi_controller got SIGINT, exiting')
