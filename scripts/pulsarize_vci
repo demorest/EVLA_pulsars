@@ -101,6 +101,6 @@ for summedarray in vciroot.iter(pfx+'summedArray'):
 
     inode += 1
 
-vcifname_out = vcifname + '_psr'
+vcifname_out = os.path.splitext(vcifname)[0] + '.psr.vci'
 vcitree.write(vcifname_out,pretty_print=True,standalone=True,encoding='UTF-8')
 
