@@ -8,15 +8,13 @@
 # XML data, and launches pulsar observations as appropriate.
 
 import os
-import struct
 import logging
-import asyncore, socket
+import asyncore
 try:
     from collections import OrderedDict
 except ImportError:
     from ordereddict import OrderedDict
-import vcixml_parser
-import obsxml_parser
+from mcast_clients import VCIClient, ObsClient
 from evla_config import EVLAConfig, SubBand
 
 from optparse import OptionParser
@@ -25,7 +23,7 @@ cmdline.add_option('-v', '--verbose', dest="verbose",
         action="store_true", default=False,
         help="More verbose output")
 cmdline.add_option('-l', '--listen', dest="listen",
-        action="store_true", default=True,
+        action="store_true", default=False,
         help="Only listen to multicast, don't launch anything") 
 (opt,args) = cmdline.parse_args()
 
@@ -53,74 +51,6 @@ else:
     logging.info('found data IPs: ' + str(data_ips))
 
 node = os.uname()[1]
-
-class McastClient(asyncore.dispatcher):
-    """Generic class to receive the multicast XML docs."""
-
-    def __init__(self, group, port, name=""):
-        asyncore.dispatcher.__init__(self)
-        self.name = name
-        self.group = group
-        self.port = port
-        addrinfo = socket.getaddrinfo(group, None)[0]
-        self.create_socket(addrinfo[0], socket.SOCK_DGRAM)
-        self.set_reuse_addr()
-        self.bind(('',port))
-        mreq = socket.inet_pton(addrinfo[0],addrinfo[4][0]) \
-                + struct.pack('=I', socket.INADDR_ANY)
-        self.socket.setsockopt(socket.IPPROTO_IP, 
-                socket.IP_ADD_MEMBERSHIP, mreq)
-        self.read = None
-
-    def handle_connect(self):
-        logging.debug('connect %s group=%s port=%d' % (self.name, 
-            self.group, self.port))
-
-    def handle_close(self):
-        logging.debug('close %s group=%s port=%d' % (self.name, 
-            self.group, self.port))
-
-    def writeable(self):
-        return False
-
-    def handle_read(self):
-        self.read = self.recv(100000)
-        logging.debug('read ' + self.name + ' ' + self.read)
-        try:
-            self.parse()
-        except Exception as e:
-            logging.error('error handling message: ' + repr(e))
-
-    def handle_error(self, type, val, trace):
-        logging.error('unhandled exception: ' + repr(val))
-
-class ObsClient(McastClient):
-    """Receives Observation XML."""
-
-    def __init__(self,controller):
-        McastClient.__init__(self,'239.192.3.2',53001,'obs')
-        self.controller = controller
-
-    def parse(self):
-        obs = obsxml_parser.parseString(self.read)
-        logging.info("read obs configId='%s' seq=%d" % (obs.configId,
-            obs.seq))
-        self.controller.add_obs(obs)
-
-class VCIClient(McastClient):
-    """Receives VCI XML."""
-
-    def __init__(self,controller):
-        McastClient.__init__(self,'239.192.3.1',53000,'vci')
-        self.controller = controller
-
-    def parse(self):
-        vci = vcixml_parser.parseString(self.read)
-        if type(vci) == vcixml_parser.subArray:
-            logging.info("read vci configId='%s'" % vci.configId)
-            self.controller.add_vci(vci)
-        else:
-            logging.info("read vci non-subArray, ignoring" % vci.configId)
 
 class YUPPIController(object):
     """Stores received VCI and Obs structures and pairs them up by
