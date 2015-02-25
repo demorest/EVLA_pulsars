@@ -153,10 +153,17 @@ def generate_obs_command(conf):
     if 'PULSAR_FOLD' in conf.scan_intent:
         # Fold command line
         # Note, '-2 c0' should turn off two-bit thresholding
-        command = \
-            'dspsr -a PSRFITS -minram=1 -t8 -2 c0 -F%d:D -d%d -L%f -E%s -b%d -O%s' \
-            % (conf.nchan, conf.npol, conf.foldtime, conf.parfile, 
-                    conf.foldbins, output_file)
+        if conf.parfile == 'CAL':
+            # Special case for folding at 10 Hz (noise tubes)
+            command = \
+                'dspsr -a PSRFITS -minram=1 -t8 -2 c0 -F%d -D0 -d%d -L%f -c0.1 -b%d -O%s -e cf' \
+                % (conf.nchan, conf.npol, conf.foldtime,
+                        conf.foldbins, output_file)
+        else:
+            command = \
+                'dspsr -a PSRFITS -minram=1 -t8 -2 c0 -F%d:D -d%d -L%f -E%s -b%d -O%s' \
+                % (conf.nchan, conf.npol, conf.foldtime, conf.parfile, 
+                        conf.foldbins, output_file)
     elif 'PULSAR_SEARCH' in conf.scan_intent:
         # Search command line
         acclen = int(abs(conf.timeres*conf.bandwidth*1e6/conf.nchan))
