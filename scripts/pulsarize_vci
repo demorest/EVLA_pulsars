@@ -28,79 +28,82 @@ n_nodes = len(n_nics)
 print "CBE: %d nodes" % n_nodes
 print "CBE: %d NICs" % len(ips)
 
-vcifname = sys.argv[1]
-#parser = etree.XMLParser(remove_blank_text=True)
-#vcitree = etree.parse(vcifname,parser)
-vcitree = etree.parse(vcifname)
-vciroot = vcitree.getroot()
-pfx = '{' + vciroot.nsmap['widar'] + '}'
+for vcifname in sys.argv[1:]:
 
-n_subband = 0
-n_summedarray = 0
-for subband in vciroot.iter(pfx+'subBand'): 
-    n_subband += 1
-    if subband.find(pfx+'summedArray') is not None: n_summedarray += 1
-    # Strip out any fractional centralFreqs
-    try:
-        freq_int = subband.attrib['centralFreq'].split('.')[0]
-        subband.attrib['centralFreq'] = freq_int
-    except:
-        pass
-    subband.attrib['frameSchedulingAlgorithm'] = 'setDelay'
-    subband.attrib['interFrameDelay'] = '400'
-print "VCI: %d subBands" % n_subband
-print "VCI: %d summedArrays" % n_summedarray
+    ##vcifname = sys.argv[1]
+    #parser = etree.XMLParser(remove_blank_text=True)
+    #vcitree = etree.parse(vcifname,parser)
+    vcitree = etree.parse(vcifname)
+    vciroot = vcitree.getroot()
+    pfx = '{' + vciroot.nsmap['widar'] + '}'
 
-if n_summedarray > n_nodes:
-    print "ERROR: Number of subbands greater than number of nodes"
-    sys.exit(1)
+    n_subband = 0
+    n_summedarray = 0
+    for subband in vciroot.iter(pfx+'subBand'): 
+        n_subband += 1
+        if subband.find(pfx+'summedArray') is not None: n_summedarray += 1
+        # Strip out any fractional centralFreqs
+        try:
+            freq_int = subband.attrib['centralFreq'].split('.')[0]
+            subband.attrib['centralFreq'] = freq_int
+        except:
+            pass
+        subband.attrib['frameSchedulingAlgorithm'] = 'setDelay'
+        subband.attrib['interFrameDelay'] = '400'
+    print "VCI: %d subBands" % n_subband
+    print "VCI: %d summedArrays" % n_summedarray
 
-# For now assume summedArray and vdif tags exist
-inode = 1
-for summedarray in vciroot.iter(pfx+'summedArray'):
-    vdif = summedarray.find(pfx+'vdif')
-    if vdif is None:
-        print "ERROR: summedArray section missing vdif component"
+    if n_summedarray > n_nodes:
+        print "ERROR: Number of subbands greater than number of nodes"
         sys.exit(1)
 
-    # To enable extra headroom on quantization (not tested)
-    #summedarray.attrib['headroom6dB'] = 'true'
+    # For now assume summedArray and vdif tags exist
+    inode = 1
+    for summedarray in vciroot.iter(pfx+'summedArray'):
+        vdif = summedarray.find(pfx+'vdif')
+        if vdif is None:
+            print "ERROR: summedArray section missing vdif component"
+            sys.exit(1)
 
-    node = 'cbe-node-%02d' % inode
-    nic1 = node + '-1'
-    nic2 = node + '-2'
+        # To enable extra headroom on quantization (not tested)
+        #summedarray.attrib['headroom6dB'] = 'true'
 
-    # Find bandwidth, use to set number of bits
-    bw = abs(float(summedarray.getparent().attrib['bw']))
-    if bw > 32.0e6: nbit = '2'
-    else: nbit = '8'
+        node = 'cbe-node-%02d' % inode
+        nic1 = node + '-1'
+        nic2 = node + '-2'
 
-    # Clear the vdif tag and refill with appropriate values
-    vdif.clear()
-    if nbit=='2': vdif.attrib['agcEnabled'] = 'true'
-    else: vdif.attrib['agcEnabled'] = 'false'
-    #vdif.attrib['requantGain'] = '123' # Set gain directly
-    vdif.attrib['vdifEnableB'] = 'true'
-    vdif.attrib['vdifEnableA'] = 'true'
-    vdif.attrib['aPacketDelay'] = '0'
-    vdif.attrib['bPacketDelay'] = '0'
-    vdif.attrib['stationId'] = '12345'
-    vdif.attrib['numBits'] = nbit
-    vdif.attrib['frameSize'] = '1250'
-    vdif.attrib['epochOffset'] = '127057024'
-    vdif.attrib['epoch'] = '0'
-    vdif.attrib['bThread'] = '1'
-    vdif.attrib['aThread'] = '0'
-    vdif.attrib['aDestPort'] = '50000'
-    #vdif.attrib['bDestPort'] = '50000' # XXX need this?
-    vdif.attrib['aDestMAC'] = macs[nic1]
-    vdif.attrib['aDestIP'] = ips[nic1]
-    vdif.attrib['bDestMAC'] = macs[nic2]
-    vdif.attrib['bDestIP'] = ips[nic2]
-    vdif.tail = '\n' + 20*' '
+        # Find bandwidth, use to set number of bits
+        bw = abs(float(summedarray.getparent().attrib['bw']))
+        if bw > 32.0e6: nbit = '2'
+        else: nbit = '8'
 
-    inode += 1
+        # Clear the vdif tag and refill with appropriate values
+        vdif.clear()
+        if nbit=='2': vdif.attrib['agcEnabled'] = 'true'
+        else: vdif.attrib['agcEnabled'] = 'false'
+        #vdif.attrib['requantGain'] = '123' # Set gain directly
+        vdif.attrib['vdifEnableB'] = 'true'
+        vdif.attrib['vdifEnableA'] = 'true'
+        vdif.attrib['aPacketDelay'] = '0'
+        vdif.attrib['bPacketDelay'] = '0'
+        vdif.attrib['stationId'] = '12345'
+        vdif.attrib['numBits'] = nbit
+        vdif.attrib['frameSize'] = '1250'
+        vdif.attrib['epochOffset'] = '127057024'
+        vdif.attrib['epoch'] = '0'
+        vdif.attrib['bThread'] = '1'
+        vdif.attrib['aThread'] = '0'
+        vdif.attrib['aDestPort'] = '50000'
+        #vdif.attrib['bDestPort'] = '50000' # XXX need this?
+        vdif.attrib['aDestMAC'] = macs[nic1]
+        vdif.attrib['aDestIP'] = ips[nic1]
+        vdif.attrib['bDestMAC'] = macs[nic2]
+        vdif.attrib['bDestIP'] = ips[nic2]
+        vdif.tail = '\n' + 20*' '
 
-vcifname_out = vcifname + '_psr'
-vcitree.write(vcifname_out,pretty_print=True,standalone=True,encoding='UTF-8')
+        inode += 1
+
+    vcifname_out = os.path.splitext(vcifname)[0] + '.psr.vci'
+    vcitree.write(vcifname_out,pretty_print=True,
+            standalone=True,encoding='UTF-8')
 
