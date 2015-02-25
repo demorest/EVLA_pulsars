@@ -104,10 +104,14 @@ class YUPPIObs(object):
 
         elif 'PULSAR_FOLD' in evla_conf.scan_intent:
             self.command = 'dspsr -a PSRFITS -minram=1 -t8 -2 c0'
-            self.command_line += ' -F%d' % evla_conf.nchan
+            self.command_line += ' -F%d:D' % evla_conf.nchan
             self.command_line += ' -d%d' % evla_conf.npol
             self.command_line += ' -L%f' % evla_conf.foldtime
-            self.command_line += ' -E%f' % evla_conf.parfile
+            if evla_conf.parfile == 'CAL':
+                # Fold at 10 Hz (noise tubes), no dedispersion, .cf extension
+                self.command_line += ' -D0 -c0.1 -e cf'
+            else:
+                self.command_line += ' -E%f' % evla_conf.parfile
             self.command_line += ' -b%d' % evla_conf.foldbins
             self.command_line += ' -O%d' % output_file
 
