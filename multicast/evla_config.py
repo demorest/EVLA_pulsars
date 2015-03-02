@@ -74,7 +74,7 @@ class EVLAConfig(object):
 
     @property
     def projid(self):
-        return self.getintent("ProjectID","Unknown")
+        return self.get_intent("ProjectID","Unknown")
 
     @property
     def scan_intent(self):
@@ -106,7 +106,7 @@ class EVLAConfig(object):
 
     @property
     def parfile(self):
-        return get_intent("TempoFileName",None)
+        return self.get_intent("TempoFileName",None)
 
     @property
     def source(self):
@@ -239,7 +239,7 @@ class EVLAConfig(object):
                         vdif = summedArray.vdif
                         if vdif:
                             if len(match_ips):
-                                if (v.aDestIP in match_ips) or (v.bDestIP 
+                                if (vdif.aDestIP in match_ips) or (vdif.bDestIP 
                                         in match_ips):
                                     # IPs match, add to list
                                     subs += [SubBand(subBand,self,IFid,vdif),]

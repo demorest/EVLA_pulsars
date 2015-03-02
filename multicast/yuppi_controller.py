@@ -101,6 +101,8 @@ class YUPPIController(object):
                     config.Id, config.seq))
                 self.orphan_configs[idx] = None
         self.orphan_configs = [c for c in self.orphan_configs if c is not None]
+        # Also clear stopped observations
+        self.observations = [o for o in self.observations if not o.is_stopped()]
 
     def handle_config(self,config):
         if not config.is_complete():
@@ -111,31 +113,36 @@ class YUPPIController(object):
             config.obs.configId, config.seq, config.scan_intent,
             config.wait_time_sec))
 
-        if 'PULSAR_' in config.scan_intent:
+        try:
 
-            subbands = config.get_subbands(match_ips=data_ips)
-            logging.info("found %d matching subbands" % len(subbands))
+            if 'PULSAR_' in config.scan_intent:
 
-            # TODO allow multiple subbands somehow
-            sub = subbands[0]
-            logging.info("configuring subband %s-%d %.1fMHz" % (sub.IFid,
-                sub.sbid, sub.sky_center_freq))
+                subbands = config.get_subbands(match_ips=data_ips)
+                logging.info("found %d matching subbands" % len(subbands))
 
-            # TODO if there is a running observation we need to stop it..
+                # TODO allow multiple subbands somehow
+                sub = subbands[0]
+                logging.info("configuring subband %s-%d %.1fMHz" % (sub.IFid,
+                    sub.sbid, sub.sky_center_freq))
 
-            # Launch observation at the right time
-            self.observations += [YUPPIObs(config,sub),]
+                # TODO if there is a running observation we need to stop it..
 
-        else:
+                # Launch observation at the right time
+                self.observations += [YUPPIObs(config,sub),]
 
-            # Non-pulsar config, send stop to all running obs at the
-            # appropriate time
-            for observation in self.observations:
-                logging.info('stopping obs %s in %.1fs' % (observation.id,
-                    config.wait_time_sec))
-                observation.stop_at(config.startTime)
+            else:
 
-            # TODO clear stopped observations from the list
+                # Non-pulsar config, send stop to all running obs at the
+                # appropriate time
+                for observation in self.observations:
+                    logging.info('stopping obs %s in %.1fs' % (observation.id,
+                        config.wait_time_sec))
+                    observation.stop_at(config.startTime)
+
+                # TODO clear stopped observations from the list
+
+        except:
+            logging.exception("exception in handle_config():")
 
 if __name__ == '__main__':
     # This starts the receiving/handling loop

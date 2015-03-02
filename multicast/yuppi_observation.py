@@ -33,15 +33,15 @@ class YUPPIObs(object):
     """
 
     def __init__(self, evla_conf, subband, dry_run=False):
-        generate_shmem_config(self, evla_conf, subband)
-        generate_obs_command(self, evla_conf, subband)
+        self.generate_shmem_config(evla_conf, subband)
+        self.generate_obs_command(evla_conf, subband)
         self.dry = dry_run
         if self.dry:
             logging.warning("dry run mode enabled")
         self.process = None
         self.timer = None
         self.startMJD = evla_conf.startTime
-        self.id = evla_conf.Id + '.' + evla_conf.seq
+        self.id = evla_conf.Id + '.' + str(evla_conf.seq)
         self.set_timer()
 
     def generate_shmem_config(self, evla_conf, subband):
@@ -103,7 +103,7 @@ class YUPPIObs(object):
             return
 
         elif 'PULSAR_FOLD' in evla_conf.scan_intent:
-            self.command = 'dspsr -a PSRFITS -minram=1 -t8 -2 c0'
+            self.command_line = 'dspsr -a PSRFITS -minram=1 -t8 -2 c0'
             self.command_line += ' -F%d:D' % evla_conf.nchan
             self.command_line += ' -d%d' % evla_conf.npol
             self.command_line += ' -L%f' % evla_conf.foldtime
@@ -111,9 +111,9 @@ class YUPPIObs(object):
                 # Fold at 10 Hz (noise tubes), no dedispersion, .cf extension
                 self.command_line += ' -D0 -c0.1 -e cf'
             else:
-                self.command_line += ' -E%f' % evla_conf.parfile
+                self.command_line += ' -E%s' % evla_conf.parfile
             self.command_line += ' -b%d' % evla_conf.foldbins
-            self.command_line += ' -O%d' % output_file
+            self.command_line += ' -O%s' % output_file
 
         elif 'PULSAR_SEARCH' in evla_conf.scan_intent:
             acclen = int(abs(conf.timeres*conf.bandwidth*1e6/conf.nchan))
@@ -135,9 +135,9 @@ class YUPPIObs(object):
     def guppi_daq_command(self,cmd):
         self.guppi_ctrl = "/tmp/guppi_daq_control" # TODO allow multiple
         logging.info("guppi_daq command '%s' to '%s'" % (cmd, self.guppi_ctrl))
-        if (os.path.exists(guppi_ctrl)):
+        if (os.path.exists(self.guppi_ctrl)):
             if not self.dry:
-                open(guppi_ctrl,'w').write(cmd)
+                open(self.guppi_ctrl,'w').write(cmd)
         else:
             logging.error("guppi_daq FIFO '%s' does not exist" % (
                 self.guppi_ctrl))
@@ -149,8 +149,10 @@ class YUPPIObs(object):
             g = guppi_utils.guppi_status()
             for k in self.shmem_params:
                 g.update(k,self.shmem_params[k])
+            g.write()
     
     def start(self):
+        # TODO could use better thread safety
         logging.info('start observation')
         self.update_guppi_shmem()
         logging.info("command='%s'" % self.command_line)
@@ -162,6 +164,7 @@ class YUPPIObs(object):
         self.guppi_daq_command('START')
 
     def stop(self):
+        # TODO could use better thread safety
         logging.info('stop observation')
         try:
             self.timer.cancel() # in case not started yet
@@ -176,17 +179,28 @@ class YUPPIObs(object):
             except AttributeError:
                 pass
 
+    def is_stopped(self):
+        # TODO could use better thread safety
+        if self.timer is None and self.process is None:
+            return True
+        else:
+            return False
+
     def set_timer(self):
-        diff = (self.startMJD - mjd_now())
+        now = mjd_now()
+        diff = (self.startMJD - now)*86400.0
         if diff<0.0: diff=0.0
-        logging.info("will start obs at mjd=%f in %.1fs" % (self.startMJD,
-            diff))
+        logging.info("will start obs at mjd=%f in %.1fs (now=%f)" % (self.startMJD,
+            diff, now))
         self.timer = threading.Timer(diff, self.start)
         self.timer.start()
 
     def stop_at(self,mjd):
-        diff = (mjd - mjd_now())
+        now = mjd_now()
+        diff = (mjd - now)*86400.0
         if diff<0.0: diff=0.0
-        logging.info("will stop obs at mjd=%f in %.1fs" % (mjd, diff))
+        logging.info("will stop obs at mjd=%f in %.1fs (now=%f)" % (mjd, diff, now))
+        # TODO in case multiple stops are sent we also need to clear any
+        # previously existing stop timers.
         threading.Timer(diff, self.stop).start()
 

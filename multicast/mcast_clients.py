@@ -49,7 +49,7 @@ class McastClient(asyncore.dispatcher):
         try:
             self.parse()
         except Exception as e:
-            logging.error('error handling message: ' + repr(e))
+            logging.exception("error handling '%s' message" % self.name)
 
     def handle_error(self, type, val, trace):
         logging.error('unhandled exception: ' + repr(val))

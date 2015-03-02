@@ -17,4 +17,4 @@ guppi_set_params --force --evla --src="Init" --freq=1400 --ra=00:00:00.0 --dec=+
 ( guppi_daq_server >> $PSRLOGS/guppi_daq_server.`hostname`.`date +%Y%m%d`.log 2>&1 ) & 
 
 # Start packet-sniffer
-( $PSR/src/EVLA_pulsars/multicast/yuppi_controller.py >> $PSRLOGS/yuppi_controller.`hostname`.`date +%Y%m%d`.log 2>&1 ) &
+( $PSR/src/EVLA_pulsars/multicast/yuppi_controller.py -v >> $PSRLOGS/yuppi_controller.`hostname`.`date +%Y%m%d`.log 2>&1 ) &
