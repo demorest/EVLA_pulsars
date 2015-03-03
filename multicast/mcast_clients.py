@@ -90,7 +90,7 @@ class VCIClient(McastClient):
             if self.controller is not None:
                 self.controller.add_vci(vci)
         else:
-            logging.info("read vci non-subArray, ignoring" % vci.configId)
+            logging.info("read vci non-subArray, ignoring")
 
 # This is how these would be used in a program.  Note that no controller
 # is passed, so the only action taken here is to print log messages when
