@@ -69,6 +69,10 @@ class EVLAConfig(object):
         return self.obs.configId
 
     @property
+    def datasetId(self):
+        return self.obs.datasetId
+
+    @property
     def observer(self):
         return self.get_intent("ObserverName","Unknown")
 
