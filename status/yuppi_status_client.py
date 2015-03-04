@@ -19,6 +19,13 @@ def get(d,k):
     except KeyError:
         return "unk"
 
+# Also connect to remote supervisors
+import xmlrpclib
+supervisor = {}
+for node in nodelist:
+    uri = "http://%s:9200" % node
+    supervisor[node] = xmlrpclib.Server(uri)
+
 import curses, curses.wrapper
 
 def do_display(scr):
@@ -45,9 +52,14 @@ def do_display(scr):
         scr.addstr(curline,col,"YUPPI node status:",kc)
         curline+=1
 
-        rcol = 14
+        scol = 14
+        supfmt = "%7s %7s %7s"
+        scr.addstr(curline,scol,supfmt % ("sup", "ctrl", "daq"),kc)
+
+        rcol = 38
         statfmt = "%9s %8s %9s %9s %8s %6s"
-        scr.addstr(curline,rcol,statfmt%("PULSE","DAQ","NET","DROP","BLK", "FREQ"),kc)
+        scr.addstr(curline,rcol,statfmt%("PULSE","DAQ","NET","DROP",
+            "BLK","FREQ"),kc)
 
         # Loop over nodes
         for node in nodelist:
@@ -58,6 +70,28 @@ def do_display(scr):
                 continue
 
             scr.addstr(curline,col,node,kc)
+
+            # Check for supervisor connection
+            try:
+                sup_state = supervisor[node].supervisor.getState()['statename']
+                #scr.addstr(curline,scol,sup_state,vc)
+            except:
+                sup_state = "OFF"
+                scr.addstr(curline,scol,"No connection",ec)
+
+            if sup_state != "OFF":
+                states = {}
+                for proc in ("yuppi:yuppi_controller", "yuppi:guppi_daq"):
+                    try:
+                        states[proc] = supervisor[node].supervisor.getProcessInfo(proc)['statename']
+                    except:
+                        states[proc] = 'err'
+
+                scr.addstr(curline,scol,supfmt % (sup_state, 
+                    states['yuppi:yuppi_controller'],
+                    states['yuppi:guppi_daq']), vc)
+
+            # Check for yuppi_status connection
             try:
                 status[node].update()
                 shmem = status[node].get_shmem_keys()
