@@ -63,15 +63,34 @@ class YUPPIObs(object):
         else:
             self.shmem_params["OBS_MODE"] = "VDIF"
 
-        self.shmem_params["FD_POLN"] = "CIRC" # TODO what about low-freqs
+        self.shmem_params["FD_POLN"]  = "CIRC" # TODO what about low-freqs
         self.shmem_params["TRK_MODE"] = "TRACK"
         self.shmem_params["CAL_MODE"] = "OFF" # TODO what about cal obs
-        self.shmem_params["BACKEND"] = "YUPPI" 
+        self.shmem_params["BACKEND"]  = "YUPPI" 
+
+        self.shmem_params["SCANLEN"]  = 28800.0
+        self.shmem_params["PKTFMT"]   = "VDIF"
+        self.shmem_params["DATAHOST"] = "any"
+        self.shmem_params["POL_TYPE"] = "AABBCRCI"
+        self.shmem_params["CAL_FREQ"] = 10.0
+        self.shmem_params["CAL_DCYC"] = 0.5
+        self.shmem_params["CAL_PHS"]  = 0.0
+        self.shmem_params["OBSNCHAN"] = 1
+        self.shmem_params["NPOL"]     = 4
+        self.shmem_params["PFB_OVER"] = 4
+        self.shmem_params["NBITSADC"] = 8
+        self.shmem_params["NRCVR"]    = 2
+        self.shmem_params["ACC_LEN"]  = 1
+
+        self.shmem_params["STT_IMJD"] = 57000
+        self.shmem_params["STT_SMJD"] = 0
+        self.shmem_params["STT_OFFS"] = 0.0
 
         if subband:
 
             self.shmem_params["FRONTEND"] = subband.receiver
             self.shmem_params["OBSBW"] = subband.bw
+            self.shmem_params["CHAN_BW"] = subband.bw
             self.shmem_params["TBIN"] = 0.5/abs(subband.bw*1e6)
             self.shmem_params["OBSFREQ"] = subband.sky_center_freq
 
@@ -89,12 +108,23 @@ class YUPPIObs(object):
         """
 
         self.command_line = ""
-
-        # TODO need to clean up output directory, file naming stuff
+        
         node = os.uname()[1]
-        self.data_dir = "/lustre/evla/pulsar/data"
-        self.outfile_base = "%s.%s.%s.%s" % (evla_conf.source,
-                evla_conf.projid, evla_conf.seq, node)
+        node_idx = node.split('-')[-1] # Assumes cbe-node-XX naming
+
+        # This is the old pulsar version:
+        #self.data_dir = "/lustre/evla/pulsar/data"
+        #self.outfile_base = "%s.%s.%s.%s" % (evla_conf.source,
+        #        evla_conf.projid, evla_conf.seq, node)
+
+        # New version, 'normal' VLA data sets (SDM+BDF) are stored
+        # using datasetId as the main folder name.  Store here using
+        # node-specific subdirs because there are lots of files..
+        # Could make a subdir for each datasetId..
+        self.data_dir = "/lustre/evla/pulsar/data/%s" % node
+        self.outfile_base = "%s.%d.%d.%s" % (evla_conf.datasetId,
+                evla_conf.seq,node_idx,evla_conf.source)
+
         output_file = '%s/%s' % (self.data_dir, self.outfile_base)
 
         # Monitor mode, no data processing required here
