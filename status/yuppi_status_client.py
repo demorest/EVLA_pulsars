@@ -53,10 +53,10 @@ def do_display(scr):
         curline+=1
 
         scol = 14
-        supfmt = "%7s %7s %7s"
+        supfmt = "%8s %8s %8s"
         scr.addstr(curline,scol,supfmt % ("sup", "ctrl", "daq"),kc)
 
-        rcol = 38
+        rcol = 41
         statfmt = "%9s %8s %9s %9s %8s %6s"
         scr.addstr(curline,rcol,statfmt%("PULSE","DAQ","NET","DROP",
             "BLK","FREQ"),kc)
