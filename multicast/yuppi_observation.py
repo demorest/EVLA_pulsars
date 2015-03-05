@@ -164,10 +164,11 @@ class YUPPIObs(object):
 
     def guppi_daq_command(self,cmd):
         self.guppi_ctrl = "/tmp/guppi_daq_control" # TODO allow multiple
+        cmd = cmd.strip()
         logging.info("guppi_daq command '%s' to '%s'" % (cmd, self.guppi_ctrl))
         if (os.path.exists(self.guppi_ctrl)):
             if not self.dry:
-                open(self.guppi_ctrl,'w').write(cmd)
+                open(self.guppi_ctrl,'w').write(cmd+'\n')
         else:
             logging.error("guppi_daq FIFO '%s' does not exist" % (
                 self.guppi_ctrl))
