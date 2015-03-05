@@ -122,8 +122,8 @@ class YUPPIObs(object):
         # node-specific subdirs because there are lots of files..
         # Could make a subdir for each datasetId..
         self.data_dir = "/lustre/evla/pulsar/data/%s" % node
-        self.outfile_base = "%s.%d.%d.%s" % (evla_conf.datasetId,
-                evla_conf.seq,node_idx,evla_conf.source)
+        self.outfile_base = "%s.%d.%s.%s" % (evla_conf.datasetId,
+                int(evla_conf.seq),node_idx,evla_conf.source)
 
         output_file = '%s/%s' % (self.data_dir, self.outfile_base)
 
@@ -220,8 +220,8 @@ class YUPPIObs(object):
         now = mjd_now()
         diff = (self.startMJD - now)*86400.0
         if diff<0.0: diff=0.0
-        logging.info("will start obs at mjd=%f in %.1fs (now=%f)" % (self.startMJD,
-            diff, now))
+        logging.info("will start obs %s at mjd=%f in %.1fs (now=%f)" % (self.id,
+            self.startMJD, diff, now))
         self.timer = threading.Timer(diff, self.start)
         self.timer.start()
 
@@ -229,7 +229,8 @@ class YUPPIObs(object):
         now = mjd_now()
         diff = (mjd - now)*86400.0
         if diff<0.0: diff=0.0
-        logging.info("will stop obs at mjd=%f in %.1fs (now=%f)" % (mjd, diff, now))
+        logging.info("will stop obs %s at mjd=%f in %.1fs (now=%f)" % (self.id,
+            mjd, diff, now))
         # TODO in case multiple stops are sent we also need to clear any
         # previously existing stop timers.
         threading.Timer(diff, self.stop).start()
