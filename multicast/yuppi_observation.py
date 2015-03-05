@@ -24,6 +24,19 @@ import subprocess
 from guppi_daq import guppi_utils
 from jdcal import mjd_now
 
+class MJDTimer(threading.Timer):
+    """MJDTimer is derived from threading.Timer, but takes a start time
+    as an MJD rather than an delay in seconds.  If the start time is in
+    the past, the thread will be launched immediately.  The Timer.start()
+    method is called immediately when the object is created."""
+
+    def __init__(mjd,function,args=[],kwargs={}):
+        now = mjd_now()
+        diff = (mjd - now)*86400.0
+        if (diff<0.0): diff=0.0
+        super(MJDTimer,self).__init__(diff,function,args,kwargs)
+        self.start()
+
 class YUPPIObs(object):
     """This class represents a YUPPI observation, ie real-time
     processing of VDIF packets from one subband.  Initialize with 
@@ -33,14 +46,18 @@ class YUPPIObs(object):
     """
 
     def __init__(self, evla_conf, subband, dry_run=False):
+        self.state = 'init'
+        self.state_lock = threading.Lock()
         self.generate_shmem_config(evla_conf, subband)
         self.generate_obs_command(evla_conf, subband)
         self.dry = dry_run
         if self.dry:
             logging.warning("dry run mode enabled")
         self.process = None
-        self.timer = None
+        self.start_timer = None
+        self.stop_timer = None
         self.startMJD = evla_conf.startTime
+        self.stopMJD = None
         self.id = evla_conf.Id + '.' + str(evla_conf.seq)
         self.set_timer()
 
@@ -182,56 +199,64 @@ class YUPPIObs(object):
             g.write()
     
     def start(self):
-        # TODO could use better thread safety
-        logging.info('start observation')
-        self.update_guppi_shmem()
-        logging.info("command='%s'" % self.command_line)
-        if self.command_line and not self.dry:
-            logfile = '%s/%s.log' % (self.data_dir, self.outfile_base)
-            self.process = subprocess.Popen(self.command_line.split(' '),
-                    stdout=open(logfile,'w'), stderr=subprocess.STDOUT)
-        time.sleep(1)
-        self.guppi_daq_command('START')
+        with self.state_lock:
+            logging.info('start observation')
+            self.update_guppi_shmem()
+            logging.info("command='%s'" % self.command_line)
+            if self.command_line and not self.dry:
+                logfile = '%s/%s.log' % (self.data_dir, self.outfile_base)
+                self.process = subprocess.Popen(self.command_line.split(' '),
+                        stdout=open(logfile,'w'), stderr=subprocess.STDOUT)
+            time.sleep(1)
+            self.guppi_daq_command('START')
+            self.state = 'running'
 
     def stop(self):
-        # TODO could use better thread safety
-        logging.info('stop observation')
-        try:
-            self.timer.cancel() # in case not started yet
-            self.timer = None
-        except AttributeError:
-            pass
-        if not self.dry:
-            self.guppi_daq_command('STOP')
+        with self.state_lock:
+            logging.info('stop observation')
             try:
-                self.process.send_signal(signal.SIGINT)
-                self.process = None
+                self.start_timer.cancel() # in case not started yet
+                self.start_timer = None
             except AttributeError:
                 pass
+            if not self.dry:
+                self.guppi_daq_command('STOP')
+                try:
+                    self.process.send_signal(signal.SIGINT)
+                    self.process = None
+                except AttributeError:
+                    pass
+            self.state = 'stopped'
 
     def is_stopped(self):
-        # TODO could use better thread safety
-        if self.timer is None and self.process is None:
-            return True
-        else:
-            return False
+        with self.state_lock:
+            if self.start_timer is None and self.process is None:
+                return True
+            else:
+                return False
+
+    def get_state(self):
+        with self.state_lock:
+            return self.state
 
     def set_timer(self):
-        now = mjd_now()
-        diff = (self.startMJD - now)*86400.0
-        if diff<0.0: diff=0.0
-        logging.info("will start obs %s at mjd=%f in %.1fs (now=%f)" % (self.id,
-            self.startMJD, diff, now))
-        self.timer = threading.Timer(diff, self.start)
-        self.timer.start()
+        with self.state_lock:
+            logging.info("will start obs %s at mjd=%f" % (self.id, 
+                self.startMJD))
+            self.start_timer = MJDTimer(self.startMJD, self.start)
+            self.state = 'queued'
 
     def stop_at(self,mjd):
-        now = mjd_now()
-        diff = (mjd - now)*86400.0
-        if diff<0.0: diff=0.0
-        logging.info("will stop obs %s at mjd=%f in %.1fs (now=%f)" % (self.id,
-            mjd, diff, now))
-        # TODO in case multiple stops are sent we also need to clear any
-        # previously existing stop timers.
-        threading.Timer(diff, self.stop).start()
+        with self.state_lock:
+            # If there is already an earlier requested stop time, ignore this
+            if self.stopMJD is not None:
+                if mjd > self.stopMJD:
+                    return
+                else:
+                    # kill previous stop timer, make new one
+                    self.stop_timer.cancel()
+                    self.stop_timer = None
+            self.stopMJD = mjd
+            logging.info("will stop obs %s at mjd=%f" % (self.id, self.stopMJD))
+            self.stop_timer = MJDTimer(mjd, self.stop)
 
