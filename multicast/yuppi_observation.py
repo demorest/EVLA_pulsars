@@ -12,8 +12,6 @@
 #  - figure out how to handle multiple observations running on a node
 #    - 1 subarray, multiple subbands
 #    - multiple subarrays, multiple subbands
-#  - How to deal with stopping observations: This class provides a 'stop'
-#    method but the decision is made at a higher level?
 
 import os
 import time
@@ -24,18 +22,21 @@ import subprocess
 from guppi_daq import guppi_utils
 from jdcal import mjd_now
 
-class MJDTimer(threading.Timer):
-    """MJDTimer is derived from threading.Timer, but takes a start time
+class MJDTimer(object):
+    """MJDTimer is based on threading.Timer, but takes a start time
     as an MJD rather than an delay in seconds.  If the start time is in
     the past, the thread will be launched immediately.  The Timer.start()
     method is called immediately when the object is created."""
 
-    def __init__(mjd,function,args=[],kwargs={}):
+    def __init__(self,mjd,function,args=[],kwargs={}):
         now = mjd_now()
         diff = (mjd - now)*86400.0
         if (diff<0.0): diff=0.0
-        super(MJDTimer,self).__init__(diff,function,args,kwargs)
-        self.start()
+        self.timer = threading.Timer(diff,function,args,kwargs)
+        self.timer.start()
+
+    def cancel(self):
+        self.timer.cancel()
 
 class YUPPIObs(object):
     """This class represents a YUPPI observation, ie real-time
@@ -98,6 +99,9 @@ class YUPPIObs(object):
         self.shmem_params["NBITSADC"] = 8
         self.shmem_params["NRCVR"]    = 2
         self.shmem_params["ACC_LEN"]  = 1
+        
+        self.shmem_params["BLOCSIZE"] = 32000000
+        self.shmem_params["OVERLAP"]  = 0
 
         self.shmem_params["STT_IMJD"] = 57000
         self.shmem_params["STT_SMJD"] = 0
@@ -156,7 +160,7 @@ class YUPPIObs(object):
             self.command_line += ' -L%f' % evla_conf.foldtime
             if evla_conf.parfile == 'CAL':
                 # Fold at 10 Hz (noise tubes), no dedispersion, .cf extension
-                self.command_line += ' -D0 -c0.1 -e cf'
+                self.command_line += ' -D0.0001 -c0.1 -e cf'
             else:
                 self.command_line += ' -E%s' % evla_conf.parfile
             self.command_line += ' -b%d' % evla_conf.foldbins
@@ -201,6 +205,13 @@ class YUPPIObs(object):
     
     def start(self):
         with self.state_lock:
+            if self.state=='running':
+                logging.error('obs %s started when already running' % self.id)
+                return
+            if self.state=='stopped':
+                # This should not happen, but if state is stopped then
+                # a stop command was already sent, so don't start
+                return
             logging.info('start observation')
             self.update_guppi_shmem()
             logging.info("command='%s'" % self.command_line)
@@ -214,27 +225,26 @@ class YUPPIObs(object):
 
     def stop(self):
         with self.state_lock:
+            if self.state=='stopped': 
+                return
             logging.info('stop observation')
             try:
                 self.start_timer.cancel() # in case not started yet
                 self.start_timer = None
             except AttributeError:
                 pass
-            if not self.dry:
+            if self.state=='running' and not self.dry:
                 self.guppi_daq_command('STOP')
-                try:
-                    self.process.send_signal(signal.SIGINT)
-                    self.process = None
-                except AttributeError:
-                    pass
+            try:
+                self.process.send_signal(signal.SIGINT)
+                self.process = None
+            except AttributeError:
+                pass
             self.state = 'stopped'
 
     def is_stopped(self):
         with self.state_lock:
-            if self.start_timer is None and self.process is None:
-                return True
-            else:
-                return False
+            return self.state=='stopped'
 
     def get_state(self):
         with self.state_lock:
