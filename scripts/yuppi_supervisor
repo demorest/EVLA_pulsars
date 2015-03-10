@@ -1,0 +1,54 @@
+#! /usr/bin/env python
+
+# Script to do various things with all the supervisor processes on
+# the nodes.
+
+import sys
+import xmlrpclib
+
+from optparse import OptionParser
+parser = OptionParser(usage="Usage: %prog [options] command")
+parser.add_option("-L","--list-cmds",action="store_true",dest="list",
+        help="List commands then exit", default=False)
+(opt,arg) = parser.parse_args()
+
+cmds = {
+        "start": "Start yuppi programs",
+        "stop":  "Stop yuppi programs",
+        "shutdown": "Shutdown supervisor"
+        }
+
+if opt.list:
+    print "%10s  %s" % ("command", "description")
+    for (k,v) in cmds.items():
+        print "%10s  %s" % (k, v)
+    sys.exit(0)
+
+if len(arg)==0:
+    parser.print_help()
+    sys.exit(0)
+
+cmd = arg[0]
+if cmd not in cmds.keys():
+    print "Invalid command '%s'" % cmd
+    print "Commands: " + str(cmds.keys())
+    sys.exit(1)
+
+nodes = ["cbe-node-%02d" % i for i in range(1,33)]
+
+for node in nodes:
+    try:
+        sup = xmlrpclib.Server("http://%s:9200" % node)
+        if cmd=='shutdown':
+            sup.supervisor.shutdown()
+        elif cmd=='start':
+            sup.supervisor.startProcessGroup('yuppi')
+        elif cmd=='stop':
+            sup.supervisor.stopProcessGroup('yuppi')
+        else:
+            print "Invalid command '%s'" % cmd
+    except KeyboardInterrupt:
+        sys.exit(1)
+    except:
+        print "Error on %s" % node
+
