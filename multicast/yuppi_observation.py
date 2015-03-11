@@ -144,7 +144,7 @@ class YUPPIObs(object):
         # Could make a subdir for each datasetId..
         self.data_dir = "/lustre/evla/pulsar/data/%s" % node
         self.outfile_base = "%s.%d.%s.%s" % (evla_conf.datasetId,
-                int(evla_conf.seq),node_idx,evla_conf.source)
+                int(evla_conf.seq),evla_conf.source,node_idx)
 
         output_file = '%s/%s' % (self.data_dir, self.outfile_base)
 
@@ -167,7 +167,7 @@ class YUPPIObs(object):
             self.command_line += ' -O%s' % output_file
 
         elif 'PULSAR_SEARCH' in evla_conf.scan_intent:
-            acclen = int(abs(conf.timeres*conf.bandwidth*1e6/conf.nchan))
+            acclen = int(abs(evla_conf.timeres*subband.bw*1e6/evla_conf.nchan))
             self.command_line = 'digifil -threads 8 -B64 -I0 -c'
             self.command_line += ' -F%d' % evla_conf.nchan
             self.command_line += ' -t%d' % acclen
