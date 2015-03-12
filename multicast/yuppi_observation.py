@@ -143,10 +143,15 @@ class YUPPIObs(object):
         # node-specific subdirs because there are lots of files..
         # Could make a subdir for each datasetId..
         self.data_dir = "/lustre/evla/pulsar/data/%s" % node
-        self.outfile_base = "%s.%d.%s.%s" % (evla_conf.datasetId,
-                int(evla_conf.seq),evla_conf.source,node_idx)
+        #self.outfile_base = "%s.%d.%s.%s" % (evla_conf.datasetId,
+        #        int(evla_conf.seq),evla_conf.source,node_idx)
+        self.outfile_base = "%s.%d.%s.%s-%02d" % (evla_conf.datasetId,
+                int(evla_conf.seq), evla_conf.source,
+                subband.IFid, subband.sbid)
 
         output_file = '%s/%s' % (self.data_dir, self.outfile_base)
+
+        verbosity = ' -q'
 
         # Monitor mode, no data processing required here
         if 'PULSAR_MONITOR' in evla_conf.scan_intent:
@@ -181,6 +186,7 @@ class YUPPIObs(object):
 
         # Tack on guppi_daq args common to both dspsr and digifil
         # TODO For multiple input streams will need to select databuf value
+        self.command_line += verbosity
         self.command_line += " -header INSTRUMENT=guppi_daq DATABUF=1"
 
     def guppi_daq_command(self,cmd):
