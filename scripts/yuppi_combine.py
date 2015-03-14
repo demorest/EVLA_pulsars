@@ -4,10 +4,6 @@ import os,sys,glob
 import logging
 import psrchive
 
-# TODO:
-#  - logging statements
-#  - rephasing using certain polycos
-
 from optparse import OptionParser
 cmdline = OptionParser(usage='usage: %prog [options] scan_prefix')
 cmdline.add_option('-v', '--verbose', dest='verbose', action='store_true',
