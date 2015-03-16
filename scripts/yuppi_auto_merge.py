@@ -73,7 +73,11 @@ def get_scans(subdir):
         all_files += glob.glob('%s/*.%s' % (subdir,ext))
     scans = {}
     for fname in all_files:
-        info = FileInfo(fname)
+        try:
+            info = FileInfo(fname)
+        except ValueError:
+            logging.debug("Error parsing filename '%s'" % fname)
+            continue
         if info.scan not in scans.keys(): scans[info.scan] = ScanInfo()
         scans[info.scan].add_file(fname)
     return scans
@@ -82,25 +86,35 @@ scans = get_scans(opt.dir)
 
 for scan in scans.keys():
     info = scans[scan]
-    print (scan, info.nfiles, info.idx0, info.idx1,
-            info.max_filesize/(2.0**20),
-            info.total_filesize / (2.0**20),
-            info.ifids)
+    if opt.verbose:
+        print (scan, info.nfiles, info.idx0, info.idx1,
+                info.max_filesize/(2.0**20),
+                info.total_filesize / (2.0**20),
+                info.ifids)
     # Split so that we have ~1GB output files per scan, in 2^N sized 
     # groups of subints.
-    nparts = int(info.total_filesize / float(1<<30)) + 1
+    nparts = int(info.total_filesize/float(len(info.ifids))/float(1<<30)) + 1
     nsub = info.idx1 - info.idx0 + 1
     if nparts==1:
         subints_per_part = nsub
     else:
         subints_per_part = 1<<int(log(float(nsub)/nparts,2.0))
+    if opt.verbose: 
+        print "nsub=%d, nparts=%d, subints_per_part=%d" % (nsub,nparts,
+                subints_per_part)
+    outidx = 1
     for isub in range(info.idx0,info.idx1+1,subints_per_part):
         for bb in info.ifids:
+            # TODO check whether output file exists
             cmd = 'yuppi_combine.py'
+            cmd += ' -v'
             cmd += ' -b%s' % bb
             cmd += ' -i%d' % isub
             cmd += ' -n%d' % subints_per_part
             cmd += " -d'%s'" % opt.dir
+            cmd += ' -x%d' % outidx
+            cmd += ' -omerged_data'
             cmd += ' ' + scan
             print cmd
+        outidx += 1
 
