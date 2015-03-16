@@ -1,18 +1,24 @@
 #! /usr/bin/env python
 
 import os,sys,glob
+from math import log
 import logging
 import psrchive
 from collections import namedtuple
+
+# TODO:
+#  - make this a persistent process, watching for new files
+#    (need to decide scheme for figuring out when a scan is done)
+#  - decide if multiple merging processes should be run in parallel
+#    or if sequential calls are fine.
 
 from optparse import OptionParser
 cmdline = OptionParser(usage='usage: %prog [options] scan_prefix')
 cmdline.add_option('-v', '--verbose', dest='verbose', action='store_true',
         default=False, help='Verbose logging')
 cmdline.add_option('-d', '--subdir', dest='dir', action='store',
-        default='cbe-node-??', help='Directory with data files [%default]')
+        default='cbe-node-??', help='Directory (glob) with data files [%default]')
 (opt,args) = cmdline.parse_args()
-
 
 loglevel = logging.INFO
 if opt.verbose:
@@ -75,8 +81,26 @@ def get_scans(subdir):
 scans = get_scans(opt.dir)
 
 for scan in scans.keys():
-    print (scan, scans[scan].nfiles, scans[scan].idx0, scans[scan].idx1,
-            scans[scan].max_filesize/(2.0**20),
-            scans[scan].total_filesize / (2.0**20),
-            scans[scan].ifids)
+    info = scans[scan]
+    print (scan, info.nfiles, info.idx0, info.idx1,
+            info.max_filesize/(2.0**20),
+            info.total_filesize / (2.0**20),
+            info.ifids)
+    # Split so that we have ~1GB output files per scan, in 2^N sized 
+    # groups of subints.
+    nparts = int(info.total_filesize / float(1<<30)) + 1
+    nsub = info.idx1 - info.idx0 + 1
+    if nparts==1:
+        subints_per_part = nsub
+    else:
+        subints_per_part = 1<<int(log(float(nsub)/nparts,2.0))
+    for isub in range(info.idx0,info.idx1+1,subints_per_part):
+        for bb in info.ifids:
+            cmd = 'yuppi_combine.py'
+            cmd += ' -b%s' % bb
+            cmd += ' -i%d' % isub
+            cmd += ' -n%d' % subints_per_part
+            cmd += " -d'%s'" % opt.dir
+            cmd += ' ' + scan
+            print cmd
 
