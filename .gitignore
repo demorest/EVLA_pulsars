@@ -1,4 +1,5 @@
 *~
+.*.swp
 *.pyc
 multicast/async_mcast.log0
 multicast/obs.log
