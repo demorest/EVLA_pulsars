@@ -3,6 +3,7 @@
 import os,sys,glob
 import logging
 import psrchive
+from collections import namedtuple
 
 from optparse import OptionParser
 cmdline = OptionParser(usage='usage: %prog [options] scan_prefix')
@@ -15,7 +16,7 @@ cmdline.add_option('-i', '--idx', dest='idx', action='store',
 cmdline.add_option('-n', '--nsub', dest='nsub', action='store',
         type='int', default=128, help='Number of subints to add [%default]')
 cmdline.add_option('-d', '--subdir', dest='dir', action='store',
-        default='cbe-node-??', help='Directory with data files [%default]')
+        default='cbe-node-??', help='Directory (glob) with data files [%default]')
 (opt,args) = cmdline.parse_args()
 
 if len(args)!=1:
@@ -38,22 +39,35 @@ baseband = opt.bb
 idx0 = opt.idx
 idx1 = opt.idx + opt.nsub
 
+# Example filename:
+# 15A-105_sb30474261_1_test.57093.660558020834.963.J1909-3744.BD-15_0029.ar
+class FileInfo(namedtuple('FileInfo','path fname scan ifid sbid idx ext')):
+    def __new__(cls, fname_path):
+        (path,fname) = os.path.split(fname_path)
+        (tmp,ext) = os.path.splitext(fname)
+        ext = ext.strip('.')
+        (scan,tmp) = os.path.splitext(tmp)
+        tmp = tmp.strip('.')
+        (ifsb,idx) = tmp.split('_')
+        (ifid,sbid) = ifsb.split('-')
+        return super(FileInfo,cls).__new__(cls, path, 
+                fname, scan, ifid,
+                sbid, idx, ext)
+
 fname_base = '%s/%s' % (opt.dir,scan)
 fnames = glob.glob(fname_base + '.*.ar') + glob.glob(fname_base+'.*.cf')
 
 sub_files = {}
+ext = 'ar'
 for fname in fnames:
-    # Example filename:
-    # 15A-105_sb30474261_1_test.57093.660558020834.963.J1909-3744.BD-15_0029.ar
-    # Could do better pattern matching here..
-    parts = fname.split('.')
-    (subband, subint) = parts[-2].split('_')
-    (bb,sbid) = subband.split('-')
+    info = FileInfo(fname)
+    subband = info.ifid + '-' + info.sbid
+    ext = info.ext # TODO check for mismatched extensions
 
     # Skip files that are not from the baseband or subint we want
-    if bb != baseband:
+    if info.ifid != baseband:
         continue
-    if int(subint)<idx0 or int(subint)>=idx1:
+    if int(info.idx)<idx0 or int(info.idx)>=idx1:
         continue
 
     # build list of files per subband
@@ -100,13 +114,21 @@ freqappend.init(basearch)
 # the others so its polycos do not span the full observation.  Could
 # be improved by selecting whichever subband has the longest timespan.
 freqappend.ignore_phase = True
-polycos = basearch.get_model()
+if ext!='cf':
+    polycos = basearch.get_model()
+else:
+    polycos = None
 for sub in subbands[1:]:
-    sub_arch[sub].set_model(polycos)
+    if polycos is not None: 
+        sub_arch[sub].set_model(polycos)
     patch.operate(basearch,sub_arch[sub])
     freqappend.append(basearch,sub_arch[sub])
 
-outfname = '%s.%s_%d.ar' % (scan, baseband, idx0)
+# Make sure .cf files get marked as cals
+if ext=='cf':
+    basearch.set_type('PolnCal')
+
+outfname = '%s.%s_%d.%s' % (scan, baseband, idx0, ext)
 logging.info("Unloading '%s'" % outfname)
 basearch.unload(outfname)
 logging.debug("Done")
