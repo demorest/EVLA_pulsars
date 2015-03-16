@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 
 import os,sys,glob
+import shutil
 import logging
 import psrchive
 from collections import namedtuple
@@ -16,7 +17,12 @@ cmdline.add_option('-i', '--idx', dest='idx', action='store',
 cmdline.add_option('-n', '--nsub', dest='nsub', action='store',
         type='int', default=128, help='Number of subints to add [%default]')
 cmdline.add_option('-d', '--subdir', dest='dir', action='store',
-        default='cbe-node-??', help='Directory (glob) with data files [%default]')
+        default='cbe-node-??', 
+        help='Directory (glob) with data files [%default]')
+cmdline.add_option('-o', '--outdir', dest='outdir', action='store',
+        default='.', help='Output directory [%default]')
+cmdline.add_option('-x', '--outidx', dest='outidx', action='store',
+        type='int', default=None, help='Output index [input]')
 (opt,args) = cmdline.parse_args()
 
 if len(args)!=1:
@@ -26,6 +32,9 @@ if len(args)!=1:
 loglevel = logging.INFO
 if opt.verbose:
     loglevel = logging.DEBUG
+
+if opt.outidx is None:
+    opt.outidx = opt.idx
 
 # Include pid to distinguish different instances
 pid = '%5d' % os.getpid()
@@ -128,7 +137,12 @@ for sub in subbands[1:]:
 if ext=='cf':
     basearch.set_type('PolnCal')
 
-outfname = '%s.%s_%d.%s' % (scan, baseband, idx0, ext)
+outfname = '%s.%s_%04d.%s' % (scan, baseband, opt.outidx, ext)
 logging.info("Unloading '%s'" % outfname)
-basearch.unload(outfname)
+# Unload to /dev/shm first to avoid slow psrchive/lustre issue..
+tmpdir = '/dev/shm'
+logging.debug("Writing to %s" % tmpdir)
+basearch.unload(tmpdir+'/'+outfname)
+logging.debug("Moving to %s" % opt.outdir)
+shutil.move(tmpdir+'/'+outfname, opt.outdir+'/'+outfname)
 logging.debug("Done")
