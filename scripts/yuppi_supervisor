@@ -40,9 +40,11 @@ def node_command(node, cmd):
         print "Error on %s" % node
 
 if opt.list:
-    print "%10s  %s" % ("command", "description")
+    ll = max([len(c) for c in cmds.keys()])
+    fmt_str = '%' + str(ll) + "s  %s"
+    print fmt_str % ("command", "description")
     for (k,v) in cmds.items():
-        print "%10s  %s" % (k, v)
+        print fmt_str % (k, v)
     sys.exit(0)
 
 if len(arg)==0:
