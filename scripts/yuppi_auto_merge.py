@@ -106,6 +106,7 @@ for scan in scans.keys():
     for isub in range(info.idx0,info.idx1+1,subints_per_part):
         for bb in info.ifids:
             # TODO check whether output file exists
+            outdir = 'merged_data'
             cmd = 'yuppi_combine.py'
             cmd += ' -v'
             cmd += ' -b%s' % bb
@@ -113,7 +114,7 @@ for scan in scans.keys():
             cmd += ' -n%d' % subints_per_part
             cmd += " -d'%s'" % opt.dir
             cmd += ' -x%d' % outidx
-            cmd += ' -omerged_data'
+            cmd += ' -o%s' % outdir
             cmd += ' ' + scan
             print cmd
         outidx += 1

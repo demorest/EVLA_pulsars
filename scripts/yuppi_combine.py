@@ -10,6 +10,8 @@ from optparse import OptionParser
 cmdline = OptionParser(usage='usage: %prog [options] scan_prefix')
 cmdline.add_option('-v', '--verbose', dest='verbose', action='store_true',
         default=False, help='Verbose logging')
+cmdline.add_option('-f', '--force', dest='force', action='store_true',
+        default=False, help='Force overwrite of existing files')
 cmdline.add_option('-b', '--bb', dest='bb', action='store',
         default='AC', help='Baseband (IF) to process [%default]')
 cmdline.add_option('-i', '--idx', dest='idx', action='store',
@@ -90,6 +92,12 @@ nfiles = 0
 for sub in subbands:
     nfiles += len(sub_files[sub])
 
+outfname = '%s.%s_%04d.%s' % (scan, baseband, opt.outidx, ext)
+full_outfname = opt.outdir + '/' + outfname
+if os.path.exists(full_outfname) and not opt.force:
+    logging.info("Output file '%s' exists, exiting." % full_outfname)
+    sys.exit(0)
+
 logging.info('Found %s subbands, %d files' % (len(subbands), nfiles))
 if nfiles==0:
     logging.info('No matching files, exiting')
@@ -137,12 +145,11 @@ for sub in subbands[1:]:
 if ext=='cf':
     basearch.set_type('PolnCal')
 
-outfname = '%s.%s_%04d.%s' % (scan, baseband, opt.outidx, ext)
 logging.info("Unloading '%s'" % outfname)
 # Unload to /dev/shm first to avoid slow psrchive/lustre issue..
 tmpdir = '/dev/shm'
 logging.debug("Writing to %s" % tmpdir)
 basearch.unload(tmpdir+'/'+outfname)
 logging.debug("Moving to %s" % opt.outdir)
-shutil.move(tmpdir+'/'+outfname, opt.outdir+'/'+outfname)
+shutil.move(tmpdir+'/'+outfname, full_outfname)
 logging.debug("Done")
