@@ -90,7 +90,7 @@ class YUPPIObs(object):
         self.shmem_params["PKTFMT"]   = "VDIF"
         self.shmem_params["DATAHOST"] = "any"
         self.shmem_params["POL_TYPE"] = "AABBCRCI"
-        self.shmem_params["CAL_FREQ"] = 10.0
+        self.shmem_params["CAL_FREQ"] = evla_conf.calfreq
         self.shmem_params["CAL_DCYC"] = 0.5
         self.shmem_params["CAL_PHS"]  = 0.0
         self.shmem_params["OBSNCHAN"] = 1
@@ -164,8 +164,8 @@ class YUPPIObs(object):
             self.command_line += ' -d%d' % evla_conf.npol
             self.command_line += ' -L%f' % evla_conf.foldtime
             if evla_conf.parfile == 'CAL':
-                # Fold at 10 Hz (noise tubes), no dedispersion, .cf extension
-                self.command_line += ' -D0.0001 -c0.1 -e cf'
+                # Fold at const freq (eg 10 Hz), no dedispersion, .cf extension
+                self.command_line += ' -D0.0001 -c%.10e -e cf' % (1.0/float(evla_conf.calfreq))
             else:
                 self.command_line += ' -E%s' % evla_conf.parfile
             self.command_line += ' -b%d' % evla_conf.foldbins

@@ -113,6 +113,10 @@ class EVLAConfig(object):
         return self.get_intent("TempoFileName",None)
 
     @property
+    def calfreq(self):
+        return float(self.get_intent("PsrCalFreq", 10.0))
+
+    @property
     def source(self):
         return self.obs.name
 
