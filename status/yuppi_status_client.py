@@ -81,7 +81,8 @@ def do_display(scr):
 
             if sup_state != "OFF":
                 states = {}
-                for proc in ("yuppi:yuppi_controller", "yuppi:guppi_daq"):
+                for proc in ("yuppi:yuppi_controller", 
+                        "yuppi:guppi_daq_0", "yuppi:guppi_daq_1"):
                     try:
                         states[proc] = supervisor[node].supervisor.getProcessInfo(proc)['statename']
                     except:
@@ -89,7 +90,7 @@ def do_display(scr):
 
                 scr.addstr(curline,scol,supfmt % (sup_state, 
                     states['yuppi:yuppi_controller'],
-                    states['yuppi:guppi_daq']), vc)
+                    states['yuppi:guppi_daq_0']), vc)
 
             # Check for yuppi_status connection
             try:

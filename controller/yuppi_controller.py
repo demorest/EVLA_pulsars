@@ -120,21 +120,24 @@ class YUPPIController(object):
                 subbands = config.get_subbands(match_ips=data_ips)
                 logging.info("found %d matching subbands" % len(subbands))
 
-                # TODO allow multiple subbands somehow?
-                sub = subbands[0]
-                logging.info("configuring subband %s-%d %.1fMHz" % (sub.IFid,
-                    sub.sbid, sub.sky_center_freq))
-
                 # if there is a running observation we need to stop it..
                 for observation in self.observations:
-                    logging.debug('request stop obs %s in %.1fs' % (observation.id,
-                        config.wait_time_sec))
+                    logging.debug('request stop obs %s in %.1fs' % (
+                        observation.id, config.wait_time_sec))
                     # Two pulsar scans back-to-back, allow an extra half-second
                     # delay between them by ending first one early:
                     observation.stop_at(config.startTime - 0.5/86400.0) 
 
-                # Launch observation at the right time
-                self.observations += [YUPPIObs(config,sub),]
+                # Allow multiple subbands
+                # TODO check for max simultaneous subbands here?
+                daq_idx=0
+                for sub in subbands:
+                    logging.info("configuring subband %s-%d %.1fMHz" % (
+                        sub.IFid, sub.sbid, sub.sky_center_freq))
+
+                    # Launch observation at the right time
+                    self.observations += [YUPPIObs(config,sub,daq_idx=daq_idx),]
+                    daq_idx += 1
 
             else:
 

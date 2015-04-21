@@ -42,11 +42,12 @@ class YUPPIObs(object):
     """This class represents a YUPPI observation, ie real-time
     processing of VDIF packets from one subband.  Initialize with 
     appropriate EVLAConfig and SubBand objects.
+    daq_idx = Index of guppi_daq process to use.
     dry_run = True means emit log messages about what would have 
     happened, but do not actually touch shmem or run commands.
     """
 
-    def __init__(self, evla_conf, subband, dry_run=False):
+    def __init__(self, evla_conf, subband, daq_idx=0, dry_run=False):
         self.state = 'init'
         self.state_lock = threading.Lock()
         self.generate_shmem_config(evla_conf, subband)
@@ -54,6 +55,7 @@ class YUPPIObs(object):
         self.dry = dry_run
         if self.dry:
             logging.warning("dry run mode enabled")
+        self.daq_idx = daq_idx
         self.process = None
         self.start_timer = None
         self.stop_timer = None
@@ -190,7 +192,7 @@ class YUPPIObs(object):
         self.command_line += " -header INSTRUMENT=guppi_daq DATABUF=1"
 
     def guppi_daq_command(self,cmd):
-        self.guppi_ctrl = "/tmp/guppi_daq_control" # TODO allow multiple
+        self.guppi_ctrl = "/tmp/guppi_daq_control_%d" % self.daq_idx
         cmd = cmd.strip()
         logging.info("guppi_daq command '%s' to '%s'" % (cmd, self.guppi_ctrl))
         if (os.path.exists(self.guppi_ctrl)):
@@ -204,7 +206,7 @@ class YUPPIObs(object):
         logging.info('updating shmem: ' + str(self.shmem_params))
         if not self.dry:
             # TODO open here, or keep an open guppi_status...
-            g = guppi_utils.guppi_status()
+            g = guppi_utils.guppi_status(idx=self.daq_idx)
             for k in self.shmem_params:
                 g.update(k,self.shmem_params[k])
             g.write()
