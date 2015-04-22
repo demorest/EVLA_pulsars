@@ -53,12 +53,12 @@ for vcifname in sys.argv[1:]:
     print "VCI: %d subBands" % n_subband
     print "VCI: %d summedArrays" % n_summedarray
 
-    if n_summedarray > n_nodes:
+    if n_summedarray > 2*n_nodes:
         print "ERROR: Number of subbands greater than number of nodes"
         sys.exit(1)
 
     # For now assume summedArray and vdif tags exist
-    inode = 1
+    inode = 0
     for summedarray in vciroot.iter(pfx+'summedArray'):
         vdif = summedarray.find(pfx+'vdif')
         if vdif is None:
@@ -68,9 +68,15 @@ for vcifname in sys.argv[1:]:
         # To enable extra headroom on quantization (not tested)
         #summedarray.attrib['headroom6dB'] = 'true'
 
-        node = 'cbe-node-%02d' % inode
-        nic1 = node + '-1'
-        nic2 = node + '-2'
+        node = 'cbe-node-%02d' % ((inode % n_nodes) + 1)
+        if inode>=n_nodes:
+            nic1 = node + '-3'
+            nic2 = node + '-4'
+            port = '50001'
+        else:
+            nic1 = node + '-1'
+            nic2 = node + '-2'
+            port = '50000'
 
         # Find bandwidth, use to set number of bits
         bw = abs(float(summedarray.getparent().attrib['bw']))
@@ -93,7 +99,7 @@ for vcifname in sys.argv[1:]:
         vdif.attrib['epoch'] = '0'
         vdif.attrib['bThread'] = '1'
         vdif.attrib['aThread'] = '0'
-        vdif.attrib['aDestPort'] = '50000'
+        vdif.attrib['aDestPort'] = port
         #vdif.attrib['bDestPort'] = '50000' # XXX need this?
         vdif.attrib['aDestMAC'] = macs[nic1]
         vdif.attrib['aDestIP'] = ips[nic1]
