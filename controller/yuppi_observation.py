@@ -50,12 +50,12 @@ class YUPPIObs(object):
     def __init__(self, evla_conf, subband, daq_idx=0, dry_run=False):
         self.state = 'init'
         self.state_lock = threading.Lock()
+        self.daq_idx = daq_idx
         self.generate_shmem_config(evla_conf, subband)
         self.generate_obs_command(evla_conf, subband)
         self.dry = dry_run
         if self.dry:
             logging.warning("dry run mode enabled")
-        self.daq_idx = daq_idx
         self.process = None
         self.start_timer = None
         self.stop_timer = None
@@ -189,7 +189,8 @@ class YUPPIObs(object):
         # Tack on guppi_daq args common to both dspsr and digifil
         # TODO For multiple input streams will need to select databuf value
         self.command_line += verbosity
-        self.command_line += " -header INSTRUMENT=guppi_daq DATABUF=1"
+        self.command_line += " -header INSTRUMENT=guppi_daq DATABUF=%d" % (
+            1+self.daq_idx*10)
 
     def guppi_daq_command(self,cmd):
         self.guppi_ctrl = "/tmp/guppi_daq_control_%d" % self.daq_idx
@@ -203,7 +204,8 @@ class YUPPIObs(object):
                 self.guppi_ctrl))
 
     def update_guppi_shmem(self):
-        logging.info('updating shmem: ' + str(self.shmem_params))
+        logging.info(('updating shmem(%d): ' % self.daq_idx) \
+            + str(self.shmem_params))
         if not self.dry:
             # TODO open here, or keep an open guppi_status...
             g = guppi_utils.guppi_status(idx=self.daq_idx)
