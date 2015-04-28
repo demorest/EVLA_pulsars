@@ -53,13 +53,14 @@ def do_display(scr):
         curline+=1
 
         scol = 14
-        supfmt = "%8s %8s %8s"
-        scr.addstr(curline,scol,supfmt % ("sup", "ctrl", "daq"),kc)
+        supfmt = "%8s %8s %8s %8s"
+        scr.addstr(curline,scol,supfmt % ("sup", "ctrl", "daq0", "daq1"),kc)
 
-        rcol = 41
-        statfmt = "%9s %8s %9s %9s %8s %6s"
-        scr.addstr(curline,rcol,statfmt%("PULSE","DAQ","NET","DROP",
-            "BLK","FREQ"),kc)
+        statfmt = "%9s %8s %9s %9s %6s"
+        rcol = [50, 100]
+        for i in range(2):
+            scr.addstr(curline,rcol[i],statfmt%("PULSE","DAQ","NET","DROP",
+                "FREQ"),kc)
 
         # Loop over nodes
         for node in nodelist:
@@ -90,40 +91,43 @@ def do_display(scr):
 
                 scr.addstr(curline,scol,supfmt % (sup_state, 
                     states['yuppi:yuppi_controller'],
-                    states['yuppi:guppi_daq_0']), vc)
+                    states['yuppi:guppi_daq_0'],
+                    states['yuppi:guppi_daq_1']), vc)
 
             # Check for yuppi_status connection
             try:
                 status[node].update()
-                shmem = status[node].get_shmem_keys()
             except:
-                scr.addstr(curline,rcol,"No status connection",ec)
+                scr.addstr(curline,rcol[0],"No status connection",ec)
                 continue
 
-            if shmem==None:
-                scr.addstr(curline,rcol,"No shmem",vc)
-                continue
+            for i in range(2):
 
-            # Build status string
-            try:
-                dp = filter(bool,shmem['DAQPULSE'].split(' '))[3]
-            except KeyError:
-                dp = "unk"
+                shmem = status[node].get_shmem_keys(i)
 
-            try:
-                dt = "%.2e" % float(shmem['DROPTOT'])
-            except:
-                dt = "unk"
+                if shmem==None:
+                    scr.addstr(curline,rcol[i],"No shmem",vc)
+                    continue
 
-            ds = get(shmem,'DAQSTATE')
-            ns = get(shmem,'NETSTAT')
-            fr = get(shmem,'OBSFREQ')
-            db = get(shmem,'DROPBLK')
+                # Build status string
+                try:
+                    dp = filter(bool,shmem['DAQPULSE'].split(' '))[3]
+                except KeyError:
+                    dp = "unk"
 
-            statstring = statfmt % (dp, ds, ns, dt, db, fr)
+                try:
+                    dt = "%.2e" % float(shmem['DROPTOT'])
+                except:
+                    dt = "unk"
 
-            # print it to screen
-            scr.addstr(curline,rcol,statstring,vc)
+                ds = get(shmem,'DAQSTATE')
+                ns = get(shmem,'NETSTAT')
+                fr = get(shmem,'OBSFREQ')
+
+                statstring = statfmt % (dp, ds, ns, dt, fr)
+
+                # print it to screen
+                scr.addstr(curline,rcol[i],statstring,vc)
 
         scr.refresh()
         time.sleep(1)
