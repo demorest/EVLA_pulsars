@@ -61,7 +61,7 @@ class YUPPIObs(object):
         self.stop_timer = None
         self.startMJD = evla_conf.startTime
         self.stopMJD = None
-        self.id = evla_conf.Id + '.' + str(evla_conf.seq)
+        self.id = evla_conf.Id + '.' + str(evla_conf.seq) + '-' + str(daq_idx)
         self.set_timer()
 
     def generate_shmem_config(self, evla_conf, subband):
@@ -198,7 +198,8 @@ class YUPPIObs(object):
         logging.info("guppi_daq command '%s' to '%s'" % (cmd, self.guppi_ctrl))
         if (os.path.exists(self.guppi_ctrl)):
             if not self.dry:
-                open(self.guppi_ctrl,'w').write(cmd+'\n')
+                # 1 == line buffering
+                open(self.guppi_ctrl,'w',1).write(cmd+'\n')
         else:
             logging.error("guppi_daq FIFO '%s' does not exist" % (
                 self.guppi_ctrl))
@@ -216,19 +217,21 @@ class YUPPIObs(object):
     def start(self):
         with self.state_lock:
             if self.state=='running':
-                logging.error('obs %s started when already running' % self.id)
+                logging.warning('obs %s started when already running' % self.id)
                 return
             if self.state=='stopped':
                 # This should not happen, but if state is stopped then
                 # a stop command was already sent, so don't start
+                logging.warning('obs %s started when already stopped' % self.id)
                 return
-            logging.info('start observation')
+            logging.info('start observation %s' % self.id)
             self.update_guppi_shmem()
             logging.info("command='%s'" % self.command_line)
             if self.command_line and not self.dry:
                 logfile = '%s/%s.log' % (self.data_dir, self.outfile_base)
                 self.process = subprocess.Popen(self.command_line.split(' '),
                         stdout=open(logfile,'w'), stderr=subprocess.STDOUT)
+            logging.info("obs %s pre-sleep" % self.id)
             time.sleep(1)
             self.guppi_daq_command('START')
             self.state = 'running'
@@ -237,7 +240,7 @@ class YUPPIObs(object):
         with self.state_lock:
             if self.state=='stopped': 
                 return
-            logging.info('stop observation')
+            logging.info('stop observation %s' % self.id)
             try:
                 self.start_timer.cancel() # in case not started yet
                 self.start_timer = None
