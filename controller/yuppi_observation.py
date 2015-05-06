@@ -18,7 +18,8 @@ import time
 import threading
 import logging
 import signal
-import subprocess
+# Original 2.x subprocess is not thread-safe, this is the 3.2 backport:
+import subprocess32 as subprocess 
 from guppi_daq import guppi_utils
 from jdcal import mjd_now
 
