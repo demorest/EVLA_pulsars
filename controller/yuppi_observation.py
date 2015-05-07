@@ -251,6 +251,7 @@ class YUPPIObs(object):
                 self.guppi_daq_command('STOP')
             try:
                 self.process.send_signal(signal.SIGINT)
+                self.process.wait()
                 self.process = None
             except AttributeError:
                 pass
