@@ -68,6 +68,8 @@ for vcifname in sys.argv[1:]:
         # To enable extra headroom on quantization (not tested)
         #summedarray.attrib['headroom6dB'] = 'true'
 
+        #node = 'cbe-node-%02d' % ((inode/2) + 1)
+        #if inode%2:
         node = 'cbe-node-%02d' % ((inode % n_nodes) + 1)
         if inode>=n_nodes:
             nic1 = node + '-3'
@@ -80,7 +82,9 @@ for vcifname in sys.argv[1:]:
 
         # Find bandwidth, use to set number of bits
         bw = abs(float(summedarray.getparent().attrib['bw']))
-        if bw > 32.0e6: nbit = '2'
+        #if bw > 32.0e6: nbit = '2'
+        if bw==128e6: nbit = '2'
+        elif bw==64e6: nbit = '4'
         else: nbit = '8'
 
         # Clear the vdif tag and refill with appropriate values
