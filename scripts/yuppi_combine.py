@@ -89,8 +89,14 @@ for fname in fnames:
 
 subbands = sub_files.keys()
 nfiles = 0
+maxfiles = 0
+maxsub = None
 for sub in subbands:
-    nfiles += len(sub_files[sub])
+    nsubfiles = len(sub_files[sub])
+    nfiles += nsubfiles
+    if nsubfiles>maxfiles:
+        maxfiles = nsubfiles
+        maxsub = sub
 
 outfname = '%s.%s_%04d.%s' % (scan, baseband, opt.outidx, ext)
 full_outfname = opt.outdir + '/' + outfname
@@ -125,17 +131,16 @@ for subband in sorted(subbands):
 logging.debug("Combining all subbands")
 freqappend = psrchive.FrequencyAppend()
 patch = psrchive.PatchTime()
-basearch = sub_arch[subbands[0]]
+basearch = sub_arch[maxsub]
 freqappend.init(basearch)
-# TODO this could fail if the first subband was truncated relative to 
-# the others so its polycos do not span the full observation.  Could
-# be improved by selecting whichever subband has the longest timespan.
+# Use whichever subband has the most data as the base
 freqappend.ignore_phase = True
 if ext!='cf':
     polycos = basearch.get_model()
 else:
     polycos = None
-for sub in subbands[1:]:
+for sub in subbands:
+    if sub == maxsub: continue
     if polycos is not None: 
         sub_arch[sub].set_model(polycos)
     patch.operate(basearch,sub_arch[sub])
