@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*- 
 
 #
-# Generated Fri Aug 22 09:27:54 2014 by generateDS.py version 2.6a.
+# Generated Thu Jul  9 16:30:58 2015 by generateDS.py version 2.6a.
 #
 
 import sys
@@ -366,9 +366,10 @@ def _cast(typ, value):
 class Observation(GeneratedsSuper):
     subclass = None
     superclass = None
-    def __init__(self, subarrayId=None, seq=None, datasetID=None, startTime=None, configId=None, datasetId=None, name=None, ra=None, dec=None, dra=None, ddec=None, azoffs=None, eloffs=None, startLST=None, intent=None, state=None, scanNo=None, subscanNo=None, modifier=None, correlator=None, sslo=None):
+    def __init__(self, subarrayId=None, seq=None, configUrl=None, datasetID=None, startTime=None, configId=None, datasetId=None, name=None, ra=None, dec=None, dra=None, ddec=None, ephemeris=None, azoffs=None, eloffs=None, startLST=None, intent=None, state=None, scanNo=None, subscanNo=None, modifier=None, correlator=None, sslo=None):
         self.subarrayId = _cast(None, subarrayId)
         self.seq = _cast(int, seq)
+        self.configUrl = _cast(None, configUrl)
         self.datasetID = _cast(None, datasetID)
         self.startTime = _cast(float, startTime)
         self.configId = _cast(None, configId)
@@ -378,6 +379,7 @@ class Observation(GeneratedsSuper):
         self.dec = dec
         self.dra = dra
         self.ddec = ddec
+        self.ephemeris = ephemeris
         self.azoffs = azoffs
         self.eloffs = eloffs
         self.startLST = startLST
@@ -413,6 +415,8 @@ class Observation(GeneratedsSuper):
     def set_dra(self, dra): self.dra = dra
     def get_ddec(self): return self.ddec
     def set_ddec(self, ddec): self.ddec = ddec
+    def get_ephemeris(self): return self.ephemeris
+    def set_ephemeris(self, ephemeris): self.ephemeris = ephemeris
     def get_azoffs(self): return self.azoffs
     def set_azoffs(self, azoffs): self.azoffs = azoffs
     def get_eloffs(self): return self.eloffs
@@ -443,6 +447,8 @@ class Observation(GeneratedsSuper):
     def set_subarrayId(self, subarrayId): self.subarrayId = subarrayId
     def get_seq(self): return self.seq
     def set_seq(self, seq): self.seq = seq
+    def get_configUrl(self): return self.configUrl
+    def set_configUrl(self, configUrl): self.configUrl = configUrl
     def get_datasetID(self): return self.datasetID
     def set_datasetID(self, datasetID): self.datasetID = datasetID
     def get_startTime(self): return self.startTime
@@ -470,6 +476,9 @@ class Observation(GeneratedsSuper):
         if self.seq is not None and 'seq' not in already_processed:
             already_processed.append('seq')
             outfile.write(' seq="%s"' % self.gds_format_integer(self.seq, input_name='seq'))
+        if self.configUrl is not None and 'configUrl' not in already_processed:
+            already_processed.append('configUrl')
+            outfile.write(' configUrl=%s' % (self.gds_format_string(quote_attrib(self.configUrl).encode(ExternalEncoding), input_name='configUrl'), ))
         if self.datasetID is not None and 'datasetID' not in already_processed:
             already_processed.append('datasetID')
             outfile.write(' datasetID=%s' % (self.gds_format_string(quote_attrib(self.datasetID).encode(ExternalEncoding), input_name='datasetID'), ))
@@ -498,6 +507,8 @@ class Observation(GeneratedsSuper):
         if self.ddec is not None:
             showIndent(outfile, level)
             outfile.write('<%sddec>%s</%sddec>\n' % (namespace_, self.gds_format_double(self.ddec, input_name='ddec'), namespace_))
+        if self.ephemeris:
+            self.ephemeris.export(outfile, level, namespace_, name_='ephemeris', )
         if self.azoffs is not None:
             showIndent(outfile, level)
             outfile.write('<%sazoffs>%s</%sazoffs>\n' % (namespace_, self.gds_format_double(self.azoffs, input_name='azoffs'), namespace_))
@@ -534,6 +545,7 @@ class Observation(GeneratedsSuper):
             self.dec is not None or
             self.dra is not None or
             self.ddec is not None or
+            self.ephemeris is not None or
             self.azoffs is not None or
             self.eloffs is not None or
             self.startLST is not None or
@@ -562,6 +574,10 @@ class Observation(GeneratedsSuper):
             already_processed.append('seq')
             showIndent(outfile, level)
             outfile.write('seq = %d,\n' % (self.seq,))
+        if self.configUrl is not None and 'configUrl' not in already_processed:
+            already_processed.append('configUrl')
+            showIndent(outfile, level)
+            outfile.write('configUrl = "%s",\n' % (self.configUrl,))
         if self.datasetID is not None and 'datasetID' not in already_processed:
             already_processed.append('datasetID')
             showIndent(outfile, level)
@@ -594,6 +610,12 @@ class Observation(GeneratedsSuper):
         if self.ddec is not None:
             showIndent(outfile, level)
             outfile.write('ddec=%e,\n' % self.ddec)
+        if self.ephemeris is not None:
+            showIndent(outfile, level)
+            outfile.write('ephemeris=model_.ephemerisType(\n')
+            self.ephemeris.exportLiteral(outfile, level, name_='ephemeris')
+            showIndent(outfile, level)
+            outfile.write('),\n')
         if self.azoffs is not None:
             showIndent(outfile, level)
             outfile.write('azoffs=%e,\n' % self.azoffs)
@@ -662,6 +684,10 @@ class Observation(GeneratedsSuper):
                 self.seq = int(value)
             except ValueError, exp:
                 raise_parse_error(node, 'Bad integer attribute: %s' % exp)
+        value = find_attr_value_('configUrl', node)
+        if value is not None and 'configUrl' not in already_processed:
+            already_processed.append('configUrl')
+            self.configUrl = value
         value = find_attr_value_('datasetID', node)
         if value is not None and 'datasetID' not in already_processed:
             already_processed.append('datasetID')
@@ -718,6 +744,10 @@ class Observation(GeneratedsSuper):
                 raise_parse_error(child_, 'requires float or double: %s' % exp)
             fval_ = self.gds_validate_float(fval_, node, 'ddec')
             self.ddec = fval_
+        elif nodeName_ == 'ephemeris':
+            obj_ = ephemerisType.factory()
+            obj_.build(child_)
+            self.set_ephemeris(obj_)
         elif nodeName_ == 'azoffs':
             sval_ = child_.text
             try:
@@ -785,10 +815,218 @@ class Observation(GeneratedsSuper):
 # end class Observation
 
 
+class polyType(GeneratedsSuper):
+    subclass = None
+    superclass = None
+    def __init__(self, coeff=None):
+        if coeff is None:
+            self.coeff = []
+        else:
+            self.coeff = coeff
+    def factory(*args_, **kwargs_):
+        if polyType.subclass:
+            return polyType.subclass(*args_, **kwargs_)
+        else:
+            return polyType(*args_, **kwargs_)
+    factory = staticmethod(factory)
+    def get_coeff(self): return self.coeff
+    def set_coeff(self, coeff): self.coeff = coeff
+    def add_coeff(self, value): self.coeff.append(value)
+    def insert_coeff(self, index, value): self.coeff[index] = value
+    def export(self, outfile, level, namespace_='', name_='polyType', namespacedef_=''):
+        showIndent(outfile, level)
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='polyType')
+        if self.hasContent_():
+            outfile.write('>\n')
+            self.exportChildren(outfile, level + 1, namespace_, name_)
+            showIndent(outfile, level)
+            outfile.write('</%s%s>\n' % (namespace_, name_))
+        else:
+            outfile.write('/>\n')
+    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='polyType'):
+        pass
+    def exportChildren(self, outfile, level, namespace_='', name_='polyType', fromsubclass_=False):
+        for coeff_ in self.coeff:
+            coeff_.export(outfile, level, namespace_, name_='coeff')
+    def hasContent_(self):
+        if (
+            self.coeff
+            ):
+            return True
+        else:
+            return False
+    def exportLiteral(self, outfile, level, name_='polyType'):
+        level += 1
+        self.exportLiteralAttributes(outfile, level, [], name_)
+        if self.hasContent_():
+            self.exportLiteralChildren(outfile, level, name_)
+    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
+        pass
+    def exportLiteralChildren(self, outfile, level, name_):
+        showIndent(outfile, level)
+        outfile.write('coeff=[\n')
+        level += 1
+        for coeff_ in self.coeff:
+            showIndent(outfile, level)
+            outfile.write('model_.coeffType(\n')
+            coeff_.exportLiteral(outfile, level, name_='coeffType')
+            showIndent(outfile, level)
+            outfile.write('),\n')
+        level -= 1
+        showIndent(outfile, level)
+        outfile.write('],\n')
+    def build(self, node):
+        self.buildAttributes(node, node.attrib, [])
+        for child in node:
+            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
+            self.buildChildren(child, node, nodeName_)
+    def buildAttributes(self, node, attrs, already_processed):
+        pass
+    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
+        if nodeName_ == 'coeff':
+            obj_ = coeffType.factory()
+            obj_.build(child_)
+            self.coeff.append(obj_)
+# end class polyType
+
+
+class ephemerisType(GeneratedsSuper):
+    subclass = None
+    superclass = None
+    def __init__(self, referenceTime=None, ra_polynomial=None, dec_polynomial=None, dist_polynomial=None, origin=None):
+        self.referenceTime = referenceTime
+        self.ra_polynomial = ra_polynomial
+        self.dec_polynomial = dec_polynomial
+        self.dist_polynomial = dist_polynomial
+        self.origin = origin
+    def factory(*args_, **kwargs_):
+        if ephemerisType.subclass:
+            return ephemerisType.subclass(*args_, **kwargs_)
+        else:
+            return ephemerisType(*args_, **kwargs_)
+    factory = staticmethod(factory)
+    def get_referenceTime(self): return self.referenceTime
+    def set_referenceTime(self, referenceTime): self.referenceTime = referenceTime
+    def get_ra_polynomial(self): return self.ra_polynomial
+    def set_ra_polynomial(self, ra_polynomial): self.ra_polynomial = ra_polynomial
+    def get_dec_polynomial(self): return self.dec_polynomial
+    def set_dec_polynomial(self, dec_polynomial): self.dec_polynomial = dec_polynomial
+    def get_dist_polynomial(self): return self.dist_polynomial
+    def set_dist_polynomial(self, dist_polynomial): self.dist_polynomial = dist_polynomial
+    def get_origin(self): return self.origin
+    def set_origin(self, origin): self.origin = origin
+    def export(self, outfile, level, namespace_='', name_='ephemerisType', namespacedef_=''):
+        showIndent(outfile, level)
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='ephemerisType')
+        if self.hasContent_():
+            outfile.write('>\n')
+            self.exportChildren(outfile, level + 1, namespace_, name_)
+            showIndent(outfile, level)
+            outfile.write('</%s%s>\n' % (namespace_, name_))
+        else:
+            outfile.write('/>\n')
+    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='ephemerisType'):
+        pass
+    def exportChildren(self, outfile, level, namespace_='', name_='ephemerisType', fromsubclass_=False):
+        if self.referenceTime is not None:
+            showIndent(outfile, level)
+            outfile.write('<%sreferenceTime>%s</%sreferenceTime>\n' % (namespace_, self.gds_format_double(self.referenceTime, input_name='referenceTime'), namespace_))
+        if self.ra_polynomial:
+            self.ra_polynomial.export(outfile, level, namespace_, name_='ra_polynomial', )
+        if self.dec_polynomial:
+            self.dec_polynomial.export(outfile, level, namespace_, name_='dec_polynomial', )
+        if self.dist_polynomial:
+            self.dist_polynomial.export(outfile, level, namespace_, name_='dist_polynomial', )
+        if self.origin is not None:
+            showIndent(outfile, level)
+            outfile.write('<%sorigin>%s</%sorigin>\n' % (namespace_, self.gds_format_string(quote_xml(self.origin).encode(ExternalEncoding), input_name='origin'), namespace_))
+    def hasContent_(self):
+        if (
+            self.referenceTime is not None or
+            self.ra_polynomial is not None or
+            self.dec_polynomial is not None or
+            self.dist_polynomial is not None or
+            self.origin is not None
+            ):
+            return True
+        else:
+            return False
+    def exportLiteral(self, outfile, level, name_='ephemerisType'):
+        level += 1
+        self.exportLiteralAttributes(outfile, level, [], name_)
+        if self.hasContent_():
+            self.exportLiteralChildren(outfile, level, name_)
+    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
+        pass
+    def exportLiteralChildren(self, outfile, level, name_):
+        if self.referenceTime is not None:
+            showIndent(outfile, level)
+            outfile.write('referenceTime=%e,\n' % self.referenceTime)
+        if self.ra_polynomial is not None:
+            showIndent(outfile, level)
+            outfile.write('ra_polynomial=model_.polyType(\n')
+            self.ra_polynomial.exportLiteral(outfile, level, name_='ra_polynomial')
+            showIndent(outfile, level)
+            outfile.write('),\n')
+        if self.dec_polynomial is not None:
+            showIndent(outfile, level)
+            outfile.write('dec_polynomial=model_.polyType(\n')
+            self.dec_polynomial.exportLiteral(outfile, level, name_='dec_polynomial')
+            showIndent(outfile, level)
+            outfile.write('),\n')
+        if self.dist_polynomial is not None:
+            showIndent(outfile, level)
+            outfile.write('dist_polynomial=model_.polyType(\n')
+            self.dist_polynomial.exportLiteral(outfile, level, name_='dist_polynomial')
+            showIndent(outfile, level)
+            outfile.write('),\n')
+        if self.origin is not None:
+            showIndent(outfile, level)
+            outfile.write('origin=%s,\n' % quote_python(self.origin).encode(ExternalEncoding))
+    def build(self, node):
+        self.buildAttributes(node, node.attrib, [])
+        for child in node:
+            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
+            self.buildChildren(child, node, nodeName_)
+    def buildAttributes(self, node, attrs, already_processed):
+        pass
+    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
+        if nodeName_ == 'referenceTime':
+            sval_ = child_.text
+            try:
+                fval_ = float(sval_)
+            except (TypeError, ValueError), exp:
+                raise_parse_error(child_, 'requires float or double: %s' % exp)
+            fval_ = self.gds_validate_float(fval_, node, 'referenceTime')
+            self.referenceTime = fval_
+        elif nodeName_ == 'ra_polynomial':
+            obj_ = polyType.factory()
+            obj_.build(child_)
+            self.set_ra_polynomial(obj_)
+        elif nodeName_ == 'dec_polynomial':
+            obj_ = polyType.factory()
+            obj_.build(child_)
+            self.set_dec_polynomial(obj_)
+        elif nodeName_ == 'dist_polynomial':
+            obj_ = polyType.factory()
+            obj_.build(child_)
+            self.set_dist_polynomial(obj_)
+        elif nodeName_ == 'origin':
+            origin_ = child_.text
+            origin_ = self.gds_validate_string(origin_, node, 'origin')
+            self.origin = origin_
+# end class ephemerisType
+
+
 class ssloType(GeneratedsSuper):
     subclass = None
     superclass = None
-    def __init__(self, IFid=None, Sideband=None, Receiver=None, freq=None):
+    def __init__(self, SolarCal=None, IFid=None, Sideband=None, Receiver=None, freq=None):
+        self.SolarCal = _cast(int, SolarCal)
         self.IFid = _cast(None, IFid)
         self.Sideband = _cast(int, Sideband)
         self.Receiver = _cast(None, Receiver)
@@ -801,6 +1039,8 @@ class ssloType(GeneratedsSuper):
     factory = staticmethod(factory)
     def get_freq(self): return self.freq
     def set_freq(self, freq): self.freq = freq
+    def get_SolarCal(self): return self.SolarCal
+    def set_SolarCal(self, SolarCal): self.SolarCal = SolarCal
     def get_IFid(self): return self.IFid
     def set_IFid(self, IFid): self.IFid = IFid
     def get_Sideband(self): return self.Sideband
@@ -820,6 +1060,9 @@ class ssloType(GeneratedsSuper):
         else:
             outfile.write('/>\n')
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='ssloType'):
+        if self.SolarCal is not None and 'SolarCal' not in already_processed:
+            already_processed.append('SolarCal')
+            outfile.write(' SolarCal="%s"' % self.gds_format_integer(self.SolarCal, input_name='SolarCal'))
         if self.IFid is not None and 'IFid' not in already_processed:
             already_processed.append('IFid')
             outfile.write(' IFid=%s' % (self.gds_format_string(quote_attrib(self.IFid).encode(ExternalEncoding), input_name='IFid'), ))
@@ -846,6 +1089,10 @@ class ssloType(GeneratedsSuper):
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
     def exportLiteralAttributes(self, outfile, level, already_processed, name_):
+        if self.SolarCal is not None and 'SolarCal' not in already_processed:
+            already_processed.append('SolarCal')
+            showIndent(outfile, level)
+            outfile.write('SolarCal = %d,\n' % (self.SolarCal,))
         if self.IFid is not None and 'IFid' not in already_processed:
             already_processed.append('IFid')
             showIndent(outfile, level)
@@ -868,6 +1115,13 @@ class ssloType(GeneratedsSuper):
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
     def buildAttributes(self, node, attrs, already_processed):
+        value = find_attr_value_('SolarCal', node)
+        if value is not None and 'SolarCal' not in already_processed:
+            already_processed.append('SolarCal')
+            try:
+                self.SolarCal = int(value)
+            except ValueError, exp:
+                raise_parse_error(node, 'Bad integer attribute: %s' % exp)
         value = find_attr_value_('IFid', node)
         if value is not None and 'IFid' not in already_processed:
             already_processed.append('IFid')
@@ -893,6 +1147,80 @@ class ssloType(GeneratedsSuper):
             fval_ = self.gds_validate_float(fval_, node, 'freq')
             self.freq = fval_
 # end class ssloType
+
+
+class coeffType(GeneratedsSuper):
+    subclass = None
+    superclass = None
+    def __init__(self, order=None, valueOf_=None):
+        self.order = _cast(int, order)
+        self.valueOf_ = valueOf_
+    def factory(*args_, **kwargs_):
+        if coeffType.subclass:
+            return coeffType.subclass(*args_, **kwargs_)
+        else:
+            return coeffType(*args_, **kwargs_)
+    factory = staticmethod(factory)
+    def get_order(self): return self.order
+    def set_order(self, order): self.order = order
+    def get_valueOf_(self): return self.valueOf_
+    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
+    def export(self, outfile, level, namespace_='', name_='coeffType', namespacedef_=''):
+        showIndent(outfile, level)
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='coeffType')
+        if self.hasContent_():
+            outfile.write('>')
+            outfile.write(str(self.valueOf_).encode(ExternalEncoding))
+            self.exportChildren(outfile, level + 1, namespace_, name_)
+            outfile.write('</%s%s>\n' % (namespace_, name_))
+        else:
+            outfile.write('/>\n')
+    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='coeffType'):
+        if self.order is not None and 'order' not in already_processed:
+            already_processed.append('order')
+            outfile.write(' order="%s"' % self.gds_format_integer(self.order, input_name='order'))
+    def exportChildren(self, outfile, level, namespace_='', name_='coeffType', fromsubclass_=False):
+        pass
+    def hasContent_(self):
+        if (
+            self.valueOf_
+            ):
+            return True
+        else:
+            return False
+    def exportLiteral(self, outfile, level, name_='coeffType'):
+        level += 1
+        self.exportLiteralAttributes(outfile, level, [], name_)
+        if self.hasContent_():
+            self.exportLiteralChildren(outfile, level, name_)
+        showIndent(outfile, level)
+        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
+    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
+        if self.order is not None and 'order' not in already_processed:
+            already_processed.append('order')
+            showIndent(outfile, level)
+            outfile.write('order = %d,\n' % (self.order,))
+    def exportLiteralChildren(self, outfile, level, name_):
+        pass
+    def build(self, node):
+        self.buildAttributes(node, node.attrib, [])
+        self.valueOf_ = get_all_text_(node)
+        for child in node:
+            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
+            self.buildChildren(child, node, nodeName_)
+    def buildAttributes(self, node, attrs, already_processed):
+        value = find_attr_value_('order', node)
+        if value is not None and 'order' not in already_processed:
+            already_processed.append('order')
+            try:
+                self.order = int(value)
+            except ValueError, exp:
+                raise_parse_error(node, 'Bad integer attribute: %s' % exp)
+    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
+        pass
+# end class coeffType
 
 
 USAGE_TEXT = """
@@ -956,8 +1284,8 @@ def parseLiteral(inFileName):
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
     doc = None
-##     sys.stdout.write('#from observation_mcast import *\n\n')
-##     sys.stdout.write('import observation_mcast as model_\n\n')
+##     sys.stdout.write('#from obsxml_parser import *\n\n')
+##     sys.stdout.write('import obsxml_parser as model_\n\n')
 ##     sys.stdout.write('rootObj = model_.rootTag(\n')
 ##     rootObj.exportLiteral(sys.stdout, 0, name_=rootTag)
 ##     sys.stdout.write(')\n')
@@ -979,5 +1307,8 @@ if __name__ == '__main__':
 
 __all__ = [
     "Observation",
+    "coeffType",
+    "ephemerisType",
+    "polyType",
     "ssloType"
     ]

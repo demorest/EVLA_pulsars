@@ -1,357 +1,392 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xs:schema targetNamespace="http://www.nrc.ca/namespaces/widar" xmlns:widar="http://www.nrc.ca/namespaces/widar" xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
-	<!--
-   	File: 	vciCommon.xsd 
- 	Author:	Sonja.Vrcic@nrc.gc.ca
-    Copyright:  National Research Council of Canada and Associated Universities Inc., 2010, 2011, 2012, 2013
-	Version of the protocol: As specified in the VCI Protocol Specification, Widar Document A25201N0000 Revision 3.15, 
-    Description: XML Schema - Elements and type defintions used in VCI messages.
-	$Date: 2013-07-05 17:58:48 -0700 (Fri, 05 Jul 2013) $
-	$Revision: 6403 $
--->
-	<!--
-		Includes WidarCommon.xsd 
-	-->
-	<xs:include schemaLocation="../widarCommon.xsd"/>
-	
-	<xs:simpleType name="VciProtocolVersionType">
-		<xs:annotation>
-			<xs:documentation>
-			String that defines the version of the VCI protocol. 
-			Corresponds to the version (revision) of the DRAO document A25201N000 VCI Protocol Specification.
-			</xs:documentation>
-		</xs:annotation>
-		<xs:restriction base="xs:NMTOKEN">
-			<xs:enumeration value="3.9"/>
-			<xs:enumeration value="3.10"/>
-			<xs:enumeration value="3.11"/>
-			<xs:enumeration value="3.12"/>
-			<xs:enumeration value="3.13"/>
-			<xs:enumeration value="3.14"/>
-			<xs:enumeration value="3.15"/>
-		</xs:restriction>
-	</xs:simpleType>
-	<xs:attributeGroup name="vciCommonMsgAttributes">
-		<xs:annotation>
-			<xs:documentation>
-			Attributes that are assigned to all the VCI messages.
-		    </xs:documentation>
-		</xs:annotation>
-		<xs:attribute name="msgId" type="xs:int"    use="required"/>
-		<xs:attribute name="desc"  type="xs:string" use="optional"/>
-		<xs:attribute name="timeStamp" type="xs:dateTime" use="optional"/>
-		<xs:attribute name="version" type="widar:VciProtocolVersionType" use="optional"/>
-	</xs:attributeGroup>
-	<xs:element name="antenna">
-		<xs:annotation>
-			<xs:documentation>
-			Basic antenna information as specified in the VCI messages. 
-			Antenna ID is needed only by the Correlator Backend.
-			Detailed antenna information will be specified in the Antenna Table and 
-			made available to the Backend by some other means
-			(e.g. as a file stored on a server).
-			</xs:documentation>
-		</xs:annotation>
-		<xs:complexType>
-			<xs:attribute name="type" type="widar:AntennaType" use="required"/>
-			<xs:attribute name="id" type="xs:string" use="required"/>
-			<xs:attribute name="name" type="xs:string" use="optional"/>
-		</xs:complexType>
-	</xs:element>
-	<xs:element name="host">
-		<xs:annotation>
-			<xs:documentation>
-			 Set of parameters that unequely define a WIDAR host computer.
-			 This element may be used in logs/Alarms and other messages, 
-			 where it may be used to identify the machine where log or
-			 report was originated.
-			 </xs:documentation>
-		</xs:annotation>
-		<xs:complexType>
-			<xs:attribute name="type" type="widar:HostType" use="required"/>
-			<xs:attribute name="instance" type="xs:string" use="optional"/>
-			<xs:attribute name="destIP4address" type="widar:IP4AddressType" use="optional"/>
-		</xs:complexType>
-	</xs:element>
+  <!--
+      File: 	vciCommon.xsd 
+      Author:	Sonja.Vrcic@nrc.gc.ca
+      Copyright:  National Research Council of Canada and Associated Universities Inc., 2010, 2011, 2012, 2013
+      Version of the protocol: As specified in the VCI Protocol Specification, Widar Document A25201N0000 Revision 3.16, 
+      V3.16 - attributes and elements related to phase binning.
+      Description: XML Schema - Elements and type defintions used in VCI messages.
+      $Date: 2015-06-10 14:49:27 -0600 (Wed, 10 Jun 2015) $
+      $Revision: 6764 $
+  -->
+  <!--
+      Includes WidarCommon.xsd 
+  -->
+  <xs:include schemaLocation="../widarCommon.xsd"/>
+  
+  <xs:simpleType name="VciProtocolVersionType">
+    <xs:annotation>
+      <xs:documentation>
+	String that defines the version of the VCI protocol. 
+	Corresponds to the version (revision) of the DRAO 
+	document A25201N000 VCI Protocol Specification.
+	--
+	This value should be manually updated here and as the
+	default value of the 'version' attribute in the 
+	'vciCommonMsgAttributes' attributeGroup defined
+	below.
+	2015.06.10 -- kjr
+	--
+      </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:NMTOKEN">
+      <xs:enumeration value="3.9"/>
+      <xs:enumeration value="3.10"/>
+      <xs:enumeration value="3.11"/>
+      <xs:enumeration value="3.12"/>
+      <xs:enumeration value="3.13"/>
+      <xs:enumeration value="3.14"/>
+      <xs:enumeration value="3.15"/>
+      <xs:enumeration value="3.16"/>
+      <xs:enumeration value="3.17"/>
+      <xs:enumeration value="3.18"/>
+      <xs:enumeration value="3.18.1"/>
+      <!--
+         -              N   O   T   E                       -
+	 -                                                  -
+	 -  Be sure to change the version number here and   -
+	 -  as the default for the 'version' attribute in   -
+	 -  'vciCommonMsgAttributes' below.                 -
+	 -->
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:attributeGroup name="vciCommonMsgAttributes">
+    <xs:annotation>
+      <xs:documentation>
+	Attributes that are assigned to all the VCI messages.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="msgId" type="xs:int"    use="required"/>
+    <xs:attribute name="desc"  type="xs:string" use="optional"/>
+    <xs:attribute name="timeStamp" type="xs:dateTime" use="optional"/>
+    <xs:attribute name="version" default="3.18.1" type="widar:VciProtocolVersionType" use="optional"/>
+  </xs:attributeGroup>
+  <xs:element name="antenna">
+    <xs:annotation>
+      <xs:documentation>
+	Basic antenna information as specified in the VCI messages. 
+	Antenna ID is needed only by the Correlator Backend.
+	Detailed antenna information will be specified in the Antenna Table and 
+	made available to the Backend by some other means
+	(e.g. as a file stored on a server).
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:attribute name="type" type="widar:AntennaType" use="required"/>
+      <xs:attribute name="id" type="xs:string" use="required"/>
+      <xs:attribute name="name" type="xs:string" use="optional"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="host">
+    <xs:annotation>
+      <xs:documentation>
+	Set of parameters that unequely define a WIDAR host computer.
+	This element may be used in logs/Alarms and other messages, 
+	where it may be used to identify the machine where log or
+	report was originated.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:attribute name="type" type="widar:HostType" use="required"/>
+      <xs:attribute name="instance" type="xs:string" use="optional"/>
+      <xs:attribute name="destIP4address" type="widar:IP4AddressType" use="optional"/>
+    </xs:complexType>
+  </xs:element>
 
 
-	<xs:simpleType name="SpectChanType">
-		<xs:annotation>
-			<xs:documentation>
-			Number of spectral channels per product (for "narrow band" correlation on the Baseline Board).
-			Number of spectral channels must be multiple of 64.
-			 </xs:documentation>
-		</xs:annotation>
-		<xs:restriction base="xs:int">
-			<xs:minInclusive value="64"/>
-			<xs:maxInclusive value="262144"/>
-		</xs:restriction>
-	</xs:simpleType>
-	<xs:element name="radarMode">
-		<xs:annotation>
-			<xs:documentation>
-			2012-02-29 Sonja.Vrcic@nrc.gc.ca: Radar Mode has not been implemented.
-			This element has been added for completness and to record inital implementation ideas,
-			but before implementing this, use cases and detailed requirements should be defined.
-			
-			Raw data saving, also known as, radar mode. 
-			Narrow band output of  a single filter per Station Board Data Path (i.e. per filter bank) 
-			can be saved in the memory and sent to the specified location. 
-			Number of bits to be saved is equal to the number of bits in the filter output, 
-			with exception of 7-bit output which is saved as 8 bits of data.
-			Duration can be specified in the number of 10 millisecond interrupts. 
-			Duration=0 means perform data saving until "off" command is received or 
-			until the configuration is overwritten by another configuration.
-			 </xs:documentation>
-		</xs:annotation>
-		<xs:complexType>
-			<xs:attribute name="status" type="widar:OnOffType" use="required"/>
-			<xs:attribute name="duration" type="xs:int" use="optional" default="0"/>
-			<xs:attribute name="destination" type="xs:anyURI"/>
-		</xs:complexType>
-	</xs:element>
+  <xs:simpleType name="SpectChanType">
+    <xs:annotation>
+      <xs:documentation>
+	Number of spectral channels per product (for "narrow band" correlation on the Baseline Board).
+	Number of spectral channels must be multiple of 64.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:int">
+      <xs:minInclusive value="64"/>
+      <xs:maxInclusive value="262144"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:element name="radarMode">
+    <xs:annotation>
+      <xs:documentation>
+	2012-02-29 Sonja.Vrcic@nrc.gc.ca: Radar Mode has not been implemented.
+	This element has been added for completness and to record inital implementation ideas,
+	but before implementing this, use cases and detailed requirements should be defined.
 	
+	Raw data saving, also known as, radar mode. 
+	Narrow band output of  a single filter per Station Board Data Path (i.e. per filter bank) 
+	can be saved in the memory and sent to the specified location. 
+	Number of bits to be saved is equal to the number of bits in the filter output, 
+	with exception of 7-bit output which is saved as 8 bits of data.
+	Duration can be specified in the number of 10 millisecond interrupts. 
+	Duration=0 means perform data saving until "off" command is received or 
+	until the configuration is overwritten by another configuration.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:attribute name="status" type="widar:OnOffType" use="required"/>
+      <xs:attribute name="duration" type="xs:int" use="optional" default="0"/>
+      <xs:attribute name="destination" type="xs:anyURI"/>
+    </xs:complexType>
+  </xs:element>
+  
+  
+  <xs:element name="cmMonitorControl">
+    <xs:annotation>
+      <xs:documentation>
+	Global parameters of VCI Configuration Mapper.
+	2012 October Replaced attribute:
+	*xs:attribute name="flushCmibQueues"  		type="widar:YesNoType" use="optional" *	
+	with element cmFlushCmibQueues
 	
-	<xs:element name="cmMonitorControl">
-		<xs:annotation>
-			<xs:documentation>
-			Global parameters of VCI Configuration Mapper.
-			2012 October Replaced attribute:
-			*xs:attribute name="flushCmibQueues"  		type="widar:YesNoType" use="optional" *	
-			with element cmFlushCmibQueues
-			
-			</xs:documentation>
-		</xs:annotation>
-		<xs:complexType>
-			<xs:sequence>
-			    <xs:element ref="widar:queryCfgStatus" 	minOccurs="0" maxOccurs="1"/>
-				<xs:element ref="widar:cfgQueue" 		minOccurs="0" maxOccurs="1"/>	
-				<xs:element ref="widar:actQueue" 		minOccurs="0" maxOccurs="1"/>
-				<xs:element ref="widar:ctrlQueue" 		minOccurs="0" maxOccurs="1"/>
-				<xs:element ref="widar:cbeOutputQueue" 	minOccurs="0" maxOccurs="1"/>
-				<xs:element ref="widar:cmLogging" 		minOccurs="0" maxOccurs="1"/>
-				<xs:element ref="widar:vciReporting" 	minOccurs="0" maxOccurs="1"/>
-				<xs:element ref="widar:cmAlerts" 	    minOccurs="0" maxOccurs="1"/>
-				<xs:element ref="widar:cmDeleteSubarray" 	minOccurs="0" maxOccurs="1"/>
-				<xs:element ref="widar:cmFlushCmibQueues" 	minOccurs="0" maxOccurs="1"/>
-				<xs:element ref="widar:ifdDefault" 	        minOccurs="0" maxOccurs="1"/>
-			</xs:sequence>
-			
-			<xs:attribute name="sendConfigToSTBs" 		type="widar:YesNoType" use="optional"	/>
-			<xs:attribute name="sendConfigToBLBs" 		type="widar:YesNoType" use="optional"	/>
-			<xs:attribute name="sendConfigToXBBs" 		type="widar:YesNoType" use="optional"	/>
-			<xs:attribute name="sendConfigToCBE"  		type="widar:YesNoType" use="optional"	/>
-			<xs:attribute name="sendQueryToCRM"  		type="widar:YesNoType" use="optional"	/>
-			<xs:attribute name="vciSchemaValidation" 	type="widar:YesNoType" use="optional"	/>
-			<xs:attribute name="crmQuery"               type="widar:YesNoType" use="optional" 	/>
-			<xs:attribute name="query"               	type="widar:YesNoType" use="optional" 	/>
-			<xs:attribute name="enableAllComponents"    type="xs:string"       use="optional"   />
-		</xs:complexType>
-	</xs:element>
-	
-	
-	<xs:element name="vciReporting">
-		<xs:annotation>
-			<xs:documentation>
-			Specify destination address and port for VCI Responses/Reports.
-			Enable/disable transmission of VCI Responses/Reports.
-			</xs:documentation>
-		</xs:annotation>
-		<xs:complexType>
-		    <xs:attribute name="transmit" 		type="widar:YesNoType" 	use="required"/>
-			<xs:attribute name="destIpAddress" 	type="xs:string" 		use="optional"/>
-			<xs:attribute name="destPort" 		type="xs:int" 		    use="optional"/>
-		</xs:complexType>
-	</xs:element>
-	
-	<xs:element name="cmAlerts">
-		<xs:annotation>
-			<xs:documentation>
-			Enable/disable transmission of xAlerts.
-			</xs:documentation>
-		</xs:annotation>
-		<xs:complexType>
-		    <xs:attribute name="transmit" type="widar:YesNoType" 	use="required"/>
-		</xs:complexType>
-	</xs:element>
-	
-	<xs:element name="queryCfgStatus">
-		<xs:annotation>
-			<xs:documentation>
-			  Request for configuration status report.
-			  One can specify: cfg=active or cfg=next or activation time or CorrModel ID.
-			  If more than one identification is specified, CM uses the first valid identifier, in following order:
-			  1. cfg
-			  2. actTime
-			  3. CorrModel ID
-			</xs:documentation>
-		</xs:annotation>
-		<xs:complexType>
-		    <xs:attribute name="cfg" 		 type="widar:CfgStringType" 	use="optional"/>
-			<xs:attribute name="actTime" 	 type="xs:dateTime" 		    use="optional"/>
-			<xs:attribute name="corrModelId" type="xs:double" 				use="optional"/>
-		</xs:complexType>
-	</xs:element>
-	
-	<xs:simpleType name="CfgStringType">
-		<xs:restriction base="xs:string">
-			<xs:enumeration value="active"/>
-			<xs:enumeration value="next"/>
-		</xs:restriction>
-	</xs:simpleType>	
-	
-	<xs:element name="cfgQueue">
-		<xs:annotation>
-			<xs:documentation>
-			Monitor and control for the configuration queue.
-			</xs:documentation>
-		</xs:annotation>
-		<xs:complexType>
-		    <xs:simpleContent>
-			    <xs:extension base="xs:string" >
-				    <xs:attribute name="action" type="widar:QueueActionType" use="optional"/>
-				</xs:extension >
-			</xs:simpleContent>
-		</xs:complexType>
-	</xs:element>
-	
-	<xs:element name="actQueue">
-		<xs:annotation>
-			<xs:documentation>
-			Monitor and control for the activation queue.
-			</xs:documentation>
-		</xs:annotation>
-		<xs:complexType>
-		    <xs:simpleContent>
-			    <xs:extension base="xs:string" >
-				    <xs:attribute name="action" type="widar:QueueActionType" use="optional"/>
-				</xs:extension >
-			</xs:simpleContent>
-		</xs:complexType>
-	</xs:element>
-	<xs:element name="ctrlQueue">
-		<xs:annotation>
-			<xs:documentation>
-			Monitor and control for the queue that contains Control messages.
-			</xs:documentation>
-		</xs:annotation>
-		<xs:complexType>
-		    <xs:simpleContent>
-			    <xs:extension base="xs:string" >
-				    <xs:attribute name="action" type="widar:QueueActionType" use="optional"/>
-				</xs:extension >
-			</xs:simpleContent>
-		</xs:complexType>
-	</xs:element>
-	<xs:element name="cbeOutputQueue">
-		<xs:annotation>
-			<xs:documentation>
-			Monitor and control for the queue that contains messages for CBE.
-			</xs:documentation>
-		</xs:annotation>
-		<xs:complexType>
-		    <xs:simpleContent>
-			    <xs:extension base="xs:string" >
-				    <xs:attribute name="action" type="widar:QueueActionType" use="optional"/>
-				</xs:extension >
-			</xs:simpleContent>
-		</xs:complexType>
-	</xs:element>
-	
-	<xs:element name="ifdDefault">
-		<xs:annotation>
-			<xs:documentation>
-			Default values for inter-frame delay.
-			</xs:documentation>
-		</xs:annotation>
-		<xs:complexType>
-			<xs:attribute name="mode" 	     type="widar:InterFrameDelayAlgType" 		use="required" />
-			<xs:attribute name="delay" 		 type="xs:int" 		    					use="optional" />
-			<xs:attribute name="randomOn"    type="widar:YesNoType" 					use="optional" />
-		</xs:complexType>
-	</xs:element>
-	
-	<xs:simpleType name="QueueActionType">
-		<xs:annotation>
-			<xs:documentation>
-			Values used for attribute action. Used for configuration queue and activation queue.
-			Status: List contnet of the queue as string (one line per message).
-			Flush:  Delete and discard the content of the queue. 
-			</xs:documentation>
-		</xs:annotation>
-		<xs:restriction base="xs:NMTOKEN">
-			<xs:enumeration value="list"/>
-			<xs:enumeration value="flush"/>
-		</xs:restriction>
-	</xs:simpleType>
-	
-	<xs:element name="cmFlushCmibQueues">
-		<xs:annotation>
-			<xs:documentation>
-			Flush CMIB configuration(input) queue in specified racks.
-			</xs:documentation>
-		</xs:annotation>
-		<xs:complexType>
-		    <xs:attribute name="all"  type="widar:YesNoType" use="optional" default="no" />
-			<xs:attribute name="s001" type="widar:YesNoType" use="optional" default="no" />
-			<xs:attribute name="s002" type="widar:YesNoType" use="optional" default="no" />
-			<xs:attribute name="s003" type="widar:YesNoType" use="optional" default="no" />
-			<xs:attribute name="s004" type="widar:YesNoType" use="optional" default="no" />
-			<xs:attribute name="s005" type="widar:YesNoType" use="optional" default="no" />
-			<xs:attribute name="s006" type="widar:YesNoType" use="optional" default="no" />
-			<xs:attribute name="s007" type="widar:YesNoType" use="optional" default="no" />
-			<xs:attribute name="s008" type="widar:YesNoType" use="optional" default="no" />
-			<xs:attribute name="b101" type="widar:YesNoType" use="optional" default="no" />	
-			<xs:attribute name="b102" type="widar:YesNoType" use="optional" default="no" />
-			<xs:attribute name="b103" type="widar:YesNoType" use="optional" default="no" />
-			<xs:attribute name="b104" type="widar:YesNoType" use="optional" default="no" />	
-			<xs:attribute name="b105" type="widar:YesNoType" use="optional" default="no" />	
-			<xs:attribute name="b106" type="widar:YesNoType" use="optional" default="no" />	
-			<xs:attribute name="b107" type="widar:YesNoType" use="optional" default="no" />	
-			<xs:attribute name="b108" type="widar:YesNoType" use="optional" default="no" />	
-		</xs:complexType>
-	</xs:element>
-	
-	
-	<xs:element name="cmDeleteSubarray">
-		<xs:annotation>
-			<xs:documentation>
-			Delete subarray with the specified Config ID.
-			If configId==all delete all subarrays.
-			This command is used when usr does not want to (or cannot) specify activation time.
-			When this command is received, CM searches both the active configuration and
-			all the scheduled configurations (in the Activation Queue) and 
-			deletes all the instances of a subarray with the specified Config ID.
-			</xs:documentation>
-		</xs:annotation>
-		<xs:complexType>
-		    <xs:simpleContent>
-			    <xs:extension base="xs:string" >
-				    <xs:attribute name="configId" type="xs:string" use="required"/>
-				</xs:extension >
-			</xs:simpleContent>
-		</xs:complexType>
-	</xs:element>
-	
-	
-	
-	<xs:element name="cmLogging">
-		<xs:annotation>
-			<xs:documentation>
-			</xs:documentation>
-		</xs:annotation>
-		<xs:complexType>
-			<xs:attribute name="level"            type="widar:LogLevelType"  use="optional"/>
-			<xs:attribute name="logToFile"        type="widar:YesNoType" 	 use="optional"/>
-			<xs:attribute name="logVciMessages"   type="widar:YesNoType" 	 use="optional"/>
-			<xs:attribute name="logStbMessages"   type="widar:YesNoType" 	 use="optional"/>
-			<xs:attribute name="logBlbMessages"   type="widar:YesNoType" 	 use="optional"/>
-			<xs:attribute name="logXbbMessages"   type="widar:YesNoType" 	 use="optional"/>
-			<xs:attribute name="logCbeMessages"   type="widar:YesNoType" 	 use="optional"/>
-			<xs:attribute name="logCrmMessages"   type="widar:YesNoType" 	 use="optional"/>
-			<xs:attribute name="logXAlerts"       type="widar:YesNoType" 	 use="optional"/>
-		</xs:complexType>
-	</xs:element>	
-		
-	
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+	<xs:element ref="widar:queryCfgStatus" 	minOccurs="0" maxOccurs="1"/>
+	<xs:element ref="widar:cfgQueue" 		minOccurs="0" maxOccurs="1"/>	
+	<xs:element ref="widar:actQueue" 		minOccurs="0" maxOccurs="1"/>
+	<xs:element ref="widar:ctrlQueue" 		minOccurs="0" maxOccurs="1"/>
+	<xs:element ref="widar:cbeOutputQueue" 	minOccurs="0" maxOccurs="1"/>
+	<xs:element ref="widar:cmLogging" 		minOccurs="0" maxOccurs="1"/>
+	<xs:element ref="widar:vciReporting" 	minOccurs="0" maxOccurs="1"/>
+	<xs:element ref="widar:cmAlerts" 	    minOccurs="0" maxOccurs="1"/>
+	<xs:element ref="widar:cmDeleteSubarray" 	minOccurs="0" maxOccurs="1"/>
+	<xs:element ref="widar:cmFlushCmibQueues" 	minOccurs="0" maxOccurs="1"/>
+	<xs:element ref="widar:ifdDefault" 	        minOccurs="0" maxOccurs="1"/>
+      </xs:sequence>
+      
+      <xs:attribute name="sendConfigToSTBs" 		type="widar:YesNoType" use="optional"	/>
+      <xs:attribute name="sendConfigToBLBs" 		type="widar:YesNoType" use="optional"	/>
+      <xs:attribute name="sendConfigToXBBs" 		type="widar:YesNoType" use="optional"	/>
+      <xs:attribute name="sendConfigToCBE"  		type="widar:YesNoType" use="optional"	/>
+      <xs:attribute name="sendQueryToCRM"  		type="widar:YesNoType" use="optional"	/>
+      <xs:attribute name="vciSchemaValidation" 	type="widar:YesNoType" use="optional"	/>
+      <xs:attribute name="crmQuery"               type="widar:YesNoType" use="optional" 	/>
+      <xs:attribute name="query"               	type="widar:YesNoType" use="optional" 	/>
+      <xs:attribute name="enableAllComponents"    type="xs:string"       use="optional"   />
+    </xs:complexType>
+  </xs:element>
+  
+  
+  <xs:element name="vciReporting">
+    <xs:annotation>
+      <xs:documentation>
+	Specify destination address and port for VCI Responses/Reports.
+	Enable/disable transmission of VCI Responses/Reports.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:attribute name="transmit" 		type="widar:YesNoType" 	use="required"/>
+      <xs:attribute name="destIpAddress" 	type="xs:string" 		use="optional"/>
+      <xs:attribute name="destPort" 		type="xs:int" 		    use="optional"/>
+    </xs:complexType>
+  </xs:element>
+  
+  <xs:element name="cmAlerts">
+    <xs:annotation>
+      <xs:documentation>
+	Enable/disable transmission of xAlerts.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:attribute name="transmit" type="widar:YesNoType" 	use="required"/>
+    </xs:complexType>
+  </xs:element>
+  
+  <xs:element name="queryCfgStatus">
+    <xs:annotation>
+      <xs:documentation>
+	Request for configuration status report.
+	One can specify: cfg=active or cfg=next or activation time or CorrModel ID.
+	If more than one identification is specified, CM uses the first valid identifier, in following order:
+	1. cfg
+	2. actTime
+	3. CorrModel ID
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:attribute name="cfg" 		 type="widar:CfgStringType" 	use="optional"/>
+      <xs:attribute name="actTime" 	 type="xs:dateTime" 		    use="optional"/>
+      <xs:attribute name="corrModelId" type="xs:double" 				use="optional"/>
+    </xs:complexType>
+  </xs:element>
+  
+  <xs:simpleType name="CfgStringType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="active"/>
+      <xs:enumeration value="next"/>
+    </xs:restriction>
+  </xs:simpleType>	
+  
+  <xs:element name="cfgQueue">
+    <xs:annotation>
+      <xs:documentation>
+	Monitor and control for the configuration queue.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:simpleContent>
+	<xs:extension base="xs:string" >
+	  <xs:attribute name="action" type="widar:QueueActionType" use="optional"/>
+	</xs:extension >
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+  
+  <xs:element name="actQueue">
+    <xs:annotation>
+      <xs:documentation>
+	Monitor and control for the activation queue.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:simpleContent>
+	<xs:extension base="xs:string" >
+	  <xs:attribute name="action" type="widar:QueueActionType" use="optional"/>
+	</xs:extension >
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="ctrlQueue">
+    <xs:annotation>
+      <xs:documentation>
+	Monitor and control for the queue that contains Control messages.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:simpleContent>
+	<xs:extension base="xs:string" >
+	  <xs:attribute name="action" type="widar:QueueActionType" use="optional"/>
+	</xs:extension >
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="cbeOutputQueue">
+    <xs:annotation>
+      <xs:documentation>
+	Monitor and control for the queue that contains messages for CBE.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:simpleContent>
+	<xs:extension base="xs:string" >
+	  <xs:attribute name="action" type="widar:QueueActionType" use="optional"/>
+	</xs:extension >
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+  
+  <xs:element name="ifdDefault">
+    <xs:annotation>
+      <xs:documentation>
+	Default values for inter-frame delay.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:attribute name="mode" 	     type="widar:InterFrameDelayAlgType" 		use="required" />
+      <xs:attribute name="delay" 		 type="widar:SfpFrameDelayType"             use="optional" />
+      <xs:attribute name="randomOn"    type="widar:YesNoType" 					use="optional" />
+    </xs:complexType>
+  </xs:element>
+  
+  <xs:simpleType name="InterFrameDelayAlgType">
+    <xs:restriction base="xs:token">
+      <xs:enumeration value="dontSet"/>
+      <xs:enumeration value="setDelay"/>
+      <xs:enumeration value="minDelay"/>
+    </xs:restriction>
+  </xs:simpleType>
+  
+  <xs:simpleType name="SfpFrameDelayType">
+    <xs:restriction base="xs:int">
+      <xs:minInclusive value="0"/>
+      <xs:maxInclusive value="1020"/>
+    </xs:restriction>
+  </xs:simpleType>
+  
+  <xs:simpleType name="QueueActionType">
+    <xs:annotation>
+      <xs:documentation>
+	Values used for attribute action. Used for configuration queue and activation queue.
+	Status: List contnet of the queue as string (one line per message).
+	Flush:  Delete and discard the content of the queue. 
+      </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:NMTOKEN">
+      <xs:enumeration value="list"/>
+      <xs:enumeration value="flush"/>
+    </xs:restriction>
+  </xs:simpleType>
+  
+  <xs:element name="cmFlushCmibQueues">
+    <xs:annotation>
+      <xs:documentation>
+	Flush CMIB configuration(input) queue in specified racks.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:attribute name="all"  type="widar:YesNoType" use="optional" default="no" />
+      <xs:attribute name="s001" type="widar:YesNoType" use="optional" default="no" />
+      <xs:attribute name="s002" type="widar:YesNoType" use="optional" default="no" />
+      <xs:attribute name="s003" type="widar:YesNoType" use="optional" default="no" />
+      <xs:attribute name="s004" type="widar:YesNoType" use="optional" default="no" />
+      <xs:attribute name="s005" type="widar:YesNoType" use="optional" default="no" />
+      <xs:attribute name="s006" type="widar:YesNoType" use="optional" default="no" />
+      <xs:attribute name="s007" type="widar:YesNoType" use="optional" default="no" />
+      <xs:attribute name="s008" type="widar:YesNoType" use="optional" default="no" />
+      <xs:attribute name="b101" type="widar:YesNoType" use="optional" default="no" />	
+      <xs:attribute name="b102" type="widar:YesNoType" use="optional" default="no" />
+      <xs:attribute name="b103" type="widar:YesNoType" use="optional" default="no" />
+      <xs:attribute name="b104" type="widar:YesNoType" use="optional" default="no" />	
+      <xs:attribute name="b105" type="widar:YesNoType" use="optional" default="no" />	
+      <xs:attribute name="b106" type="widar:YesNoType" use="optional" default="no" />	
+      <xs:attribute name="b107" type="widar:YesNoType" use="optional" default="no" />	
+      <xs:attribute name="b108" type="widar:YesNoType" use="optional" default="no" />	
+    </xs:complexType>
+  </xs:element>
+  
+  
+  <xs:element name="cmDeleteSubarray">
+    <xs:annotation>
+      <xs:documentation>
+	Delete subarray with the specified Config ID.
+	If configId==all delete all subarrays.
+	This command is used when usr does not want to (or cannot) specify activation time.
+	When this command is received, CM searches both the active configuration and
+	all the scheduled configurations (in the Activation Queue) and 
+	deletes all the instances of a subarray with the specified Config ID.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:simpleContent>
+	<xs:extension base="xs:string" >
+	  <xs:attribute name="configId" type="xs:string" use="required"/>
+	</xs:extension >
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+  
+  
+  
+  <xs:element name="cmLogging">
+    <xs:annotation>
+      <xs:documentation>
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:attribute name="level"            type="widar:LogLevelType"  use="optional"/>
+      <xs:attribute name="logToFile"        type="widar:YesNoType" 	 use="optional"/>
+      <xs:attribute name="logVciMessages"   type="widar:YesNoType" 	 use="optional"/>
+      <xs:attribute name="logStbMessages"   type="widar:YesNoType" 	 use="optional"/>
+      <xs:attribute name="logBlbMessages"   type="widar:YesNoType" 	 use="optional"/>
+      <xs:attribute name="logXbbMessages"   type="widar:YesNoType" 	 use="optional"/>
+      <xs:attribute name="logCbeMessages"   type="widar:YesNoType" 	 use="optional"/>
+      <xs:attribute name="logCrmMessages"   type="widar:YesNoType" 	 use="optional"/>
+      <xs:attribute name="logXAlerts"       type="widar:YesNoType" 	 use="optional"/>
+    </xs:complexType>
+  </xs:element>	
+  
+  
 </xs:schema>

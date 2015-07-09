@@ -1,66 +1,66 @@
 <?xml version="1.0"?>
 <!-- edited with XMLSpy v2007 sp2 (http://www.altova.com) by Bruce Rowen (NRAO) -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified">
-	<xs:element name="bbSlopeTable">
-		<xs:annotation>
-			<xs:documentation>base band slope measurements</xs:documentation>
-		</xs:annotation>
-		<xs:complexType>
-			<xs:sequence>
-				<xs:element name="bbSlope" minOccurs="0" maxOccurs="unbounded">
-					<xs:annotation>
-						<xs:documentation>slope measurements from a single wideband input</xs:documentation>
-					</xs:annotation>
-					<xs:complexType>
-						<xs:attribute name="time" type="xs:dateTime" use="optional">
-							<xs:annotation>
-								<xs:documentation>start time of this integration (ISO 8601)</xs:documentation>
-							</xs:annotation>
-						</xs:attribute>
-						<xs:attribute name="stationId" type="xs:int" use="required">
-							<xs:annotation>
-								<xs:documentation>Station identification number</xs:documentation>
-							</xs:annotation>
-						</xs:attribute>
-						<xs:attribute name="basebandId" use="required">
-							<xs:annotation>
-								<xs:documentation>CM baseband id applied to this data path</xs:documentation>
-							</xs:annotation>
-							<xs:simpleType>
-								<xs:restriction base="xs:int">
-									<xs:minInclusive value="0"/>
-									<xs:maxInclusive value="7"/>
-								</xs:restriction>
-							</xs:simpleType>
-						</xs:attribute>
-						<xs:attribute name="swbbName" use="required">
-							<xs:annotation>
-								<xs:documentation>spectral window baseband name</xs:documentation>
-							</xs:annotation>
-							<xs:simpleType>
-								<xs:restriction base="xs:string">
-									<xs:enumeration value="A1C1_3BIT"/>
-									<xs:enumeration value="A2C2_3BIT"/>
-									<xs:enumeration value="AC_8BIT"/>
-									<xs:enumeration value="B1D1_3BIT"/>
-									<xs:enumeration value="B2D2_3BIT"/>
-									<xs:enumeration value="BD_8BIT"/>
-								</xs:restriction>
-							</xs:simpleType>
-						</xs:attribute>
-						<xs:attribute name="slope" type="xs:decimal" use="required">
-							<xs:annotation>
-								<xs:documentation>Slope of least squares fit in units of dB per band width. Fit is performed on center 7/8ths of spectrum.</xs:documentation>
-							</xs:annotation>
-						</xs:attribute>
-						<xs:attribute name="lag0" type="xs:decimal" use="required">
-							<xs:annotation>
-								<xs:documentation>raw value of lag 0 from autocorrelation, normalized by data valid count. </xs:documentation>
-							</xs:annotation>
-						</xs:attribute>
-					</xs:complexType>
-				</xs:element>
-			</xs:sequence>
-		</xs:complexType>
+  <xs:element name="bbSlopeTable">
+    <xs:annotation>
+      <xs:documentation>base band slope measurements</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+	<xs:element name="bbSlope" minOccurs="0" maxOccurs="unbounded">
+	  <xs:annotation>
+	    <xs:documentation>slope measurements from a single wideband input</xs:documentation>
+	  </xs:annotation>
+	  <xs:complexType>
+	    <xs:attribute name="time" type="xs:dateTime" use="optional">
+	      <xs:annotation>
+		<xs:documentation>start time of this integration (ISO 8601)</xs:documentation>
+	      </xs:annotation>
+	    </xs:attribute>
+	    <xs:attribute name="stationId" type="xs:int" use="required">
+	      <xs:annotation>
+		<xs:documentation>Station identification number</xs:documentation>
+	      </xs:annotation>
+	    </xs:attribute>
+	    <xs:attribute name="basebandId" use="required">
+	      <xs:annotation>
+		<xs:documentation>CM baseband id applied to this data path</xs:documentation>
+	      </xs:annotation>
+	      <xs:simpleType>
+		<xs:restriction base="xs:int">
+		  <xs:minInclusive value="0"/>
+		  <xs:maxInclusive value="7"/>
+		</xs:restriction>
+	      </xs:simpleType>
+	    </xs:attribute>
+	    <xs:attribute name="swbbName" use="required">
+	      <xs:annotation>
+		<xs:documentation>spectral window baseband name</xs:documentation>
+	      </xs:annotation>
+	      <xs:simpleType>
+		<xs:restriction base="xs:string">
+		  <xs:enumeration value="A1C1_3BIT"/>
+		  <xs:enumeration value="A2C2_3BIT"/>
+		  <xs:enumeration value="AC_8BIT"/>
+		  <xs:enumeration value="B1D1_3BIT"/>
+		  <xs:enumeration value="B2D2_3BIT"/>
+		  <xs:enumeration value="BD_8BIT"/>
+		</xs:restriction>
+	      </xs:simpleType>
+	    </xs:attribute>
+	    <xs:attribute name="slope" type="xs:double" use="required">
+	      <xs:annotation>
+		<xs:documentation>Slope of least squares fit in units of dB per band width. Fit is performed on center 7/8ths of spectrum.</xs:documentation>
+	      </xs:annotation>
+	    </xs:attribute>
+	    <xs:attribute name="lag0" type="xs:double" use="required">
+	      <xs:annotation>
+		<xs:documentation>raw value of lag 0 from autocorrelation, normalized by data valid count. </xs:documentation>
+	      </xs:annotation>
+	    </xs:attribute>
+	  </xs:complexType>
 	</xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
 </xs:schema>

@@ -1,95 +1,95 @@
 <?xml version="1.0"?>
 <!-- edited with XMLSpy v2007 sp2 (http://www.altova.com) by Bruce Rowen (NRAO) -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified">
-	<xs:element name="switchedPowerTable">
-		<xs:annotation>
-			<xs:documentation>sub band based noise tube switched power measurements</xs:documentation>
-		</xs:annotation>
+  <xs:element name="switchedPowerTable">
+    <xs:annotation>
+      <xs:documentation>sub band based noise tube switched power measurements</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+	<xs:element name="swBaseband" minOccurs="0" maxOccurs="2">
+	  <xs:annotation>
+	    <xs:documentation>power measurements from a single spectral window (filter)</xs:documentation>
+	  </xs:annotation>
+	  <xs:complexType>
+	    <xs:sequence>
+	      <xs:element name="swPower" maxOccurs="18">
 		<xs:complexType>
-			<xs:sequence>
-				<xs:element name="swBaseband" minOccurs="0" maxOccurs="2">
-					<xs:annotation>
-						<xs:documentation>power measurements from a single spectral window (filter)</xs:documentation>
-					</xs:annotation>
-					<xs:complexType>
-						<xs:sequence>
-							<xs:element name="swPower" maxOccurs="18">
-								<xs:complexType>
-									<xs:attribute name="swIndex" use="required">
-										<xs:annotation>
-											<xs:documentation>spectral window index</xs:documentation>
-										</xs:annotation>
-										<xs:simpleType>
-											<xs:restriction base="xs:int">
-												<xs:minInclusive value="0"/>
-												<xs:maxInclusive value="17"/>
-											</xs:restriction>
-										</xs:simpleType>
-									</xs:attribute>
-									<xs:attribute name="pSum" type="xs:float" use="required">
-										<xs:annotation>
-											<xs:documentation>sum of power with noise diode on/off</xs:documentation>
-										</xs:annotation>
-									</xs:attribute>
-									<xs:attribute name="pDiff" type="xs:float" use="required">
-										<xs:annotation>
-											<xs:documentation>difference of power with noise diode on/off</xs:documentation>
-										</xs:annotation>
-									</xs:attribute>
-									<xs:attribute name="gain" type="xs:int" use="required">
-										<xs:annotation>
-											<xs:documentation>gain</xs:documentation>
-										</xs:annotation>
-									</xs:attribute>
-								</xs:complexType>
-							</xs:element>
-						</xs:sequence>
-						<xs:attribute name="stationId" type="xs:int" use="required">
-							<xs:annotation>
-								<xs:documentation>Station identification number</xs:documentation>
-							</xs:annotation>
-						</xs:attribute>
-						<xs:attribute name="swbbName" use="required">
-							<xs:annotation>
-								<xs:documentation>spectral window baseband name</xs:documentation>	
-							</xs:annotation>
-							<xs:simpleType>
-								<xs:restriction base="xs:string">
-									<xs:enumeration value="A1C1_3BIT"/>
-									<xs:enumeration value="A2C2_3BIT"/>
-									<xs:enumeration value="AC_8BIT"/>
-									<xs:enumeration value="B1D1_3BIT"/>
-									<xs:enumeration value="B2D2_3BIT"/>
-									<xs:enumeration value="BD_8BIT"/>
-								</xs:restriction>
-							</xs:simpleType>
-						</xs:attribute>
-						<xs:attribute name="startTime" type="xs:dateTime" use="required">
-							<xs:annotation>
-								<xs:documentation>start time of this integration (ISO 8601)</xs:documentation>
-							</xs:annotation>
-						</xs:attribute>
-						<xs:attribute name="duration" type="xs:float" use="required">
-							<xs:annotation>
-								<xs:documentation>Duration of this integration in seconds.</xs:documentation>
-							</xs:annotation>
-						</xs:attribute>
-						<xs:attribute name="polarization" use="required">
-							<xs:annotation>
-								<xs:documentation>Identifier for base band polarization</xs:documentation>
-							</xs:annotation>
-							<xs:simpleType>
-								<xs:restriction base="xs:string">
-									<xs:enumeration value="R"/>
-									<xs:enumeration value="L"/>
-									<xs:enumeration value="X"/>
-									<xs:enumeration value="Y"/>
-								</xs:restriction>
-							</xs:simpleType>
-						</xs:attribute>
-					</xs:complexType>
-				</xs:element>
-			</xs:sequence>
+		  <xs:attribute name="swIndex" use="required">
+		    <xs:annotation>
+		      <xs:documentation>spectral window index</xs:documentation>
+		    </xs:annotation>
+		    <xs:simpleType>
+		      <xs:restriction base="xs:int">
+			<xs:minInclusive value="0"/>
+			<xs:maxInclusive value="17"/>
+		      </xs:restriction>
+		    </xs:simpleType>
+		  </xs:attribute>
+		  <xs:attribute name="pSum" type="xs:float" use="required">
+		    <xs:annotation>
+		      <xs:documentation>sum of power with noise diode on/off</xs:documentation>
+		    </xs:annotation>
+		  </xs:attribute>
+		  <xs:attribute name="pDiff" type="xs:float" use="required">
+		    <xs:annotation>
+		      <xs:documentation>difference of power with noise diode on/off</xs:documentation>
+		    </xs:annotation>
+		  </xs:attribute>
+		  <xs:attribute name="gain" type="xs:int" use="required">
+		    <xs:annotation>
+		      <xs:documentation>gain</xs:documentation>
+		    </xs:annotation>
+		  </xs:attribute>
 		</xs:complexType>
+	      </xs:element>
+	    </xs:sequence>
+	    <xs:attribute name="stationId" type="xs:int" use="required">
+	      <xs:annotation>
+		<xs:documentation>Station identification number</xs:documentation>
+	      </xs:annotation>
+	    </xs:attribute>
+	    <xs:attribute name="swbbName" use="required">
+	      <xs:annotation>
+		<xs:documentation>spectral window baseband name</xs:documentation>	
+	      </xs:annotation>
+	      <xs:simpleType>
+		<xs:restriction base="xs:string">
+		  <xs:enumeration value="A1C1_3BIT"/>
+		  <xs:enumeration value="A2C2_3BIT"/>
+		  <xs:enumeration value="AC_8BIT"/>
+		  <xs:enumeration value="B1D1_3BIT"/>
+		  <xs:enumeration value="B2D2_3BIT"/>
+		  <xs:enumeration value="BD_8BIT"/>
+		</xs:restriction>
+	      </xs:simpleType>
+	    </xs:attribute>
+	    <xs:attribute name="startTime" type="xs:dateTime" use="required">
+	      <xs:annotation>
+		<xs:documentation>start time of this integration (ISO 8601)</xs:documentation>
+	      </xs:annotation>
+	    </xs:attribute>
+	    <xs:attribute name="duration" type="xs:float" use="required">
+	      <xs:annotation>
+		<xs:documentation>Duration of this integration in seconds.</xs:documentation>
+	      </xs:annotation>
+	    </xs:attribute>
+	    <xs:attribute name="polarization" use="required">
+	      <xs:annotation>
+		<xs:documentation>Identifier for base band polarization</xs:documentation>
+	      </xs:annotation>
+	      <xs:simpleType>
+		<xs:restriction base="xs:string">
+		  <xs:enumeration value="R"/>
+		  <xs:enumeration value="L"/>
+		  <xs:enumeration value="X"/>
+		  <xs:enumeration value="Y"/>
+		</xs:restriction>
+	      </xs:simpleType>
+	    </xs:attribute>
+	  </xs:complexType>
 	</xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
 </xs:schema>

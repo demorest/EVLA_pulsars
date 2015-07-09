@@ -1,819 +1,872 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema targetNamespace="http://www.nrc.ca/namespaces/widar" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:widar="http://www.nrc.ca/namespaces/widar" elementFormDefault="qualified">
-	<!--
-	    Virtual Correlator Interface (VCI) Request. 
-		
-	    File:      vciRequest.xsd (XML Schema)
-	    Author:    Sonja.Vrcic@nrc.gc.ca
-	    Copyright: National Research Council of Canada and Associated Universities Inc., 2010, 2011, 2012, 2013
-	    
-	    Documentation : VCI Protocol Specification,  Widar Document A25201N0000 Revision 3.15
-	    
-		2011.03.03 Sonja.Vrcic@nrc.gc.ca  
-		Element subArray: Attribute subArrayId becomes optional - will be deleted in the next release. 
-		2011.02.03 Sonja.Vrcic@nrc.gc.ca Removed sid from summedArray/cc, SID is defined in summedArray
-	    2011.01.17 Sonja.Vrcic@nrc.gc.ca Elements summedArray and modifySummedArray
-	    2010.02.17 Sonja.Vrcic@nrc.gc.ca 
-		Added spectral window related attributes: baseband@swbbName and subband@swIndex
-		VCI Protocol Specification will be updated when SV returns to Penticton.
-	    2010.02.14 Sonja.vrcic@nrc.gc.ca 
-		Added new value for autoCorrSubset algorithm=crossCorrOnly
-	    2010.02.14 Sonja.Vrcic@nrc.gc.ca 
-		StationInputOutput, attribute id becomes optional attribute, default id=all
-		This change have no consequences for the software that generates requests. 
-		2012.04.13 Sonja.Vrcic@nrc-cnrc.gc.ca changes to pulsar phase binning and burst mode. 
-		2012.06.11 Sonja.Vrcic@nrc-cnrc.gc.ca added rfi and inter-frame delay (ifd) related attributes.
-		Deleted unused element stbDataProducts. Station Board products, except for Wideband Correlator (WBC)
-		and RFI detection level and blanking duration are not set via VCI. 
-		2012-10-04 Updated by Sonja.Vrcic@nrc.gc.ca:  wpp - comments providded below.
-		2013-03-01 Updated by Sonja.Vrcic@nrc.gc.ca:  burst mode parameters
-		Last update::
-		$Id: vciRequest.xsd 6388 2013-06-15 00:29:14Z svrcic $
-	    $Date: 2013-06-14 17:29:14 -0700 (Fri, 14 Jun 2013) $
-	    $Revision: 6388 $
-	 -->
-	<!-- Includes VciCommon.xsd (which in turn includes WidarCommon.xsd) -->
-	<xs:include schemaLocation="vciCommon.xsd"/>
-	<xs:element name="vciRequest">
-		<xs:annotation>
-			<xs:documentation>
-				VCI Request is a "wrapper" element.
-				A single vciRequest may contain configuration for several components and/or stations.
-				vciRequest can contain several activationTriggers.
-		        Element vciRequest can not contain configuration for more than one subarray.
-			</xs:documentation>
-		</xs:annotation>
-		<xs:complexType>
-			<xs:sequence>
-				<xs:element ref="widar:stationHw" minOccurs="0" maxOccurs="255"/>
-				<xs:element ref="widar:subArray" minOccurs="0"/>
-				<xs:element ref="widar:activationTrigger" minOccurs="0" maxOccurs="unbounded"/>
-				<xs:element ref="widar:cmMonitorControl" minOccurs="0"/>
-			</xs:sequence>
-			<xs:attributeGroup ref="widar:vciCommonMsgAttributes"/>
-		</xs:complexType>
-	</xs:element>
-	<xs:element name="activationTrigger">
-		<xs:annotation>
-			<xs:documentation>
-			VCI Configuration Activation Trigger.
-			Activation time for the configuration request messages with the same activation identifier.
-			</xs:documentation>
-		</xs:annotation>
-		<xs:complexType>
-			<xs:attribute name="msgId" type="xs:int" use="optional"/>
-			<xs:attribute name="activationId" type="xs:string" use="required"/>
-			<xs:attribute name="activationTime" type="xs:dateTime" use="optional"/>
-			<xs:attribute name="mappingTime" type="xs:dateTime" use="optional"/>
-			<xs:attribute name="query" type="widar:YesNoType" use="optional" default="no"/>
-			<xs:attribute name="rollback" type="widar:DwellTimeType" use="optional" default="0"/>
-			<xs:attribute name="fastSwitching" type="widar:DwellTimeType" use="optional" default="0"/>
-			<xs:attribute name="timeStamp" type="xs:dateTime" use="optional"/>
-		</xs:complexType>
-	</xs:element>
-	<xs:element name="stationHw">
-		<xs:annotation>
-			<xs:documentation>
-			Assigns Station ID to a group of Station Boards that receive input from the same antenna.
-			This element assigns Baseband ID to a Station Board Data Path.
-			Primary purpose of this element is resource allocation. 
-			Additional elements and atributes have been added,
-			that allow user to specify station specific attributes that are not likely to change for every scan:
-			- Antenna ID and other antenna parameters,
-			- Noise Diode parameters,
-			- Parameters related to generation of monitor data.
-			If, at the Activation Time, a station with the same Station ID already exists,  
-			it is replaced by the new configuration. 
-			A (previously configured) station that belongs to a subarray cannot be re-configured.
-			Station ID and Baseband IDs assigned here are used when specifying subarray configuration.
-			July 2012 Sonja.Vrcic@nrc.gc.ca removed element noiseDiode:
-			--- element ref="widar:noiseDiode" minOccurs="0 ---
-			Noise Diode is not set via VCI. 
-			</xs:documentation>
-		</xs:annotation>
-		<xs:complexType>
-			<xs:sequence>
-				<xs:element ref="widar:baseBandHw" minOccurs="0" maxOccurs="8"/>
-				<xs:element ref="widar:antenna"    minOccurs="0"/>
-			</xs:sequence>
-			<xs:attribute name="sid" type="widar:StationIdType" use="required"/>
-			<xs:attribute name="name" type="xs:string" use="optional"/>
-			<xs:attribute name="activationId" type="xs:string" use="required"/>
-			<xs:attribute name="mappingOrder" type="xs:int" use="optional"/>
-			<xs:attribute name="action" type="widar:StationHwActionType" use="required"/>
-			<xs:attribute name="timeStamp" type="xs:dateTime" use="optional"/>
-			<xs:attribute name="msgId" type="xs:int" use="optional"/>
-		</xs:complexType>
-		<xs:unique name="UniqueStationBbId">
-			<xs:selector xpath="baseBandHw"/>
-			<xs:field xpath="@id"/>
-		</xs:unique>
-	</xs:element>
-	<xs:element name="baseBandHw">
-		<xs:annotation>
-			<xs:documentation>
-				Used to: assign Baseband ID to a Station Board Data Path.
-			</xs:documentation>
-		</xs:annotation>
-		<xs:complexType>
-			<xs:attribute name="bbid" type="widar:BBIDtype" use="required"/>
-			<xs:attribute name="name" type="xs:string" use="optional"/>
-			<xs:attribute name="stationBoardMlid" type="xs:string" use="required"/>
-			<xs:attribute name="dataPath" type="widar:StbDataPathIdType" use="required"/>
-		</xs:complexType>
-	</xs:element>
-	<xs:element name="subArray">
-		<xs:annotation>
-			<xs:documentation>
-				Subarray Configuration Contains: 
-				- list of stations that belong to the subarray, 
-				- description of input data (basebands), and
-				- specification for desired output products.
-				Station IDs and BaseBandIDs used here must be defined using element stationHw.
-				A station can have up to four baseband pairs or up to 8 single basebands.
-				A combination of baseband pairs and singletons is also allowed.
-				dtEpoch is epoch for DumpTrig signal. Applies for all basebands/subbands.
-				Element modifySummedArray should be specified only if action is "modify".
-				
-				Deleted: 
-				xs:attribute name="targetRqRms" 				type="xs:string"   use="optional"/
-			</xs:documentation>
-		</xs:annotation>
-		<xs:complexType>
-			<xs:sequence>
-				<xs:element ref="widar:listOfStations" minOccurs="0"/>
-				<xs:element ref="widar:stationInputOutput" minOccurs="0" maxOccurs="255"/>
-				<xs:element ref="widar:baseline" minOccurs="0" maxOccurs="unbounded"/>
-				<xs:element ref="widar:modifySummedArray" minOccurs="0"/>
-			</xs:sequence>
-			<xs:attribute name="configId"     type="xs:string" use="required"/>
-			<xs:attribute name="activationId" type="xs:string" use="required"/>
-			<xs:attribute name="msgId"        type="xs:int"    use="required"/>
-			<xs:attribute name="subarrayId"   type="xs:string" use="optional"/>
-			<xs:attribute name="scanId"       type="xs:string" use="optional"/>
-			<xs:attribute name="name"         type="xs:string" use="optional"/>
-			<xs:attribute name="action"       type="widar:SubarrayActionType" use="optional" default="create"/>
-			<xs:attribute name="observationTime" 			type="xs:dateTime" use="optional"/>
-			<xs:attribute name="mappingOrder"    			type="xs:int" use="optional"/>
-			<xs:attribute name="modelErrorReportingThreshold"      type="xs:int"     use="optional"/>
-			<xs:attribute name="reConfigureCompleteBaselineBoards" type="xs:boolean" use="optional" default="false"/>
-			<xs:attribute name="timeStamp"   				type="xs:dateTime" use="optional"/>
-			<xs:attribute name="dtEpoch"     				type="xs:dateTime" use="optional"/>
-		</xs:complexType>
-		<xs:unique name="UniqueStationIdInSubarray">
-			<xs:selector xpath="stationInputOutput"/>
-			<xs:field xpath="@id"/>
-		</xs:unique>
-	</xs:element>
-	<xs:simpleType name="SubarrayActionType">
-		<xs:restriction base="xs:token">
-			<xs:enumeration value="create"/>
-			<xs:enumeration value="modify"/>
-			<xs:enumeration value="delete"/>
-		</xs:restriction>
-	</xs:simpleType>
-	<xs:simpleType name="StationListActionType">
-		<xs:restriction base="xs:token">
-			<xs:enumeration value="add"/>
-		</xs:restriction>
-	</xs:simpleType>
-	<xs:simpleType name="StationHwActionType">
-		<xs:restriction base="xs:token">
-			<xs:enumeration value="add"/>
-			<xs:enumeration value="remove"/>
-		</xs:restriction>
-	</xs:simpleType>
-	<xs:element name="listOfStations">
-		<xs:annotation>
-			<xs:documentation>
-				List of stations that belong to the subarray. 
-				Only known stations (i.e. stations that were previously defined using stationHw) can be listed here.
-			</xs:documentation>
-		</xs:annotation>
-		<xs:complexType>
-			<xs:sequence>
-				<xs:element ref="widar:station" minOccurs="0" maxOccurs="255"/>
-			</xs:sequence>
-			<xs:attribute name="action" type="widar:StationListActionType" use="optional" default="add"/>
-		</xs:complexType>
-		<xs:unique name="UniqueStationIdInStationList">
-			<xs:selector xpath="station"/>
-			<xs:field xpath="@id"/>
-		</xs:unique>
-	</xs:element>
-	<xs:element name="station">
-		<xs:annotation>
-			<xs:documentation>
-				Element station is used to specify the list of stations (antennas) that
-				belong to a subarray. The list of stations can be specified either in 
-				subarray/listOfStations or in subarray/stationInputOutput. 
-				Preffered use: subarrayInputOutput.
-				(Subarray/listOfStations is the older version preserved for backwards compatibility.)
-				The only attributes (other than name) that can be specified in this element are 
-				Local Oscillator and Frequency Shift. These parameters are different for each antenna.
-				Normally, Local Oscillator and Frequency Shift are specified in the delay models,
-				but, for testing purposes they can be specified  here.
-				LO and Frequency Shift can be specified in: 
-				- VCI screate subarray,  
-				- VCI modify subarray, or 
-				- STB Delay Models. 
-			</xs:documentation>
-		</xs:annotation>
-		<xs:complexType>
-			<xs:sequence>
-				<xs:element ref="widar:bb" minOccurs="0" maxOccurs="8"/>
-			</xs:sequence>
-			<xs:attribute name="sid" type="widar:StationIdType" use="required"/>
-			<xs:attribute name="name" type="xs:string" use="optional"/>
-			<xs:attribute name="action" type="widar:StationListActionType" use="optional"/>
-		</xs:complexType>
-	</xs:element>
-	<xs:element name="bb">
-		<xs:annotation>
-			<xs:documentation>
-            Baseband parameters that are different for each antenna (station).
-			</xs:documentation>
-		</xs:annotation>
-		<xs:complexType>
-			<xs:attribute name="bbid" type="widar:BBIDtype" use="required"/>
-			<xs:attribute name="localOsc" type="xs:double" use="optional"/>
-			<xs:attribute name="freqShift" type="xs:double" use="optional"/>
-		</xs:complexType>
-	</xs:element>
-	<xs:element name="bbParams">
-		<xs:annotation>
-			<xs:documentation>
-            This element can be used to specify parameters for individual Basebands. 
-			The parameters (attributes) specified here can be different for Basebands that belong to the same pair.
-			Typically, these parameters are same for all the stations in a subarray, but
-			they can be specified for each station individually.
-			Removed attributes: 
-			xs:attribute name="fshift_kHz" type="xs:double" use="optional"
-			xs:attribute name="lo_o_MHz"   type="xs:double" use="optional"
-			</xs:documentation>
-		</xs:annotation>
-		<xs:complexType>
-			<xs:sequence>
-				<xs:element ref="widar:sbParams" minOccurs="0" maxOccurs="16"/>
-			</xs:sequence>
-			<xs:attribute name="bbid" type="widar:BBIDtype" use="required"/>
-			<xs:attribute name="sourceType" type="widar:StbSourceType" use="optional"/>
-			<xs:attribute name="sourceId" type="widar:StbDataPathIdType" use="optional"/>
-			<xs:attribute name="polarization" type="widar:PolarizationType" use="optional"/>
-			<xs:attribute name="sideband" type="widar:UpperLowerType" use="optional"/>
-			<xs:attribute name="phaseModelInsertion" type="widar:EarlyLateType" use="optional"/>
-		</xs:complexType>
-	</xs:element>
-	<xs:element name="sbParams">
-		<xs:annotation>
-			<xs:documentation>
-			This element is a child of the element bbParams and will be specified for each Baseband individually
-			(not for a Baseband pair).	
-			Tone extraction and radar mode will  typically be set the same way for all the stations in a subarray,
-			but can be specified for individual stations, if needed. 
-			Normally, Station Board filter will be selected by the correlator software. 
-			User may want to explicitely specify the Filter ID during the testing or to awoid use of the damaged hardware.	 
-			</xs:documentation>
-		</xs:annotation>
-		<xs:complexType>
-			<xs:sequence>
-				<xs:element ref="widar:radarMode" minOccurs="0"/>
-				<xs:element ref="widar:toneExtraction" minOccurs="0"/>
-			</xs:sequence>
-			<xs:attribute name="sbid" type="widar:SBIDtype" use="required"/>
-			<xs:attribute name="name" type="xs:string" use="optional"/>
-			<xs:attribute name="filter" type="widar:SBIDtype" use="optional"/>
-		</xs:complexType>
-	</xs:element>
-	<xs:element name="stationInputOutput">
-		<xs:annotation>
-			<xs:documentation>
-			Specification of input and output data: 
-				baseband parameters, 
-				for each baseband (pair) the list of subbands, 
-				for each subband the list of desired products. 
-			VCI Client may specify stationInputOutput for each station individually,
-			or use id=ALL to apply the same configuration to all the stations in the subarray.
-			Element subarray may have one element stationInputOutput that defines configuration for all
-			the stations, and one or more elements stationInputOutput that define configuration for stations
-			that are not exactly the same as others. 
-			Station ID and Baseband IDs used here must be already defined using stationHw. 
-			</xs:documentation>
-		</xs:annotation>
-		<xs:complexType>
-			<xs:sequence>
-				<xs:element ref="widar:station" minOccurs="0" maxOccurs="255"/>
-				<xs:element ref="widar:bbParams" minOccurs="0" maxOccurs="8"/>
-				<xs:element ref="widar:baseBand" minOccurs="0" maxOccurs="8"/>
-			</xs:sequence>
-			<xs:attribute name="sid" type="xs:string" use="optional" default="all"/>
-			<xs:attribute name="name" type="xs:string" use="optional"/>
-		</xs:complexType>
-		<xs:unique name="UniqueBbId">
-			<xs:selector xpath="baseBand"/>
-			<xs:field xpath="@bbA"/>
-			<xs:field xpath="@bbB"/>
-		</xs:unique>
-	</xs:element>
-	<xs:element name="baseBand">
-		<xs:annotation>
-			<xs:documentation>
-			swbbName is BaseBand name for Spectral Window (BDF),
-			swbbName is forwarded to CBE (BDF) and to Station Boards,
-			so that it can be inserted into output related to switched power (power counts).
-			
-			swPwrEpoch - epoch for data related to switched power data generated by Station Board,
-			             if not specified as as DumpTrig epoch. 
-			swPwrInteg - integration time for switched power data generated by Station Board,
-			             if not specified, same as LTA dump time. Specified in milliseconds,
-						 value must be in hundreds of milliseconds.
-						 
-			defaultFilterGain - If present, set default values for active filter stages 
-						 Default values for filter gain are determined by CMIB software based on filter setup.
-					     "Target RMS", if specified, will override filter gains set as result of this attribute.
-						 In other words, either this attribute or "target RMS" should be specified.
-						 Howver, it is possible to set "defaultFilterGain" for all the stages and re-quantizer, and 
-						 then adjust gain only for a subset of stages.
-			requantRms - Target RMS for re-qunatizer. If specified, invoke filter gain adjustment to get output RMS 
-						 as specified.
-			stage1Rms  - Target RMS for filter stage 1. If specified, invoke filter gain adjustment to get output RMS 
-			             as specified by this attribute.
-			stage2Rms  - Target RMS for filter stage 2. If specified, invoke filter gain adjustment to get output RMS 
-			             as specified by this attribute.
-			stage3Rms  - Target RMS for filter stage 3. If specified, invoke filter gain adjustment to get output RMS 
-			             as specified by this attribute.
-			stage4Rms  - Target RMS for filter stage 4. If specified, invoke filter gain adjustment to get output RMS 
-			             as specified by this attribute.
-			
-			Not sure if Station ID definition is needed at all:
-			Station ID, if specified here overrides the Station ID specified in the parent element. 
-			This may be used in configurations other than EVLA and perhaps for testing.
-			</xs:documentation>
-		</xs:annotation>
-		<xs:complexType>
-			<xs:sequence>
-				<xs:element ref="widar:subBand"      minOccurs="0" maxOccurs="18"/>
-				<xs:element ref="widar:wpp"          minOccurs="0" maxOccurs="32"/>
-				<xs:element ref="widar:pulsarGating" minOccurs="0" />
-			</xs:sequence>
-			<xs:attribute name="bbA" type="widar:BBIDtype" use="required"/>
-			<xs:attribute name="bbB" type="widar:BBIDtype" use="optional"/>
-			<xs:attribute name="swbbName" type="widar:SwBbType" use="optional"/>
-			<xs:attribute name="name" type="xs:string" use="optional"/>
-			<xs:attribute name="bw" type="widar:BaseBandBwType" use="optional"/>
-			<xs:attribute name="inQuant" type="widar:BitsForInitialQuantizationType" use="optional"/>
-			<xs:attribute name="singlePhaseCenter" type="widar:YesNoType" use="optional" default="yes"/>
-			<xs:attribute name="delayModelsValid" type="xs:int" use="optional" default="1"/>
-			<xs:attribute name="sid" type="widar:StationIdType" use="optional"/>
-			<xs:attribute name="swPwrEpoch" type="xs:dateTime" use="optional"/>
-			<xs:attribute name="swPwrInteg" type="xs:int" use="optional"/>
-			<xs:attribute name="defaultFilterGain" type="xs:string" use="optional"/>
-			<xs:attribute name="requantRms"    type="xs:double" use="optional"/>
-			<xs:attribute name="stage1Rms"     type="xs:double" use="optional"/>
-			<xs:attribute name="stage2Rms"     type="xs:double" use="optional"/>
-			<xs:attribute name="stage3Rms"     type="xs:double" use="optional"/>
-			<xs:attribute name="stage4Rms"     type="xs:double" use="optional"/>
-			<xs:attribute name="noWbcProducts" type="xs:string" use="optional"/>
-		</xs:complexType>
-	</xs:element>
+<!-- edited with XMLSpy v2014 sp1 (http://www.altova.com) by National Radio Astronomy Observatory (National Radio Astronomy Observatory) -->
+<xs:schema xmlns:widar="http://www.nrc.ca/namespaces/widar" xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.nrc.ca/namespaces/widar" elementFormDefault="qualified">
+  <!--
+      Virtual Correlator Interface (VCI) Request. 
+      
+      File:      vciRequest.xsd (XML Schema)
+      Author:    Sonja.Vrcic@nrc.gc.ca
+      Copyright: National Research Council of Canada and Associated Universities Inc., 2010, 2011, 2012, 2013
+      
+      Version of the protocol: As specified in the VCI Protocol Specification, Widar Document A25201N0000 Revision 3.16, 
+      V3.16 - attributes and elements related to phase binning. 
+      
+      2011.03.03 Sonja.Vrcic@nrc.gc.ca  
+      Element subArray: Attribute subArrayId becomes optional - will be deleted in the next release. 
+      2011.02.03 Sonja.Vrcic@nrc.gc.ca Removed sid from summedArray/cc, SID is defined in summedArray
+      2011.01.17 Sonja.Vrcic@nrc.gc.ca Elements summedArray and modifySummedArray
+      2010.02.17 Sonja.Vrcic@nrc.gc.ca 
+      Added spectral window related attributes: baseband@swbbName and subband@swIndex
+      VCI Protocol Specification will be updated when SV returns to Penticton.
+      2010.02.14 Sonja.vrcic@nrc.gc.ca 
+      Added new value for autoCorrSubset algorithm=crossCorrOnly
+      2010.02.14 Sonja.Vrcic@nrc.gc.ca 
+      StationInputOutput, attribute id becomes optional attribute, default id=all
+      This change have no consequences for the software that generates requests. 
+      2012.04.13 Sonja.Vrcic@nrc-cnrc.gc.ca changes to pulsar phase binning and burst mode. 
+      2012.06.11 Sonja.Vrcic@nrc-cnrc.gc.ca added rfi and inter-frame delay (ifd) related attributes.
+      Deleted unused element stbDataProducts. Station Board products, except for Wideband Correlator (WBC)
+      and RFI detection level and blanking duration are not set via VCI. 
+      2012-10-04 Updated by Sonja.Vrcic@nrc.gc.ca:  wpp - comments providded below.
+      2013-03-01 Updated by Sonja.Vrcic@nrc.gc.ca:  burst mode parameters
+      2013-09-20 Updated by Sonja.Vrcic@nrc.gc.ca:  phase binning parameters
+      2013-09-30 Updated by Sonja.Vrcic@nrc.gc.ca:  phase binning parameters (added v.16 to enumberation.)
+      2015.04.12 Updated by KRyan: CBE frequency averaging interface added (element <cbeProcessing>).
+      Last update::
+      $Id: vciRequest.xsd 6748 2015-05-26 17:15:50Z kryan $
+      $Date: 2015-05-26 11:15:50 -0600 (Tue, 26 May 2015) $
+      $Revision: 6748 $
+  -->
+  <!-- Includes VciCommon.xsd (which in turn includes WidarCommon.xsd) -->
+  <xs:include schemaLocation="vciCommon.xsd"/>
+  <xs:element name="vciRequest">
+    <xs:annotation>
+      <xs:documentation>
+	VCI Request is a "wrapper" element.
+	A single vciRequest may contain configuration for several components and/or stations.
+	vciRequest can contain several activationTriggers.
+	Element vciRequest can not contain configuration for more than one subarray.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+	<xs:element ref="widar:stationHw" minOccurs="0" maxOccurs="255"/>
+	<xs:element ref="widar:subArray" minOccurs="0"/>
+	<xs:element ref="widar:activationTrigger" minOccurs="0" maxOccurs="unbounded"/>
+	<xs:element ref="widar:cmMonitorControl" minOccurs="0"/>
+      </xs:sequence>
+      <xs:attributeGroup ref="widar:vciCommonMsgAttributes"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="activationTrigger">
+    <xs:annotation>
+      <xs:documentation>
+	VCI Configuration Activation Trigger.
+	Activation time for the configuration request messages with the same activation identifier.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:attribute name="msgId" type="xs:int" use="optional"/>
+      <xs:attribute name="activationId" type="xs:string" use="required"/>
+      <xs:attribute name="activationTime" type="xs:dateTime" use="optional"/>
+      <xs:attribute name="mappingTime" type="xs:dateTime" use="optional"/>
+      <xs:attribute name="query" type="widar:YesNoType" use="optional" default="no"/>
+      <xs:attribute name="rollback" type="widar:DwellTimeType" use="optional" default="0"/>
+      <xs:attribute name="fastSwitching" type="widar:DwellTimeType" use="optional" default="0"/>
+      <xs:attribute name="timeStamp" type="xs:dateTime" use="optional"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="stationHw">
+    <xs:annotation>
+      <xs:documentation>
+	Assigns Station ID to a group of Station Boards that receive input from the same antenna.
+	This element assigns Baseband ID to a Station Board Data Path.
+	Primary purpose of this element is resource allocation. 
+	Additional elements and atributes have been added,
+	that allow user to specify station specific attributes that are not likely to change for every scan:
+	- Antenna ID and other antenna parameters,
+	- Noise Diode parameters,
+	- Parameters related to generation of monitor data.
+	If, at the Activation Time, a station with the same Station ID already exists,  
+	it is replaced by the new configuration. 
+	A (previously configured) station that belongs to a subarray cannot be re-configured.
+	Station ID and Baseband IDs assigned here are used when specifying subarray configuration.
+	July 2012 Sonja.Vrcic@nrc.gc.ca removed element noiseDiode:
+	--- element ref="widar:noiseDiode" minOccurs="0 ---
+	Noise Diode is not set via VCI. 
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+	<xs:element ref="widar:baseBandHw" minOccurs="0" maxOccurs="8"/>
+	<xs:element ref="widar:antenna" minOccurs="0"/>
+      </xs:sequence>
+      <xs:attribute name="sid" type="widar:StationIdType" use="required"/>
+      <xs:attribute name="name" type="xs:string" use="optional"/>
+      <xs:attribute name="activationId" type="xs:string" use="required"/>
+      <xs:attribute name="mappingOrder" type="xs:int" use="optional"/>
+      <xs:attribute name="action" type="widar:StationHwActionType" use="required"/>
+      <xs:attribute name="timeStamp" type="xs:dateTime" use="optional"/>
+      <xs:attribute name="msgId" type="xs:int" use="optional"/>
+    </xs:complexType>
+    <!-- 
+      I don't know what this does but for some reason, I added
+      changed 'xpath="baseBandHw"' into 'xpath="widar:baseBandHw"
+      kjr.2015.05.21
+    --> 
+    <xs:unique name="UniqueStationBbId">
+      <xs:selector xpath="widar:baseBandHw"/>
+      <xs:field xpath="@id"/>
+    </xs:unique>
+  </xs:element>
+  <xs:element name="baseBandHw">
+    <xs:annotation>
+      <xs:documentation>
+	Used to: assign Baseband ID to a Station Board Data Path.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:attribute name="bbid" type="widar:BBIDtype" use="required"/>
+      <xs:attribute name="name" type="xs:string" use="optional"/>
+      <xs:attribute name="stationBoardMlid" type="xs:string" use="required"/>
+      <xs:attribute name="dataPath" type="widar:StbDataPathIdType" use="required"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="subArray">
+    <xs:annotation>
+      <xs:documentation>
+	Subarray Configuration Contains: 
+	- list of stations that belong to the subarray, 
+	- description of input data (basebands), and
+	- specification for desired output products.
+	Station IDs and BaseBandIDs used here must be defined using element stationHw.
+	A station can have up to four baseband pairs or up to 8 single basebands.
+	A combination of baseband pairs and singletons is also allowed.
+	dtEpoch is epoch for DumpTrig signal. Applies for all basebands/subbands.
+	Element modifySummedArray should be specified only if action is "modify".
 	
-	<xs:element name="subBand">
-		<xs:annotation>
-			<xs:documentation>
-			Subband configuration specifies filter configuration and output products.
-			swIndex is index of the Spectral Window (BDF). 
-			WIDAR correlator does not use swIndex; swIndex is forwarded to CBE (BDF).
-			</xs:documentation>
-		</xs:annotation>
-		<xs:complexType>
-			<xs:sequence>
-				<xs:element ref="widar:polProducts"       minOccurs="0"/>
-				<xs:element ref="widar:summedArray"       minOccurs="0" maxOccurs="2" />
-				<xs:element ref="widar:radarMode"         minOccurs="0"/>
-				<xs:element ref="widar:toneExtraction"    minOccurs="0"/>
-			</xs:sequence>
-			<xs:attribute name="sbid" 			     		type="widar:SBIDtype" 					use="required" />
-			<xs:attribute name="swIndex" 		     		type="xs:int" 							use="required" />
-			<xs:attribute name="name" 			     		type="xs:string" 						use="optional" />
-			<xs:attribute name="bw"				     		type="widar:SbBwType" 					use="required" />
-			<xs:attribute name="centralFreq" 	     		type="xs:decimal" 						use="required"/>
-			<xs:attribute name="rqNumBits" 		     		type="widar:BitsForReQuantizationType" 	use="required" />
-			<xs:attribute name="pulsarGatingPhase"   		type="xs:int" 							use="optional"  default="0"/>
-			<xs:attribute name="useMixer" 			 		type="widar:YesNoType" 					use="optional"  default="no"/>
-			<xs:attribute name="mixerPhaseErrorCorr" 		type="widar:YesNoType" 					use="optional"  default="no"/>
-			<xs:attribute name="signalToNoise"       		type="widar:SignalToNoiseType"       	use="optional"  default="0"/>
-			<xs:attribute name="rfiDetectionLevel"   		type="xs:decimal" 	                    use="optional" />
-			<xs:attribute name="rfiBlankingDuration" 		type="xs:decimal" 	                    use="optional" />
-			
-			<xs:attribute name="frameSchedulingAlgorithm"   type="widar:InterFrameDelayAlgType"   	use="optional" />
-			<!-- interFrameDelay is nominal time in microseconds between transmitted frames on SFP1 (or XPAK if we have 10 GigE). 
-                 interFrameDelay is used only if frameSchedulingAlgotihm=setDelay, otherwise it is ignored. Default=896. 
-			     If randomDelay is Off: 0-255, if randomDelay is On : 0, 4, ..., 1020                                      -->
-			<xs:attribute name="interFrameDelay"     		type="widar:SfpFrameDelayType"          use="optional" />
-			<xs:attribute name="randomizeDelay"             type="widar:OnOffType"                  use="optional" />
-		</xs:complexType>
-	</xs:element>
-	<xs:simpleType name="InterFrameDelayAlgType">
-		<xs:restriction base="xs:token">
-			<xs:enumeration value="dontSet"/>
-			<xs:enumeration value="setDelay"/>
-			<xs:enumeration value="minDelay"/>
-		</xs:restriction>
-	</xs:simpleType>
-	<xs:simpleType name="SfpFrameDelayType" >
-		<xs:restriction base="xs:int">
-			<xs:minInclusive value="0"/>
-			<xs:maxInclusive value="1020"/>
-		</xs:restriction>
-	</xs:simpleType>
-	<xs:element name="polProducts">
-		<xs:annotation>
-			<xs:documentation>
-			Polarization products that use the same integration factors (DUMPTRIG) and
-			share same boards. For now, user can specify only one instance of this element, 
-			which means that user can not specify two groups of polarization products,
-			where each group uses different DUMPTRIG. 
-			</xs:documentation>
-		</xs:annotation>
-		<xs:complexType>
-			<xs:sequence>
-				<xs:element ref="widar:pp"                 minOccurs="0"   maxOccurs="4"/>
-				<xs:element ref="widar:blbProdIntegration" minOccurs="0"/>
-				<xs:element ref="widar:pulsarTiming"       minOccurs="0"/>
-				<xs:element ref="widar:pulsarBins"         minOccurs="0"/>
-				<xs:element ref="widar:blbPair"            minOccurs="0"   maxOccurs="unbounded"/>
-				<xs:element ref="widar:stationPacking"     minOccurs="0"/>
-				<xs:element ref="widar:productPacking"     minOccurs="0"/>
-				<xs:element ref="widar:autoCorrSubset"     minOccurs="0"/>
-			</xs:sequence>
-			<xs:attribute name="autoCorrMode"     type="widar:OnOffType" use="optional" default="off" />
-		</xs:complexType>
-	</xs:element>
-	<xs:element name="pp">
-		<xs:annotation>
-			<xs:documentation>
-			Polarization product.
-			</xs:documentation>
-		</xs:annotation>
-		<xs:complexType>
-			<xs:attribute name="id"               type="widar:ProductIdType"     use="required"/>
-			<xs:attribute name="correlation"      type="widar:CorrelationType"   use="required"/>
-			<xs:attribute name="spectralChannels" type="widar:SpectChannelsType" use="required"/>
-		</xs:complexType>
-	</xs:element>
-	<xs:element name="blbProdIntegration">
-		<xs:annotation>
-			<xs:documentation>
-			Integration Time defined as:  
-			Minimum Hardware Integration Time (MHIT) in microseconds.
-			H/W integration factor (h/w integration time specified as multiple of the minimum h/w integration time). 
-			LTA integration factor  (LTA integration time specified as multiple of the h/w integration time).
-			CBE integration factor (CBE integration time specified as multiple of the LTA integration time).
-			Phase for recirculation should be specified only if recFactor>1. 
-			If recPhase is not specified and recFactor>1, CM uses serial phase. 
-			</xs:documentation>
-		</xs:annotation>
-		<xs:complexType>
-			<xs:attribute name="recirculation"  type="widar:RecirculationFactorType" use="required"/>
-			<xs:attribute name="recPhase"       type="widar:RecPhaseType"            use="optional"/>
-			<xs:attribute name="minIntegTime"   type="widar:MinHwIntTimeType"        use="required"/>
-			<xs:attribute name="ccIntegFactor"  type="xs:int" 						 use="optional" default="1"/>
-			<xs:attribute name="ltaIntegFactor" type="xs:int" 						 use="optional" default="1"/>
-			<xs:attribute name="cbeIntegFactor" type="xs:int"                        use="optional" default="1"/>
-			<xs:attribute name="burstDuration"       type="xs:int"                   use="optional"/>
-			<xs:attribute name="burstBlankDuration"  type="xs:int"                   use="optional"/>
-			<xs:attribute name="numRollingBursts"    type="xs:int"                   use="optional"/>
-			<xs:attribute name="pauseBetweenBursts"  type="xs:int"                   use="optional"/>
-			<xs:attribute name="firstBurstOffset"    type="xs:int"                   use="optional"/>
-		</xs:complexType>
-	</xs:element>
+	Deleted: 
+	xs:attribute name="targetRqRms" 				type="xs:string"   use="optional"/
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+	<xs:element ref="widar:listOfStations" minOccurs="0"/>
+	<xs:element ref="widar:stationInputOutput" minOccurs="0" maxOccurs="255"/>
+	<xs:element ref="widar:baseline" minOccurs="0" maxOccurs="unbounded"/>
+	<xs:element ref="widar:modifySummedArray" minOccurs="0"/>
+      </xs:sequence>
+      <xs:attribute name="configId" type="xs:string" use="required"/>
+      <xs:attribute name="activationId" type="xs:string" use="required"/>
+      <xs:attribute name="msgId" type="xs:int" use="required"/>
+      <xs:attribute name="subarrayId" type="xs:string" use="optional"/>
+      <xs:attribute name="scanId" type="xs:string" use="optional"/>
+      <xs:attribute name="name" type="xs:string" use="optional"/>
+      <xs:attribute name="action" type="widar:SubarrayActionType" use="optional" default="create"/>
+      <xs:attribute name="observationTime" type="xs:dateTime" use="optional"/>
+      <xs:attribute name="mappingOrder" type="xs:int" use="optional"/>
+      <xs:attribute name="modelErrorReportingThreshold" type="xs:int" use="optional"/>
+      <xs:attribute name="reConfigureCompleteBaselineBoards" type="xs:boolean" use="optional" default="false"/>
+      <xs:attribute name="timeStamp" type="xs:dateTime" use="optional"/>
+      <xs:attribute name="dtEpoch" type="xs:dateTime" use="optional"/>
+    </xs:complexType>
+    <xs:unique name="UniqueStationIdInSubarray">
+      <xs:selector xpath="stationInputOutput"/>
+      <xs:field xpath="@id"/>
+    </xs:unique>
+  </xs:element>
+  <xs:simpleType name="SubarrayActionType">
+    <xs:restriction base="xs:token">
+      <xs:enumeration value="create"/>
+      <xs:enumeration value="modify"/>
+      <xs:enumeration value="delete"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="StationListActionType">
+    <xs:restriction base="xs:token">
+      <xs:enumeration value="add"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="StationHwActionType">
+    <xs:restriction base="xs:token">
+      <xs:enumeration value="add"/>
+      <xs:enumeration value="remove"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:element name="listOfStations">
+    <xs:annotation>
+      <xs:documentation>
+	List of stations that belong to the subarray. 
+	Only known stations (i.e. stations that were previously defined using stationHw) can be listed here.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+	<xs:element ref="widar:station" minOccurs="0" maxOccurs="255"/>
+      </xs:sequence>
+      <xs:attribute name="action" type="widar:StationListActionType" use="optional" default="add"/>
+    </xs:complexType>
+    <xs:unique name="UniqueStationIdInStationList">
+      <xs:selector xpath="station"/>
+      <xs:field xpath="@id"/>
+    </xs:unique>
+  </xs:element>
+  <xs:element name="station">
+    <xs:annotation>
+      <xs:documentation>
+	Element station is used to specify the list of stations (antennas) that
+	belong to a subarray. The list of stations can be specified either in 
+	subarray/listOfStations or in subarray/stationInputOutput. 
+	Preffered use: subarrayInputOutput.
+	(Subarray/listOfStations is the older version preserved for backwards compatibility.)
+	The only attributes (other than name) that can be specified in this element are 
+	Local Oscillator and Frequency Shift. These parameters are different for each antenna.
+	Normally, Local Oscillator and Frequency Shift are specified in the delay models,
+	but, for testing purposes they can be specified  here.
+	LO and Frequency Shift can be specified in: 
+	- VCI screate subarray,  
+	- VCI modify subarray, or 
+	- STB Delay Models. 
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+	<xs:element ref="widar:bb" minOccurs="0" maxOccurs="8"/>
+      </xs:sequence>
+      <xs:attribute name="sid" type="widar:StationIdType" use="required"/>
+      <xs:attribute name="name" type="xs:string" use="optional"/>
+      <xs:attribute name="action" type="widar:StationListActionType" use="optional"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="bb">
+    <xs:annotation>
+      <xs:documentation>
+	Baseband parameters that are different for each antenna (station).
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:attribute name="bbid" type="widar:BBIDtype" use="required"/>
+      <xs:attribute name="localOsc" type="xs:double" use="optional"/>
+      <xs:attribute name="freqShift" type="xs:double" use="optional"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="bbParams">
+    <xs:annotation>
+      <xs:documentation>
+	This element can be used to specify parameters for individual Basebands. 
+	The parameters (attributes) specified here can be different for Basebands that belong to the same pair.
+	Typically, these parameters are same for all the stations in a subarray, but
+	they can be specified for each station individually.
+	Removed attributes: 
+	xs:attribute name="fshift_kHz" type="xs:double" use="optional"
+	xs:attribute name="lo_o_MHz"   type="xs:double" use="optional"
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+	<xs:element ref="widar:sbParams" minOccurs="0" maxOccurs="16"/>
+      </xs:sequence>
+      <xs:attribute name="bbid" type="widar:BBIDtype" use="required"/>
+      <xs:attribute name="sourceType" type="widar:StbSourceType" use="optional"/>
+      <xs:attribute name="sourceId" type="widar:StbDataPathIdType" use="optional"/>
+      <xs:attribute name="polarization" type="widar:PolarizationType" use="optional"/>
+      <xs:attribute name="sideband" type="widar:UpperLowerType" use="optional"/>
+      <xs:attribute name="phaseModelInsertion" type="widar:EarlyLateType" use="optional"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="sbParams">
+    <xs:annotation>
+      <xs:documentation>
+	This element is a child of the element bbParams and will be specified for each Baseband individually
+	(not for a Baseband pair).	
+	Tone extraction and radar mode will  typically be set the same way for all the stations in a subarray,
+	but can be specified for individual stations, if needed. 
+	Normally, Station Board filter will be selected by the correlator software. 
+	User may want to explicitely specify the Filter ID during the testing or to awoid use of the damaged hardware.	 
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+	<xs:element ref="widar:radarMode" minOccurs="0"/>
+	<xs:element ref="widar:toneExtraction" minOccurs="0"/>
+      </xs:sequence>
+      <xs:attribute name="sbid" type="widar:SBIDtype" use="required"/>
+      <xs:attribute name="name" type="xs:string" use="optional"/>
+      <xs:attribute name="filter" type="widar:SBIDtype" use="optional"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="stationInputOutput">
+    <xs:annotation>
+      <xs:documentation>
+	Specification of input and output data: 
+	baseband parameters, 
+	for each baseband (pair) the list of subbands, 
+	for each subband the list of desired products. 
+	VCI Client may specify stationInputOutput for each station individually,
+	or use id=ALL to apply the same configuration to all the stations in the subarray.
+	Element subarray may have one element stationInputOutput that defines configuration for all
+	the stations, and one or more elements stationInputOutput that define configuration for stations
+	that are not exactly the same as others. 
+	Station ID and Baseband IDs used here must be already defined using stationHw. 
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+	<xs:element ref="widar:station" minOccurs="0" maxOccurs="255"/>
+	<xs:element ref="widar:bbParams" minOccurs="0" maxOccurs="8"/>
+	<xs:element ref="widar:baseBand" minOccurs="0" maxOccurs="8"/>
+      </xs:sequence>
+      <xs:attribute name="sid" type="xs:string" use="optional" default="all"/>
+      <xs:attribute name="name" type="xs:string" use="optional"/>
+    </xs:complexType>
+    <xs:unique name="UniqueBbId">
+      <xs:selector xpath="baseBand"/>
+      <xs:field xpath="@bbA"/>
+      <xs:field xpath="@bbB"/>
+    </xs:unique>
+  </xs:element>
+  <xs:element name="baseBand">
+    <xs:annotation>
+      <xs:documentation>
+	swbbName is BaseBand name for Spectral Window (BDF),
+	swbbName is forwarded to CBE (BDF) and to Station Boards,
+	so that it can be inserted into output related to switched power (power counts).
 	
-		<xs:simpleType name="RecPhaseType">
-		<xs:restriction base="xs:token">
-			<xs:enumeration value="serial"/>
-			<xs:enumeration value="parallel"/>
-		</xs:restriction>
-	</xs:simpleType>
+	swPwrEpoch - epoch for data related to switched power data generated by Station Board,
+	if not specified as as DumpTrig epoch. 
+	swPwrInteg - integration time for switched power data generated by Station Board,
+	if not specified, same as LTA dump time. Specified in milliseconds,
+	value must be in hundreds of milliseconds.
+	
+	defaultFilterGain - If present, set default values for active filter stages 
+	Default values for filter gain are determined by CMIB software based on filter setup.
+	"Target RMS", if specified, will override filter gains set as result of this attribute.
+	In other words, either this attribute or "target RMS" should be specified.
+	Howver, it is possible to set "defaultFilterGain" for all the stages and re-quantizer, and 
+	then adjust gain only for a subset of stages.
+	requantRms - Target RMS for re-qunatizer. If specified, invoke filter gain adjustment to get output RMS 
+	as specified.
+	stage1Rms  - Target RMS for filter stage 1. If specified, invoke filter gain adjustment to get output RMS 
+	as specified by this attribute.
+	stage2Rms  - Target RMS for filter stage 2. If specified, invoke filter gain adjustment to get output RMS 
+	as specified by this attribute.
+	stage3Rms  - Target RMS for filter stage 3. If specified, invoke filter gain adjustment to get output RMS 
+	as specified by this attribute.
+	stage4Rms  - Target RMS for filter stage 4. If specified, invoke filter gain adjustment to get output RMS 
+	as specified by this attribute.
+	
+	bininningPeriod   - in microseconds, to be specified only if phase binning is used for at last one subband.
+	binMaxHwIntegTime - relevant only when phase bining is used. If not specified CMIB uses the default value of 500 nano seconds.
+	
+	
+	Station ID, if specified here overrides the Station ID specified in the parent element. 
+	This may be used in configurations other than EVLA and perhaps for testing.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+	<xs:element ref="widar:phaseBinning" minOccurs="0" maxOccurs="2000"/>
+	<xs:element ref="widar:subBand" minOccurs="0" maxOccurs="18"/>
+	<xs:element ref="widar:wpp" minOccurs="0" maxOccurs="32"/>
+	<xs:element ref="widar:gating" minOccurs="0"/>
+      </xs:sequence>
+      <xs:attribute name="bbA" type="widar:BBIDtype" use="required"/>
+      <xs:attribute name="bbB" type="widar:BBIDtype" use="optional"/>
+      <xs:attribute name="swbbName" type="widar:SwBbType" use="optional"/>
+      <xs:attribute name="name" type="xs:string" use="optional"/>
+      <xs:attribute name="bw" type="widar:BaseBandBwType" use="optional"/>
+      <xs:attribute name="inQuant" type="widar:BitsForInitialQuantizationType" use="optional"/>
+      <xs:attribute name="singlePhaseCenter" type="widar:YesNoType" use="optional" default="yes"/>
+      <xs:attribute name="delayModelsValid" type="xs:int" use="optional" default="1"/>
+      <xs:attribute name="sid" type="widar:StationIdType" use="optional"/>
+      <xs:attribute name="swPwrEpoch" type="xs:dateTime" use="optional"/>
+      <xs:attribute name="swPwrInteg" type="xs:int" use="optional"/>
+      <xs:attribute name="defaultFilterGain" type="xs:string" use="optional"/>
+      <xs:attribute name="requantRms" type="xs:double" use="optional"/>
+      <xs:attribute name="stage1Rms" type="xs:double" use="optional"/>
+      <xs:attribute name="stage2Rms" type="xs:double" use="optional"/>
+      <xs:attribute name="stage3Rms" type="xs:double" use="optional"/>
+      <xs:attribute name="stage4Rms" type="xs:double" use="optional"/>
+      <xs:attribute name="noWbcProducts" type="xs:string" use="optional"/>
+      <xs:attribute name="binningPeriod" type="xs:float" use="optional"/>
+      <xs:attribute name="binMaxHwIntegTime" type="xs:float" use="optional"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="subBand">
+    <xs:annotation>
+      <xs:documentation>
+	Subband configuration specifies filter configuration and output products.
+	swIndex is index of the Spectral Window (BDF). 
+	WIDAR correlator does not use swIndex; swIndex is forwarded to CBE (BDF).
+	
+	Radar mode and tone extraction have not been implemented in CM.
+	Gating and signal-to-noise-ratio have not been implemented in CM. 
+	
+	interFrameDelay is nominal time in microseconds between transmitted frames on SFP1 (or XPAK if we have 10 GigE). 
+	interFrameDelay is used only if frameSchedulingAlgotihm=setDelay, otherwise it is ignored. Default=896. 
+	If randomDelay is Off: 0-255, if randomDelay is On : 0, 4, ..., 1020       
+	
+	Attributes phaseBinning and binningOffset are relevant only when phaseBinning is defined for baseBand.
+	binningOffset is phase relative to (in addition to) phase specified in baseBand.		
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+	<xs:element ref="widar:polProducts" minOccurs="0"/>
+	<xs:element ref="widar:summedArray" minOccurs="0" maxOccurs="2"/>
+	<xs:element ref="widar:radarMode" minOccurs="0"/>
+	<xs:element ref="widar:toneExtraction" minOccurs="0"/>
+      </xs:sequence>
+      <xs:attribute name="sbid" type="widar:SBIDtype" use="required"/>
+      <xs:attribute name="swIndex" type="xs:int" use="required"/>
+      <xs:attribute name="name" type="xs:string" use="optional"/>
+      <xs:attribute name="bw" type="widar:SbBwType" use="required"/>
+      <xs:attribute name="centralFreq" type="xs:decimal" use="required"/>
+      <xs:attribute name="rqNumBits" type="widar:BitsForReQuantizationType" use="required"/>
+      <xs:attribute name="useMixer" type="widar:YesNoType" use="optional" default="no"/>
+      <xs:attribute name="mixerPhaseErrorCorr" type="widar:YesNoType" use="optional" default="no"/>
+      <xs:attribute name="rfiDetectionLevel" type="xs:decimal" use="optional"/>
+      <xs:attribute name="rfiBlankingDuration" type="xs:decimal" use="optional"/>
+      <xs:attribute name="frameSchedulingAlgorithm" type="widar:InterFrameDelayAlgType" use="optional"/>
+      <xs:attribute name="interFrameDelay" type="widar:SfpFrameDelayType" use="optional"/>
+      <xs:attribute name="randomizeDelay" type="widar:OnOffType" use="optional"/>
+      <xs:attribute name="phaseBinning" type="widar:OnOffType" use="optional"/>
+      <xs:attribute name="binningOffset" type="widar:NormalizedPhaseType" use="optional"/>
+      <xs:attribute name="gatingPhase" type="xs:int" use="optional"/>
+      <xs:attribute name="signalToNoise" type="widar:SignalToNoiseType" use="optional"/>
+      <xs:attribute name="pulsarGatingPhase" type="xs:decimal" use="optional"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="polProducts">
+    <xs:annotation>
+      <xs:documentation>
+	Polarization products that use the same integration factors (DUMPTRIG) and
+	share same boards. For now, user can specify only one instance of this element, 
+	which means that user can not specify two groups of polarization products,
+	where each group uses different DUMPTRIG. 
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+	<xs:element ref="widar:pp" minOccurs="0" maxOccurs="4"/>
+	<xs:element ref="widar:blbProdIntegration" minOccurs="0"/>
+	<xs:element ref="widar:blbPair" minOccurs="0" maxOccurs="unbounded"/>
+	<xs:element ref="widar:stationPacking" minOccurs="0"/>
+	<xs:element ref="widar:productPacking" minOccurs="0"/>
+	<xs:element ref="widar:autoCorrSubset" minOccurs="0"/>
+	<xs:element ref="widar:cbeProcessing" minOccurs="0" maxOccurs="1"/>
+      </xs:sequence>
+      <xs:attribute name="autoCorrMode" type="widar:OnOffType" use="optional" default="off"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="pp">
+    <xs:annotation>
+      <xs:documentation>
+	Polarization product.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:attribute name="id" type="widar:ProductIdType" use="required"/>
+      <xs:attribute name="correlation" type="widar:CorrelationType" use="required"/>
+      <xs:attribute name="spectralChannels" type="widar:SpectChannelsType" use="required"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="blbProdIntegration">
+    <xs:annotation>
+      <xs:documentation>
+	Integration Time defined as:  
+	Minimum Hardware Integration Time (MHIT) in microseconds.
+	H/W integration factor (h/w integration time specified as multiple of the minimum h/w integration time). 
+	LTA integration factor (LTA integration time specified as multiple of the h/w integration time).
+	CBE integration factor (CBE integration time specified as multiple of the LTA integration time).
+	Phase for recirculation (serial,parallel) is relevant only if recFactor>1. 
+	If recPhase is not specified and recFactor>1, CM assumes that phase for recirculation is serial. 
+	For phased binning:
+	a) minHwIntegTime is not relevant and does not need to be specified. 
+	b) ccIntegFactor is not relevant and need not be specified.
+	c) ltaIntegFactor can be specified (if not specified assume 1).
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:attribute name="recirculation" type="widar:RecirculationFactorType" use="required"/>
+      <xs:attribute name="recPhase" type="widar:RecPhaseType" use="optional"/>
+      <xs:attribute name="minIntegTime" type="widar:MinHwIntTimeType" use="optional"/>
+      <xs:attribute name="ccIntegFactor" type="xs:int" use="optional" default="1"/>
+      <xs:attribute name="ltaIntegFactor" type="xs:int" use="optional" default="1"/>
+      <xs:attribute name="cbeIntegFactor" type="xs:int" use="optional" default="1"/>
+      <xs:attribute name="burstDuration" type="xs:int" use="optional"/>
+      <xs:attribute name="burstBlankDuration" type="xs:int" use="optional"/>
+      <xs:attribute name="numRollingBursts" type="xs:int" use="optional"/>
+      <xs:attribute name="pauseBetweenBursts" type="xs:int" use="optional"/>
+      <xs:attribute name="firstBurstOffset" type="xs:int" use="optional"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:simpleType name="RecPhaseType">
+    <xs:restriction base="xs:token">
+      <xs:enumeration value="serial"/>
+      <xs:enumeration value="parallel"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:element name="phaseBinning">
+    <xs:annotation>
+      <xs:documentation> 
+	Default implemented by CM:   numBins if not specified, assumed to be 1. 
+	Default implemented by CMIB: maxHwIntegTime 500 micro seconds. 
+	Default for numBins not specified in schema; if specified, JAXB adds default to messages.
+	maxHwIntegTime, if not specified is not specified in CMIB configuration and CMIB
+	assumes 500 micro seconds. 
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:attribute name="phase" type="widar:NormalizedPhaseType" use="required"/>
+      <xs:attribute name="binWidth" type="widar:NormalizedPhaseType" use="required"/>
+      <xs:attribute name="numBins" type="widar:NumBinsType" use="optional"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="blbPair">
+    <xs:annotation>
+      <xs:documentation>
+	List of Baseline Board Pairs to be used for a particular subband
+	Acronym ifd stands for Inter-Frame Delay
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:attribute name="quadrant" type="widar:QuadIdType" use="required"/>
+      <xs:attribute name="firstBlbPair" type="widar:BlbPairIdType" use="required"/>
+      <xs:attribute name="numBlbPairs" type="widar:NumberOfBlbPairsType" use="required"/>
+      <xs:attribute name="ifdRandom" type="widar:YesNoType" use="optional"/>
+      <xs:attribute name="ifd" type="widar:IntRangeZeroTo255Type" use="optional"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="summedArray">
+    <xs:annotation>
+      <xs:documentation>
+	The sum of the subarray.
+	List of Baseline Boards: 
+	If specified in summedArray choice applies both for cc and vdif. 
+	If not specified at all, CM will use Baseline Boards specified in element polProducts. 	
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+	<xs:element ref="widar:blbPair" minOccurs="0" maxOccurs="unbounded"/>
+	<xs:element ref="widar:cc" minOccurs="0"/>
+	<xs:element ref="widar:vdif" minOccurs="0"/>
+      </xs:sequence>
+      <xs:attribute name="sid" type="widar:StationIdType" use="required"/>
+      <xs:attribute name="excludeStations" type="widar:ListOfStationsType" use="optional"/>
+      <xs:attribute name="modifyExcludeStations" type="xs:boolean" use="optional"/>
+      <xs:attribute name="zeroFillInvalidData" type="xs:boolean" use="optional"/>
+      <xs:attribute name="autoIntegration" type="xs:boolean" use="optional"/>
+      <xs:attribute name="applyIntegInHw" type="xs:boolean" use="optional"/>
+      <xs:attribute name="headroom6dB" type="xs:boolean" use="optional"/>
+      <xs:attribute name="integTime" type="xs:int" use="optional"/>
+      <xs:attribute name="continuousInteg" type="xs:boolean" use="optional"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="modifySummedArray">
+    <xs:annotation>
+      <xs:documentation>
+	Modify summed array - If the action=modify can be specified in element subarray or per subband.
+	2012-04-13 SV : Not implemented. Need to check is this required. If not, should be removed from the schema.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:attribute name="excludeStations" type="widar:ListOfStationsType" use="optional"/>
+      <xs:attribute name="vdifEnableA" type="xs:boolean" use="optional"/>
+      <xs:attribute name="vdifEnableB" type="xs:boolean" use="optional"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:simpleType name="ListOfStationsOrAllType">
+    <xs:union>
+      <xs:simpleType>
+	<xs:list itemType="widar:StationIdType"/>
+      </xs:simpleType>
+      <xs:simpleType>
+	<xs:restriction base="xs:string">
+	  <xs:enumeration value="all"/>
+	</xs:restriction>
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+  <xs:simpleType name="ListOfStationsType">
+    <xs:list itemType="widar:StationIdType"/>
+  </xs:simpleType>
+  <xs:simpleType name="ContOnceType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="cont"/>
+      <xs:enumeration value="once"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:attributeGroup name="agcAttributes">
+    <xs:annotation>
+      <xs:documentation>
+	Summed Array: Automatic Gain Control.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="agcEnabled" type="xs:boolean" use="optional" default="true"/>
+    <xs:attribute name="agcRms" type="xs:float" use="optional"/>
+  </xs:attributeGroup>
+  <xs:element name="cc">
+    <xs:annotation>
+      <xs:documentation>
+	Send summed data to the Correlator Chip Array
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+	<xs:element ref="widar:pp" minOccurs="0" maxOccurs="4"/>
+	<xs:element ref="widar:blbPair" minOccurs="0" maxOccurs="unbounded"/>
+	<xs:element ref="widar:blbProdIntegration" minOccurs="0"/>
+      </xs:sequence>
+      <xs:attribute name="requantGain" type="widar:IntRangeZeroTo255Type" use="optional"/>
+      <xs:attributeGroup ref="widar:agcAttributes"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:simpleType name="IntList1248Type">
+    <xs:annotation>
+      <xs:documentation>
+	Number of bands in the Station Board Input Data Stream.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:int">
+      <xs:enumeration value="1"/>
+      <xs:enumeration value="2"/>
+      <xs:enumeration value="4"/>
+      <xs:enumeration value="8"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:element name="vdif">
+    <xs:annotation>
+      <xs:documentation>
+	Send the sum of a subarray to VDIF output
+	Default value for VDIF frame size is 1250 (enforced by CM).
+	Default enforced by CM:
+	a) vdifEnable=false
+	b) agcEnabled=true.
+	c) epoch and epochOffset are required parameters in "create subarray"
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+	<xs:element ref="widar:blbPair" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+      <xs:attribute name="stationId" type="widar:IntRangeZeroTo65535Type" use="required"/>
+      <xs:attribute name="epoch" type="widar:IntRangeZeroTo63Type" use="optional"/>
+      <xs:attribute name="epochOffset" type="xs:int" use="optional"/>
+      <xs:attribute name="vdifEnableA" type="xs:boolean" use="optional"/>
+      <xs:attribute name="aThread" type="widar:IntRangeZeroTo1023Type" use="optional"/>
+      <xs:attribute name="aDestMAC" type="xs:string" use="optional" default="12:34:56:78:90:00"/>
+      <xs:attribute name="aDestIP" type="widar:IP4AddressType" use="optional" default="192.168.0.21"/>
+      <xs:attribute name="aDestPort" type="xs:string" use="optional" default="12002"/>
+      <xs:attribute name="aPacketDelay" type="widar:IntRangeZeroTo255Type" use="optional"/>
+      <xs:attribute name="vdifEnableB" type="xs:boolean" use="optional"/>
+      <xs:attribute name="bThread" type="widar:IntRangeZeroTo1023Type" use="optional"/>
+      <xs:attribute name="bDestMAC" type="xs:string" use="optional"/>
+      <xs:attribute name="bDestIP" type="widar:IP4AddressType" use="optional"/>
+      <xs:attribute name="bDestPort" type="xs:string" use="optional"/>
+      <xs:attribute name="bPacketDelay" type="widar:IntRangeZeroTo255Type" use="optional"/>
+      <xs:attribute name="numBits" type="widar:IntList1248Type" use="optional" default="2"/>
+      <xs:attribute name="frameSize" type="widar:IntRange250To2000Type" use="optional"/>
+      <xs:attribute name="requantGain" type="widar:IntRangeZeroTo255Type" use="optional"/>
+      <xs:attribute name="agcEnabled" type="xs:boolean" use="optional"/>
+      <xs:attribute name="agcRms" type="xs:float" use="optional"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="wideBandCorrelator">
+    <xs:annotation>
+      <xs:documentation>
+	Configuration for the Station Board Wideband Correlator.
+	For input from EVLA antennas, WBC products will be specified using A/B (Baseband pair IDs)
+	Different format may be used for VLBI or other input that have more than one band in the input stream.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+	<xs:choice>
+	  <xs:element ref="widar:wpp" minOccurs="0" maxOccurs="32"/>
+	</xs:choice>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="wpp">
+    <xs:annotation>
+      <xs:documentation>
+	Polarization Product for the Station Board Wideband Correlator. 
+	Uses A/B to identify which input data streams should be correlated.
+	Attribute correlation changed from required to optional, 
+	so that correlation does not need to be specified for status=disable. 
+	Added attribute status - so that user can disable individual products.
+	If not specified, CM assumes that product is enabled, examples: 
+	<wpp id="0" correlation="A*A"/>                   Enable product  A*A
+	<wpp id="1" correlation="A*B" status="enable"/>  Enable product  A*B
+	<wpp id="2" correlation="B*B" status="disable"/>  Disable product B*B
+	Default values, enforced by CM: spectralChannels=64, integFactor=100, status=enabled.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:attribute name="id" type="widar:ProductIdType" use="required"/>
+      <xs:attribute name="correlation" type="widar:CorrelationType" use="optional"/>
+      <xs:attribute name="spectralChannels" type="widar:WbcNumSpectChanType" use="optional"/>
+      <xs:attribute name="integFactor" type="xs:int" use="optional"/>
+      <xs:attribute name="status" type="widar:EnableDisableType" use="optional"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:simpleType name="WbcNumSpectChanType">
+    <xs:annotation>
+      <xs:documentation>
+	Wideband Correlator: Number of spectral channels. must be multiple of 64.
+	Max. 4096 is specified in the stationBoard schema.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:int">
+      <xs:minInclusive value="32"/>
+      <xs:maxInclusive value="4096"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:element name="baseline">
+    <xs:annotation>
+      <xs:documentation>
+	Used to disable / enable baselines.
+	A baseline is uniquely identified by a pair of station IDs. 
+	If only one Station ID is specified, all the baselines for that station will be disbled/enabled. 
+	If baseband pair (single baseband) and subband are not specified applies for all the products
+	(i.e. for all the subbands of all the basebandes).
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:attribute name="status" type="widar:EnableDisableType" use="required"/>
+      <xs:attribute name="stationOne" type="widar:StationIdType" use="required"/>
+      <xs:attribute name="stationTwo" type="widar:StationIdType" use="optional"/>
+      <xs:attribute name="bbA" type="widar:BBIDtype" use="optional"/>
+      <xs:attribute name="bbB" type="widar:BBIDtype" use="optional"/>
+      <xs:attribute name="subband" type="widar:SBIDtype" use="optional"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="stationPacking">
+    <xs:annotation>
+      <xs:documentation>
+	Station packing algorithm.
+	User may specify one of the two options:
+	1) use the minimum number of the Correlator Chips (i.e. columns and rows on the Baseline Board) or 
+	2) distribute station input across as many Baseline Board columns/rows as possible.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:attribute name="algorithm" type="widar:StationPackType" use="required"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="productPacking">
+    <xs:annotation>
+      <xs:documentation>
+	Product packing algorithm.
+	This parameter is relevant only if  there is more than one Correlator Chip available per baseline. 
+	User can specify one of the two supported options:
+	1) MaxPack, which means: minimise the number of Correlator Chips that produce lag chain for each product (i.e. avoid use of static 					recirulation memory)
+	2) MinPack, which means: distribute lag chain across available Correlator Chips.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:attribute name="algorithm" type="widar:MaxMinPackType" use="required"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="autoCorrSubset">
+    <xs:annotation>
+      <xs:documentation>
+	The correlator can not obtain all auto-correlation products all the time,
+	this is used to specify desired subset of auto-correlation products.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:attribute name="algorithm" type="widar:AutoCorrAlgorithmType" use="required"/>
+      <xs:attribute name="startFrom" type="widar:StartFromType" use="optional" default="lowestStId"/>
+      <xs:attribute name="dwellTime" type="widar:DwellTimeType" use="optional" default="10"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="cbeProcessing">
+    <xs:annotation>
+      <xs:documentation>Specifies processing to be done by CBE on data products from the Baseline Boards.
 
-	<xs:element name="pulsarTiming">
-		<xs:annotation>
-			<xs:documentation> 
-			Occurs as sequence element under subband replacing pulsarBinning.
-			referenceTime is MJD 
-			</xs:documentation> 			
-		</xs:annotation>
-		<xs:complexType>
-			<xs:sequence>
-				<xs:element ref="widar:pulsarModelCff" maxOccurs="unbounded"/>
-			</xs:sequence>
-			<xs:attribute name="status"        type="widar:OnOffType" use="required"/>
-			<xs:attribute name="referenceTime" type="xs:double"       use="required"/>
-			<xs:attribute name="numCff"        type="xs:int"          use="required"/>
-		</xs:complexType>
-	</xs:element>    
-	
-	<xs:element name="pulsarModelCff" >
-		<xs:complexType>
-			<xs:attribute name="index" type="xs:int"    use="required"/>
-			<xs:attribute name="cff"   type="xs:double" use="required"/>
-		</xs:complexType>
+      This is optional and, if not used, the CBE will default to 'integrateFirst' with no other processing done.</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:all>
+	<xs:element name="averageFrequency" minOccurs="0">
+	  <xs:annotation>
+	    <xs:documentation>Average adjacent frequency channels to reduce data quantity.</xs:documentation>
+	  </xs:annotation>
+	  <xs:complexType>
+	    <xs:attribute name="algorithm" type="xs:string" use="required">
+	      <xs:annotation>
+		<xs:documentation>'boxcar is the only supported algorithm at this time.</xs:documentation>
+	      </xs:annotation>
+	    </xs:attribute>
+	    <xs:attribute name="span" type="xs:int" use="required">
+	      <xs:annotation>
+		<xs:documentation>For the 'boxcar' algorithm, 'span' specifies how many frequency channels are used in each average.</xs:documentation>
+	      </xs:annotation>
+	    </xs:attribute>
+	  </xs:complexType>
 	</xs:element>
-	
-	<xs:element name="pulsarBins">
-		<xs:annotation>
-			<xs:documentation> 
-			Occurs as sequence element under  pp (polarization product) 
-			</xs:documentation> 
-		</xs:annotation>
-		<xs:complexType>
-			<xs:sequence>
-				<xs:element ref="widar:pulsarBinSet" maxOccurs="unbounded"/>
-			</xs:sequence>
-			<xs:attribute name="nmbrPulsarBinSets" type="xs:int"/>
-		</xs:complexType>
+	<xs:element name="window" minOccurs="0">
+	  <xs:annotation>
+	    <xs:documentation>Apply apodization in the time domain.</xs:documentation>
+	  </xs:annotation>
+	  <xs:complexType>
+	    <xs:attribute name="algorithm" type="xs:string" use="required">
+	      <xs:annotation>
+		<xs:documentation>'hanning' is the only algorithm supported at this time.</xs:documentation>
+	      </xs:annotation>
+	    </xs:attribute>
+	    <xs:attribute name="width" type="xs:int" use="optional">
+	      <xs:annotation>
+		<xs:documentation>Optional.  Specifies width of desired convolution function.</xs:documentation>
+	      </xs:annotation>
+	    </xs:attribute>
+	  </xs:complexType>
 	</xs:element>
-	
-	<xs:element name="pulsarBinSet">
-		<xs:annotation>
-			<xs:documentation> 
-			Bin positions are specified as fraction of  the period.
-			binWidth must be at least 1us smaller than binSpacing. 
-			If binWidth is omitted, 1us less than binSpacing is assumed. 
-			</xs:documentation> 
-		</xs:annotation>
-		<xs:complexType>
-			<xs:attribute name="nmbrBins"      type="xs:int"    use="required"/>
-			<xs:attribute name="startingPhase" type="xs:double" use="required"/>
-			<xs:attribute name="binWidth"      type="xs:double" use="optional"/>
-			<xs:attribute name="binSpacing"    type="xs:double" use="required"/>
-		</xs:complexType>
-	</xs:element>
-
-	<xs:element name="blbPair">
-		<xs:annotation>
-			<xs:documentation>
-			List of Baseline Board Pairs to be used for a particular subband
-			Acronym ifd stands for Inter-Frame Delay
-			</xs:documentation>
-		</xs:annotation>
-		<xs:complexType>
-			<xs:attribute name="quadrant"     	type="widar:QuadIdType" 			use="required"/>
-			<xs:attribute name="firstBlbPair" 	type="widar:BlbPairIdType" 			use="required"/>
-			<xs:attribute name="numBlbPairs"  	type="widar:NumberOfBlbPairsType" 	use="required"/>
-			<xs:attribute name="ifdRandom"      type="widar:YesNoType"              use="optional"/>
-			<xs:attribute name="ifd"            type="widar:IntRangeZeroTo255Type"  use="optional"/>
-		</xs:complexType>
-	</xs:element>
-	
-	<xs:element name="summedArray">
-		<xs:annotation>
-			<xs:documentation>
-				The sum of the subarray.
-				List of Baseline Boards: 
-				If specified in summedArray choice applies both for cc and vdif. 
-			    If not specified at all, CM will use Baseline Boards specified in element polProducts. 	
-			</xs:documentation>
-		</xs:annotation>
-		<xs:complexType>
-			<xs:sequence>
-			    <xs:element ref="widar:blbPair"   minOccurs="0" maxOccurs="unbounded"/>
-				<xs:element ref="widar:cc"        minOccurs="0"/>
-				<xs:element ref="widar:vdif"      minOccurs="0"/>
-			</xs:sequence>
-			<xs:attribute name="sid"                   type="widar:StationIdType"      use="required" />
-			<xs:attribute name="excludeStations"       type="widar:ListOfStationsType" use="optional" />
-			<xs:attribute name="modifyExcludeStations" type="xs:boolean"               use="optional" />
-			<xs:attribute name="zeroFillInvalidData"   type="xs:boolean"               use="optional" />
-			<xs:attribute name="autoIntegration"       type="xs:boolean"               use="optional" />
-			<xs:attribute name="applyIntegInHw"        type="xs:boolean"               use="optional" />
-			<xs:attribute name="headroom6dB"           type="xs:boolean"               use="optional" />
-			<xs:attribute name="integTime"             type="xs:int"                   use="optional" />
-			<xs:attribute name="continuousInteg"       type="xs:boolean"               use="optional" />
-		</xs:complexType>
-	</xs:element>
-	<xs:element name="modifySummedArray">
-		<xs:annotation>
-			<xs:documentation>
-				Modify summed array - If the action=modify can be specified in element subarray or per subband.
-				2012-04-13 SV : Not implemented. Need to check is this required. If not, should be removed from the schema.
-			</xs:documentation>
-		</xs:annotation>
-		<xs:complexType>
-			<xs:attribute name="excludeStations" type="widar:ListOfStationsType" use="optional"  />
-			<xs:attribute name="vdifEnableA"     type="xs:boolean"               use="optional"  />
-			<xs:attribute name="vdifEnableB"     type="xs:boolean"               use="optional"  />
-		</xs:complexType>
-	</xs:element>
-	<xs:simpleType name="ListOfStationsOrAllType">
-		<xs:union>
-			<xs:simpleType>
-				<xs:list itemType="widar:StationIdType"/>
-			</xs:simpleType>
-			<xs:simpleType>
-				<xs:restriction base="xs:string">
-					<xs:enumeration value="all"/>
-				</xs:restriction>
-			</xs:simpleType>
-		</xs:union>
+      </xs:all>
+      <xs:attribute name="nSpectralWindowChannels" use="optional">
+	<xs:annotation>
+	  <xs:documentation>Optional; if not specified, CBE and MCAF will determine the number.</xs:documentation>
+	</xs:annotation>
+	<xs:simpleType>
+	  <xs:restriction base="xs:int">
+	    <xs:minInclusive value="1"/>
+	  </xs:restriction>
 	</xs:simpleType>
-	<xs:simpleType name="ListOfStationsType">
-		<xs:list itemType="widar:StationIdType"/>
+      </xs:attribute>
+      <xs:attribute name="integrationStyle">
+	<xs:annotation>
+	  <xs:documentation>Specifies the minimal process to be performed by CBE.  Optional; if omitted defaults to 'integrateFirst'.The three choices are:
+	  -- integrateFirst:
+	  1. Flag,
+	  2. Integrate,
+	  3. DvNormalize,
+	  4. FourierTransform,
+	  5. WriteToBdf.
+	  -- transformFirst:
+	  1. Flag,
+	  2. DvNormalize,
+	  3. FourierTransform,
+	  4. Integrate,
+	  5. AccNormalize,
+	  6. WriteToBdf.
+	  -- noTransform
+	  1. Flag,
+	  2. Integrate,
+	  3. DvNormalize,
+	  4. WriteToBdf.
+	  The doubling of data size will have to be accounted for in the BDF and, perhaps, the SDM.</xs:documentation>
+	</xs:annotation>
+	<xs:simpleType>
+	  <xs:restriction base="xs:token">
+	    <xs:enumeration value="integrateFirst"/>
+	    <xs:enumeration value="transformFirst"/>
+	    <xs:enumeration value="noTransform"/>
+	  </xs:restriction>
 	</xs:simpleType>
-	<xs:simpleType name="ContOnceType">
-		<xs:restriction base="xs:string">
-			<xs:enumeration value="cont"/>
-			<xs:enumeration value="once"/>
-		</xs:restriction>
-	</xs:simpleType>
-	<xs:attributeGroup name="agcAttributes">
-		<xs:annotation>
-			<xs:documentation>
-			Summed Array: Automatic Gain Control.
-		    </xs:documentation>
-		</xs:annotation>
-		<xs:attribute name="agcEnabled" type="xs:boolean" use="optional" default="true"/>
-		<xs:attribute name="agcRms" type="xs:float" use="optional"/>
-	</xs:attributeGroup>
-	<xs:element name="cc">
-		<xs:annotation>
-			<xs:documentation>
-			Send summed data to the Correlator Chip Array
-			</xs:documentation>
-		</xs:annotation>
-		<xs:complexType>
-			<xs:sequence>
-				<xs:element ref="widar:pp"                 minOccurs="0" maxOccurs="4"/>
-				<xs:element ref="widar:blbPair"            minOccurs="0" maxOccurs="unbounded"/>
-				<xs:element ref="widar:blbProdIntegration" minOccurs="0"/>
-			</xs:sequence>
-			<xs:attribute name="requantGain" type="widar:IntRangeZeroTo255Type" use="optional"/>
-			<xs:attributeGroup ref="widar:agcAttributes"/>
-		</xs:complexType>
-	</xs:element>
-	
-	<xs:simpleType name="IntList1248Type">
-		<xs:annotation>
-			<xs:documentation>
-			Number of bands in the Station Board Input Data Stream.
-			</xs:documentation>
-		</xs:annotation>
-		<xs:restriction base="xs:int">
-			<xs:enumeration value="1"/>
-			<xs:enumeration value="2"/>
-			<xs:enumeration value="4"/>
-			<xs:enumeration value="8"/>
-		</xs:restriction>
-	</xs:simpleType>
-	<xs:element name="vdif">
-		<xs:annotation>
-			<xs:documentation>
-			Send the sum of a subarray to VDIF output
-			Default value for VDIF frame size is 1250 (enforced by CM).
-			Default enforced by CM:
-			a) vdifEnable=false
-			b) agcEnabled=true.
-			c) epoch and epochOffset are required parameters in "create subarray"
-			</xs:documentation>
-		</xs:annotation>
-		<xs:complexType>
-			<xs:sequence>
-				<xs:element ref="widar:blbPair" minOccurs="0" maxOccurs="unbounded"/>
-			</xs:sequence>
-			<xs:attribute name="stationId" 		type="widar:IntRangeZeroTo65535Type" use="required"/>
-			<xs:attribute name="epoch" 			type="widar:IntRangeZeroTo63Type" 	 use="optional"/>
-			<xs:attribute name="epochOffset" 	type="xs:int" 						 use="optional"/>
-
-			<xs:attribute name="vdifEnableA"	type="xs:boolean" 					 use="optional" />
-			<xs:attribute name="aThread" 		type="widar:IntRangeZeroTo1023Type"  use="optional" />
-			<xs:attribute name="aDestMAC" 		type="xs:string" 					 use="optional" default="12:34:56:78:90:00"/>
-			<xs:attribute name="aDestIP" 		type="widar:IP4AddressType" 		 use="optional" default="192.168.0.21"/>
-			<xs:attribute name="aDestPort" 		type="xs:string" 					 use="optional" default="12002"/>
-			<xs:attribute name="aPacketDelay" 	type="widar:IntRangeZeroTo255Type" 	 use="optional" />
-			
-			<xs:attribute name="vdifEnableB" 	type="xs:boolean" 					 use="optional" />		 
-			<xs:attribute name="bThread" 		type="widar:IntRangeZeroTo1023Type"  use="optional" />
-			<xs:attribute name="bDestMAC" 		type="xs:string" 					 use="optional" />
-			<xs:attribute name="bDestIP" 		type="widar:IP4AddressType" 		 use="optional" />
-			<xs:attribute name="bDestPort" 		type="xs:string" 					 use="optional" />
-			<xs:attribute name="bPacketDelay" 	type="widar:IntRangeZeroTo255Type" 	 use="optional" />
-			
-			<xs:attribute name="numBits" 		type="widar:IntList1248Type" 		 use="optional" default="2"/>
-			<xs:attribute name="frameSize" 		type="widar:IntRange250To2000Type"   use="optional" />
-			<xs:attribute name="requantGain" 	type="widar:IntRangeZeroTo255Type" 	 use="optional" />
-		    <xs:attribute name="agcEnabled" 	type="xs:boolean" 					 use="optional" />
-		    <xs:attribute name="agcRms" 		type="xs:float" 					 use="optional" />
-			
-		</xs:complexType>
-	</xs:element>
-
-	<xs:element name="wideBandCorrelator">
-		<xs:annotation>
-			<xs:documentation>
-			Configuration for the Station Board Wideband Correlator.
-			For input from EVLA antennas, WBC products will be specified using A/B (Baseband pair IDs)
-			Different format may be used for VLBI or other input that have more than one band in the input stream.
-			</xs:documentation>
-		</xs:annotation>
-		<xs:complexType>
-			<xs:sequence>
-				<xs:choice>
-					<xs:element ref="widar:wpp" minOccurs="0" maxOccurs="32"/>
-				</xs:choice>
-			</xs:sequence>
-		</xs:complexType>
-	</xs:element>
-	<xs:element name="wpp">
-		<xs:annotation>
-			<xs:documentation>
-			Polarization Product for the Station Board Wideband Correlator. 
-			Uses A/B to identify which input data streams should be correlated.
-			Attribute correlation changed from required to optional, 
-			so that correlation does not need to be specified for status=disable. 
-			Added attribute status - so that user can disable individual products.
-			If not specified, CM assumes that product is enabled, examples: 
-			<wpp id='0' correlation='A*A' />                   Enable product  A*A
-			<wpp id='1' correlation='A*B' status='enable'  />  Enable product  A*B
-			<wpp id='2' correlation='B*B' status='disable' />  Disable product B*B
-			Default values, enforced by CM: spectralChannels=64, integFactor=100, status=enabled.
-			</xs:documentation>
-		</xs:annotation>
-		<xs:complexType>
-			<xs:attribute name="id" 				type="widar:ProductIdType" 			use="required" />
-			<xs:attribute name="correlation" 		type="widar:CorrelationType" 		use="optional" />
-			<xs:attribute name="spectralChannels" 	type="widar:WbcNumSpectChanType" 	use="optional" />
-			<xs:attribute name="integFactor" 		type="xs:int" 						use="optional" />
-			<xs:attribute name="status" 		    type="widar:EnableDisableType" 	    use="optional" />
-		</xs:complexType>
-	</xs:element>
-	<xs:simpleType name="WbcNumSpectChanType">
-		<xs:annotation>
-			<xs:documentation>
-			Wideband Correlator: Number of spectral channels. must be multiple of 64.
-			Max. 4096 is specified in the stationBoard schema.
-			</xs:documentation>
-		</xs:annotation>
-		<xs:restriction base="xs:int">
-			<xs:minInclusive value="32"/>
-			<xs:maxInclusive value="4096"/>
-		</xs:restriction>
-	</xs:simpleType>
-	<xs:element name="baseline">
-		<xs:annotation>
-			<xs:documentation>
-			Used to disable / enable baselines.
-		      A baseline is uniquely identified by a pair of station IDs. 
-		      If only one Station ID is specified, all the baselines for that station will be disbled/enabled. 
-		      If baseband pair (single baseband) and subband are not specified applies for all the products
-		      (i.e. for all the subbands of all the basebandes).
-			</xs:documentation>
-		</xs:annotation>
-		<xs:complexType>
-			<xs:attribute name="status" type="widar:EnableDisableType" use="required"/>
-			<xs:attribute name="stationOne" type="widar:StationIdType" use="required"/>
-			<xs:attribute name="stationTwo" type="widar:StationIdType" use="optional"/>
-			<xs:attribute name="bbA" type="widar:BBIDtype" use="optional"/>
-			<xs:attribute name="bbB" type="widar:BBIDtype" use="optional"/>
-			<xs:attribute name="subband" type="widar:SBIDtype" use="optional"/>
-		</xs:complexType>
-	</xs:element>
-	<xs:element name="stationPacking">
-		<xs:annotation>
-			<xs:documentation>
-			Station packing algorithm.
-			User may specify one of the two options:
-			1) use the minimum number of the Correlator Chips (i.e. columns and rows on the Baseline Board) or 
-			2) distribute station input across as many Baseline Board columns/rows as possible.
-			</xs:documentation>
-		</xs:annotation>
-		<xs:complexType>
-			<xs:attribute name="algorithm" type="widar:StationPackType" use="required"/>
-		</xs:complexType>
-	</xs:element>
-	<xs:element name="productPacking">
-		<xs:annotation>
-			<xs:documentation>
-			Product packing algorithm.
-			This parameter is relevant only if  there is more than one Correlator Chip available per baseline. 
-			User can specify one of the two supported options:
-			1) MaxPack, which means: minimise the number of Correlator Chips that produce lag chain for each product (i.e. avoid use of static 					recirulation memory)
-			2) MinPack, which means: distribute lag chain across available Correlator Chips.
-		</xs:documentation>
-		</xs:annotation>
-		<xs:complexType>
-			<xs:attribute name="algorithm" type="widar:MaxMinPackType" use="required"/>
-		</xs:complexType>
-	</xs:element>
-	<xs:element name="autoCorrSubset">
-		<xs:annotation>
-			<xs:documentation>
-			The correlator can not obtain all auto-correlation products all the time,
-			this is used to specify desired subset of auto-correlation products.
-			</xs:documentation>
-		</xs:annotation>
-		<xs:complexType>
-			<xs:attribute name="algorithm" type="widar:AutoCorrAlgorithmType" use="required"/>
-			<xs:attribute name="startFrom" type="widar:StartFromType" use="optional" default="lowestStId"/>
-			<xs:attribute name="dwellTime" type="widar:DwellTimeType" use="optional" default="10"/>
-		</xs:complexType>
-	</xs:element>
+      </xs:attribute>
+    </xs:complexType>
+  </xs:element>
 </xs:schema>
