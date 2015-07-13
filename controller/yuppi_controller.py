@@ -25,6 +25,9 @@ cmdline.add_option('-v', '--verbose', dest="verbose",
 cmdline.add_option('-l', '--listen', dest="listen",
         action="store_true", default=False,
         help="Only listen to multicast, don't launch anything") 
+cmdline.add_option('-U', '--config_url', dest="config_url",
+        action="store_true", default=False,
+        help="Use config URL to retrieve VCI")
 (opt,args) = cmdline.parse_args()
 
 # Set up verbosity level for log
@@ -36,6 +39,11 @@ logging.basicConfig(format="%(asctime)-15s %(levelname)8s %(message)s",
         level=loglevel)
 
 logging.info('yuppi_controller started')
+
+if opt.config_url:
+    logging.info('will retrieve VCI from configUrl')
+else:
+    logging.info('will listen for VCI multicast')
 
 data_ips = []
 if opt.listen:
@@ -154,8 +162,9 @@ class YUPPIController(object):
 if __name__ == '__main__':
     # This starts the receiving/handling loop
     controller = YUPPIController()
-    vci_client = VCIClient(controller)
-    obs_client = ObsClient(controller)
+    if not opt.config_url:
+        vci_client = VCIClient(controller)
+    obs_client = ObsClient(controller,use_configUrl=opt.config_url)
     try:
         asyncore.loop()
     except KeyboardInterrupt:
