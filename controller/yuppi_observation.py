@@ -52,6 +52,7 @@ class YUPPIObs(object):
         self.state = 'init'
         self.state_lock = threading.Lock()
         self.daq_idx = daq_idx
+        self.generate_filename(evla_conf, subband)
         self.generate_shmem_config(evla_conf, subband)
         self.generate_obs_command(evla_conf, subband)
         self.dry = dry_run
@@ -64,6 +65,30 @@ class YUPPIObs(object):
         self.stopMJD = None
         self.id = evla_conf.Id + '.' + str(evla_conf.seq) + '-' + str(daq_idx)
         self.set_timer()
+
+    def generate_filename(self, evla_conf, subband):
+        """Given a EVLAConfig and SubBand, generate the relevant data
+        output directory and file name base, and store them in
+        self.data_dir and self.outfile_base."""
+
+        node = os.uname()[1]
+        node_idx = node.split('-')[-1] # Assumes cbe-node-XX naming
+
+        # This is the old pulsar version:
+        #self.data_dir = "/lustre/evla/pulsar/data"
+        #self.outfile_base = "%s.%s.%s.%s" % (evla_conf.source,
+        #        evla_conf.projid, evla_conf.seq, node)
+
+        # New version, 'normal' VLA data sets (SDM+BDF) are stored
+        # using datasetId as the main folder name.  Store here using
+        # node-specific subdirs because there are lots of files..
+        # Could make a subdir for each datasetId..
+        self.data_dir = "/lustre/evla/pulsar/data/%s" % node
+        #self.outfile_base = "%s.%d.%s.%s" % (evla_conf.datasetId,
+        #        int(evla_conf.seq),evla_conf.source,node_idx)
+        self.outfile_base = "%s.%d.%s.%s-%02d" % (evla_conf.datasetId,
+                int(evla_conf.seq), evla_conf.source,
+                subband.IFid, subband.sbid)
 
     def generate_shmem_config(self, evla_conf, subband):
         """Given a EVLAConfig and SubBand, generate the relevant shared
@@ -81,6 +106,8 @@ class YUPPIObs(object):
 
         if 'PULSAR_MONITOR' in evla_conf.scan_intent:
             self.shmem_params["OBS_MODE"] = "MONITOR"
+        elif 'PULSAR_RAW' in evla_conf.scan_intent:
+            self.shmem_params["OBS_MODE"] = "RAW"
         else:
             self.shmem_params["OBS_MODE"] = "VDIF"
 
@@ -102,7 +129,13 @@ class YUPPIObs(object):
         self.shmem_params["NBITSADC"] = 8
         self.shmem_params["NRCVR"]    = 2
         self.shmem_params["ACC_LEN"]  = 1
+
+        self.shmem_params["DATADIR"] = self.data_dir
+        self.shmem_params["BASENAME"] = self.outfile_base
+        self.shmem_params["RAWFMT"] = evla_conf.raw_format
         
+        # TODO could adjust block size so that there are a round
+        # number of frames per block in raw mode.
         self.shmem_params["BLOCSIZE"] = 32000000
         self.shmem_params["OVERLAP"]  = 0
 
@@ -133,31 +166,13 @@ class YUPPIObs(object):
 
         self.command_line = ""
         
-        node = os.uname()[1]
-        node_idx = node.split('-')[-1] # Assumes cbe-node-XX naming
-
-        # This is the old pulsar version:
-        #self.data_dir = "/lustre/evla/pulsar/data"
-        #self.outfile_base = "%s.%s.%s.%s" % (evla_conf.source,
-        #        evla_conf.projid, evla_conf.seq, node)
-
-        # New version, 'normal' VLA data sets (SDM+BDF) are stored
-        # using datasetId as the main folder name.  Store here using
-        # node-specific subdirs because there are lots of files..
-        # Could make a subdir for each datasetId..
-        self.data_dir = "/lustre/evla/pulsar/data/%s" % node
-        #self.outfile_base = "%s.%d.%s.%s" % (evla_conf.datasetId,
-        #        int(evla_conf.seq),evla_conf.source,node_idx)
-        self.outfile_base = "%s.%d.%s.%s-%02d" % (evla_conf.datasetId,
-                int(evla_conf.seq), evla_conf.source,
-                subband.IFid, subband.sbid)
-
         output_file = '%s/%s' % (self.data_dir, self.outfile_base)
 
         verbosity = ' -q'
 
-        # Monitor mode, no data processing required here
-        if 'PULSAR_MONITOR' in evla_conf.scan_intent:
+        # Monitor or raw record mode, no data processing required here
+        if ('PULSAR_MONITOR' in evla_conf.scan_intent
+                or 'PULSAR_RAW' in evla_conf.scan_intent):
             self.command_line = ""
             return
 
@@ -188,7 +203,6 @@ class YUPPIObs(object):
             return
 
         # Tack on guppi_daq args common to both dspsr and digifil
-        # TODO For multiple input streams will need to select databuf value
         self.command_line += verbosity
         self.command_line += " -header INSTRUMENT=guppi_daq DATABUF=%d" % (
             1+self.daq_idx*10)

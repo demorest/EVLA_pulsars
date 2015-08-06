@@ -117,6 +117,10 @@ class EVLAConfig(object):
         return float(self.get_intent("PsrCalFreq", 10.0))
 
     @property
+    def raw_format(self):
+        return self.get_intent("PsrRawFormat", "GUPPI")
+
+    @property
     def source(self):
         return self.obs.name
 
