@@ -25,6 +25,8 @@ cmdline.add_option('-o', '--outdir', dest='outdir', action='store',
         default='.', help='Output directory [%default]')
 cmdline.add_option('-x', '--outidx', dest='outidx', action='store',
         type='int', default=None, help='Output index [input]')
+cmdline.add_option('-N', '--nodesubs', dest='nodesubs', action='store_true',
+        default=False, help='Accept duplicated subband ID numbers')
 (opt,args) = cmdline.parse_args()
 
 if len(args)!=1:
@@ -72,7 +74,11 @@ sub_files = {}
 ext = 'ar'
 for fname in fnames:
     info = FileInfo(fname)
-    subband = info.ifid + '-' + info.sbid
+
+    subband = info.ifid + '-' + info.sbid 
+    if opt.nodesubs:
+        subband += '-' + info.path
+
     ext = info.ext # TODO check for mismatched extensions
 
     # Skip files that are not from the baseband or subint we want
