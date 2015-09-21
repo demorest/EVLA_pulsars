@@ -88,7 +88,7 @@ class YUPPIObs(object):
         #        int(evla_conf.seq),evla_conf.source,node_idx)
         self.outfile_base = "%s.%d.%s.%s-%02d" % (evla_conf.datasetId,
                 int(evla_conf.seq), evla_conf.source,
-                subband.IFid, subband.sbid)
+                subband.IFid, subband.swIndex-1)
 
     def generate_shmem_config(self, evla_conf, subband):
         """Given a EVLAConfig and SubBand, generate the relevant shared

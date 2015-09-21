@@ -141,7 +141,7 @@ class YUPPIController(object):
                 daq_idx=0
                 for sub in subbands:
                     logging.info("configuring subband %s-%d %.1fMHz" % (
-                        sub.IFid, sub.sbid, sub.sky_center_freq))
+                        sub.IFid, sub.swIndex-1, sub.sky_center_freq))
 
                     # Launch observation at the right time
                     self.observations += [YUPPIObs(config,sub,daq_idx=daq_idx),]
