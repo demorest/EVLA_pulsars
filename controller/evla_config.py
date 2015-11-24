@@ -109,6 +109,14 @@ class EVLAConfig(object):
         return int(self.get_intent("PsrSearchNumBits",8))
 
     @property
+    def searchdm(self):
+        return float(self.get_intent("PsrSearchDM",0.0))
+
+    @property
+    def freqfac(self):
+        return float(self.get_intent("PsrSearchFreqFac",1))
+
+    @property
     def parfile(self):
         return self.get_intent("TempoFileName",None)
 

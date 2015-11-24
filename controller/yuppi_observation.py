@@ -190,10 +190,17 @@ class YUPPIObs(object):
             self.command_line += ' -O%s' % output_file
 
         elif 'PULSAR_SEARCH' in evla_conf.scan_intent:
-            acclen = int(abs(evla_conf.timeres*subband.bw*1e6/evla_conf.nchan))
+            nchanfull = evla_conf.nchan * evla_conf.freqfac
+            acclen = int(abs(evla_conf.timeres*subband.bw*1e6/nchanfull))
             self.command_line = 'digifil -threads 8 -B64 -I0 -c'
-            self.command_line += ' -F%d' % evla_conf.nchan
+            self.command_line += ' -d%d' % evla_conf.npol
+            if evla_conf.searchdm != 0.0:
+                self.command_line += ' -F%d:D' % nchanfull
+                self.command_line += ' -D%f' % evla_conf.searchdm
+            else:
+                self.command_line += ' -F%d' % nchanfull
             self.command_line += ' -t%d' % acclen
+            self.command_line += ' -f%d' % evla_conf.freqfac
             self.command_line += ' -b%d' % evla_conf.nbitsout
             self.command_line += ' -o%s.fil' % output_file
 
