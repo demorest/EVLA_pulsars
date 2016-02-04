@@ -29,6 +29,8 @@ cmdline.add_option('-N', '--nodesubs', dest='nodesubs', action='store_true',
         default=False, help='Accept duplicated subband ID numbers')
 cmdline.add_option('-P', '--partial', dest='partial', action='store_true',
         default=False, help='Partial scan/filename matching')
+cmdline.add_option('-s', '--sp', dest='singlepulse', action='store_true',
+        default=False, help='Single-pulse mode')
 (opt,args) = cmdline.parse_args()
 
 if len(args)!=1:
@@ -142,7 +144,8 @@ for subband in sorted(subbands):
 logging.debug("Combining all subbands")
 freqappend = psrchive.FrequencyAppend()
 patch = psrchive.PatchTime()
-#patch.set_contemporaneity_policy("phase") # XXX
+if opt.singlepulse:
+    patch.set_contemporaneity_policy("phase")
 basearch = sub_arch[maxsub]
 freqappend.init(basearch)
 # Use whichever subband has the most data as the base
