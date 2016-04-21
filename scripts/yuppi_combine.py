@@ -89,7 +89,7 @@ for fname in fnames:
     ext = info.ext # TODO check for mismatched extensions
 
     # Skip files that are not from the baseband or subint we want
-    if info.ifid != baseband:
+    if (baseband!='all') and (info.ifid!=baseband):
         continue
     if int(info.idx)<idx0 or int(info.idx)>=idx1:
         continue
