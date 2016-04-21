@@ -18,6 +18,9 @@ cmdline.add_option('-v', '--verbose', dest='verbose', action='store_true',
         default=False, help='Verbose logging')
 cmdline.add_option('-d', '--subdir', dest='dir', action='store',
         default='cbe-node-??', help='Directory (glob) with data files [%default]')
+cmdline.add_option('-B', '--combine-ifs', dest='all_bb', action='store_true',
+        default=False, 
+        help='Combine different basebands into single file [%default]')
 (opt,args) = cmdline.parse_args()
 
 loglevel = logging.INFO
@@ -104,7 +107,9 @@ for scan in scans.keys():
                 subints_per_part)
     outidx = 1
     for isub in range(info.idx0,info.idx1+1,subints_per_part):
-        for bb in info.ifids:
+        if opt.all_bb: bblist = ['all',]
+        else: bblist = info.ifids
+        for bb in bblist:
             # TODO check whether output file exists
             outdir = 'merged_data'
             cmd = 'yuppi_combine.py'
