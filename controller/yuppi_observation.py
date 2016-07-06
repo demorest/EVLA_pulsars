@@ -192,6 +192,7 @@ class YUPPIObs(object):
         elif 'PULSAR_SEARCH' in evla_conf.scan_intent:
             nchanfull = evla_conf.nchan * evla_conf.freqfac
             acclen = int(abs(evla_conf.timeres*subband.bw*1e6/nchanfull))
+            nbitsin = int(subband.vdif.numBits)
             self.command_line = 'digifil -threads 8 -B64 -I0 -c'
             self.command_line += ' -d%d' % evla_conf.npol
             if evla_conf.searchdm != 0.0:
@@ -200,8 +201,26 @@ class YUPPIObs(object):
             else:
                 self.command_line += ' -F%d' % nchanfull
             self.command_line += ' -t%d' % acclen
-            self.command_line += ' -f%d' % evla_conf.freqfac
-            self.command_line += ' -b%d' % evla_conf.nbitsout
+            if evla_conf.freqfac > 1:
+                self.command_line += ' -f%d' % evla_conf.freqfac
+                if evla_conf.searchdm != 0.0:
+                    # need -K (or similar) if we are fscrunching...
+                    self.command_line += ' -K'
+            #self.command_line += ' -b%d -s1.0' % evla_conf.nbitsout # XXX 8-bit
+            # Typical RMS are 1.8 (2-bit), 2.7 (4-bit), ~10.0 (8-bit)
+            # in voltage.  These should give output counts of ~50:
+            outscale = {
+                    8: 1.0,
+                    16: 4.0,
+                    -32: 1.0,
+                    }
+            digiscale = {
+                    2: 1.8**2/50.0,
+                    4: 2.7**2/50.0,
+                    8: 10.0**2/50.0
+                    }
+            self.command_line += ' -b%d -s%f' % (evla_conf.nbitsout, 
+                    digiscale[nbitsin]/outscale[evla_conf.nbitsout])
             self.command_line += ' -o%s.fil' % output_file
 
         else:
