@@ -15,6 +15,7 @@
 
 import ast
 import angles
+import string
 from jdcal import mjd_now
 
 class EVLAConfig(object):
@@ -130,7 +131,7 @@ class EVLAConfig(object):
 
     @property
     def source(self):
-        return self.obs.name
+        return self.obs.name.translate(string.maketrans(' *','__'))
 
     @property
     def ra_deg(self):
@@ -177,6 +178,18 @@ class EVLAConfig(object):
     @property
     def telescope(self):
         return "VLA"
+
+    @property
+    def binningPeriod(self):
+        bp = {}
+        for baseBand in self.vci.stationInputOutput[0].baseBand:
+            try:
+                if baseBand.binningPeriod is not None:
+                    bp[baseBand.swbbName] = baseBand.binningPeriod
+            except AttributeError:
+                pass
+        return bp
+
 
     def get_sslo(self,IFid):
         """Return the SSLO frequency in MHz for the given IFid.  This will
