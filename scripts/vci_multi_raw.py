@@ -4,12 +4,26 @@ import sys, os
 import string
 from lxml import etree
 from copy import deepcopy
+import argparse
+
+par = argparse.ArgumentParser()
+par.add_argument("vcifile", help="Input VCI file")
+par.add_argument("-a", "--ants", 
+        help="Comma-separated list of antennas to use [default='%(default)s']",
+        default="1,3,5,6,9,10,11,12,13,14,18,19,23,27")
+par.add_argument("-r", "--remove-ant",
+        help="Remove the specified antenna from the list",
+        default=[], action="append",type=int)
+args = par.parse_args()
 
 # Read the nic config file
 n_nics = {}
 ips = {}
 macs = {}
-nic_file = os.getenv('PSR') + '/share/cbe_nics.dat'
+if os.getenv('PSR') is not None:
+    nic_file = os.getenv('PSR') + '/share/cbe_nics.dat'
+else:
+    nic_file = os.path.dirname(os.path.abspath(__file__)) + '/cbe_nics.dat'
 for l in open(nic_file).readlines():
     if l.startswith('#'): continue
     (node,nic,ip,mac) = l.split()
@@ -21,13 +35,22 @@ for l in open(nic_file).readlines():
     ips[key] = ip
     macs[key] = mac
 
-
-vcixml = etree.parse(sys.argv[1])
+vcixml = etree.parse(args.vcifile)
 vciroot = vcixml.getroot()
 
 pfx = '{http://www.nrc.ca/namespaces/widar}'
 
-bb = vciroot.find(pfx+'subArray').find(pfx+'stationInputOutput').find(pfx+'baseBand')
+# Check that it only has one subband and one baseband
+sio = vciroot.find(pfx+'subArray').find(pfx+'stationInputOutput')
+
+nbbs = len(sio.findall(pfx+'baseBand'))
+if nbbs>1:
+    raise RuntimeError("Input VCI file must have only one baseband")
+bb = sio.find(pfx+'baseBand')
+
+nsbs = len(bb.findall(pfx+'subBand'))
+if nbbs>1:
+    raise RuntimeError("Input VCI file must have only one subband")
 sb = bb.find(pfx+'subBand')
 
 # Add frame delay stuff
@@ -35,18 +58,20 @@ sb.attrib['centralFreq'] = sb.attrib['centralFreq'].split('.')[0]
 sb.attrib['frameSchedulingAlgorithm'] = 'setDelay'
 sb.attrib['interFrameDelay'] = '400'
 
-# Remove sb (assuming there is just one already present)
+# Remove existing subband section
 bb.remove(sb)
 
 # List of antennas to use
-# Note, this script will need fixing if the list grows beyond 16 total.
-#antennas = [1, 2, 3, 4]
-#antennas = [10, 12, 14, 19]
-# all MJP
-antennas = [6,10,12,14,18,19]
+antennas = map(int,args.ants.split(','))
+
+for a in args.remove_ant:
+    try:
+        antennas.remove(a)
+    except ValueError:
+        pass
+
 inode = 1
 iblb = 0
-
 for iant in antennas:
 
     #newsb = sb.copy() # not in lxml
@@ -56,7 +81,9 @@ for iant in antennas:
     newsb.attrib['swIndex'] = str(inode)
 
     blb = newsb.find(pfx+'polProducts').find(pfx+'blbPair')
-    blb.attrib['firstBlbPair'] = str(iblb)
+    blb.attrib['quadrant'] = str((iblb/16)+1)
+    blb.attrib['firstBlbPair'] = str(iblb%16)
+    blb.attrib['numBlbPairs'] = '1'
 
     sa = newsb.find(pfx+'summedArray')
     sa.attrib['sid'] = str(iant+100)
@@ -75,7 +102,7 @@ for iant in antennas:
     vdif.attrib['vdifEnableA'] = 'true'
     vdif.attrib['aPacketDelay'] = '0'
     vdif.attrib['bPacketDelay'] = '0'
-    vdif.attrib['numBits'] = '8'
+    vdif.attrib['numBits'] = '4'
     vdif.attrib['frameSize'] = '1250'
     vdif.attrib['epochOffset'] = '127057024'
     vdif.attrib['epoch'] = '0'
@@ -95,4 +122,4 @@ for iant in antennas:
     inode += 1
     iblb += 1
 
-vcixml.write('test.xml',pretty_print=True,standalone=True,encoding='UTF-8')
+vcixml.write(sys.stdout,pretty_print=True,standalone=True,encoding='UTF-8')
