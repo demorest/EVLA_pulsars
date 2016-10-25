@@ -14,6 +14,9 @@ par.add_argument("-a", "--ants",
 par.add_argument("-r", "--remove-ant",
         help="Remove the specified antenna from the list",
         default=[], action="append",type=int)
+par.add_argument("-b", "--nbits",
+        help="Number of bits to use for VDIF output [default=%(default)d]",
+        type=int, default=4)
 args = par.parse_args()
 
 # Read the nic config file
@@ -102,7 +105,7 @@ for iant in antennas:
     vdif.attrib['vdifEnableA'] = 'true'
     vdif.attrib['aPacketDelay'] = '0'
     vdif.attrib['bPacketDelay'] = '0'
-    vdif.attrib['numBits'] = '4'
+    vdif.attrib['numBits'] = '%d' % args.nbits
     vdif.attrib['frameSize'] = '1250'
     vdif.attrib['epochOffset'] = '127057024'
     vdif.attrib['epoch'] = '0'
