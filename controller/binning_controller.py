@@ -13,6 +13,9 @@ import asyncore
 from mcast_clients import ObsClient
 from evla_config import EVLAConfig
 from mjd_timer import MJDTimer
+from jdcal import mjd_now
+import tempo_utils
+
 
 from optparse import OptionParser
 cmdline = OptionParser()
@@ -41,6 +44,8 @@ if opt.listen:
 
 node = os.uname()[1]
 
+mjd1970 = 40587
+
 def mjd_to_utc(mjd):
     """Given float MJD returns HH:MM:SS.S UTC string"""
     if mjd is None: return 'x'
@@ -53,15 +58,25 @@ def mjd_to_utc(mjd):
 class CMIBQuery(object):
     """Periodically get info from the CMIB."""
 
-    def __init__(self, startTime, dataset='X', scan='X'):
+    def __init__(self, startTime, dataset='X', scan='X', parfile=None):
         self.lock = threading.Lock()
         with self.lock:
             self.dataset = dataset
             self.scan = scan
+            self.outdir = '/lustre/evla/pulsar/data/binning'
             self.cmib = 's006-t-0'
             self.cmib_url = 'http://%s/mah?driver=/proc/cmib/dumpTrig/phaseBin' \
                     % (self.cmib,)
+            self.polys = None
+            if parfile is not None:
+                # Note this assumes any single scan is less than 1 hour long.
+                # Have to assume something since there is no way to predict
+                # scan length in advance.
+                self.polys = tempo_utils.polycos.generate(parfile, 
+                        site='6', mjd_start=startTime, tobs=1.0,
+                        outfile='%s/%s.polyco' % (self.outdir,self.id))
             self.interval = 1.0
+            self.update_rate = 15
             self._run = True
             self.startTime = startTime
             self.stopTime = None
@@ -72,13 +87,19 @@ class CMIBQuery(object):
             self.last_epoch = ''
 
     def run(self):
-        logfname = '/lustre/evla/pulsar/data/binning/%s.binlog' % self.dataset
+        logfname = '%s/%s.binlog' % (self.outdir, self.dataset)
         try:
             outf = open(logfname, 'a')
         except:
             logging.warn('%s could not open %s' % (self.id, logfname))
             outf = None
+        update_count = 0
         while self._run:
+            if update_count>self.update_rate:
+                self.update()
+                update_count = 0
+            else:
+                update_count += 1
             self.query(logfile=outf)
             time.sleep(self.interval)
         if outf is not None: outf.close()
@@ -111,6 +132,25 @@ class CMIBQuery(object):
                 logfile.write(msg + '\n')
                 logfile.flush()
         self.last_epoch = epoch
+
+    def update(self):
+        if self.polys is None: 
+            logging.info('update: no polycos available')
+            return
+        tstep = self.interval * self.update_rate
+        mjd0 = mjd_now() + tstep/2.0/86400.0
+        pfreq = self.polys.freq(mjd0)
+        per_clk = 64.0e6 / pfreq
+        time_clk = (mjd0 - mjd1970)*86400.0*64e6
+        params = '%.6f %+.6f %ld' % (per_clk, 0.0, time_clk)
+        logging.info('update: ' + params)
+        for r in (1,2,3,4,5,6,7):
+            for l in ('t','b'):
+                for i in (0,1,2,3,4,5,6,7):
+                    addr = 's%03d-%s-%d' % (r,l,i)
+                    url = "http://%s/mah?driver=/proc/cmib/dumpTrig/pulsarModel&%s" \
+                            % (addr,params)
+                    urllib.urlopen(url)
 
     def stop(self):
         with self.lock:
@@ -154,13 +194,16 @@ class PhaseBinController(object):
         if config.binningPeriod != {}:
             logging.info('dataset %s scan %d period %s' % (config.datasetId,
                 int(obs.scanNo), config.binningPeriod))
+            if config.parfile is not None:
+                logging.info('parfile %s' % config.parfile)
             # start query thread
             self.queries += [CMIBQuery(config.startTime,
-                dataset=config.datasetId,scan=obs.scanNo),]
+                dataset=config.datasetId, 
+                scan=obs.scanNo,
+                parfile=config.parfile),]
         else:
             logging.info('non-binning config %s %d' % (config.datasetId,
                 int(obs.scanNo)))
-            #self.queries += [CMIBQuery(config.startTime),]
         # Clean all finished ones
         self.queries = [q for q in self.queries if not q.finished]
         for q in self.queries: 
