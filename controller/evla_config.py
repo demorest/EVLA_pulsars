@@ -74,6 +74,14 @@ class EVLAConfig(object):
         return self.obs.datasetId
 
     @property
+    def scanNo(self):
+        return int(self.obs.scanNo)
+
+    @property
+    def subscanNo(self):
+        return int(self.obs.subscanNo)
+
+    @property
     def observer(self):
         return self.get_intent("ObserverName","Unknown")
 

@@ -48,6 +48,7 @@ class YUPPIObs(object):
         self.startMJD = evla_conf.startTime
         self.stopMJD = None
         self.id = evla_conf.Id + '.' + str(evla_conf.seq) + '-' + str(daq_idx)
+        self.datasetId = evla_conf.datasetId
         self.set_timer()
 
     def generate_filename(self, evla_conf, subband):
@@ -70,8 +71,13 @@ class YUPPIObs(object):
         self.data_dir = "/lustre/evla/pulsar/data/%s" % node
         #self.outfile_base = "%s.%d.%s.%s" % (evla_conf.datasetId,
         #        int(evla_conf.seq),evla_conf.source,node_idx)
-        self.outfile_base = "%s.%d.%s.%s-%02d" % (evla_conf.datasetId,
-                int(evla_conf.seq), evla_conf.source,
+        #self.outfile_base = "%s.%d.%s.%s-%02d" % (evla_conf.datasetId,
+        #        int(evla_conf.seq), evla_conf.source,
+        #        subband.IFid, subband.swIndex-1)
+        # New-new version, use scan+subscan number rather than seq number, 
+        # remove source name from filename
+        self.outfile_base = "%s.%d.%d.%s-%02d" % (evla_conf.datasetId,
+                evla_conf.scanNo, evla_conf.subscanNo,
                 subband.IFid, subband.swIndex-1)
 
     def generate_shmem_config(self, evla_conf, subband):

@@ -130,6 +130,12 @@ class YUPPIController(object):
 
                 # if there is a running observation we need to stop it..
                 for observation in self.observations:
+
+                    # Skip any not associated with the same datasetId.
+                    # This allows multiple subarrays to run without
+                    # stomping on each other.
+                    if observation.datasetId != config.datasetId: continue
+
                     logging.debug('request stop obs %s in %.1fs' % (
                         observation.id, config.wait_time_sec))
                     # Two pulsar scans back-to-back, allow an extra half-second
@@ -152,6 +158,8 @@ class YUPPIController(object):
                 # Non-pulsar config, send stop to all running obs at the
                 # appropriate time
                 for observation in self.observations:
+                    # Skip any from other subarrays:
+                    if observation.datasetId != config.datasetId: continue
                     logging.debug('request stop obs %s in %.1fs' % (observation.id,
                         config.wait_time_sec))
                     observation.stop_at(config.startTime)
