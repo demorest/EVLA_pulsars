@@ -183,11 +183,21 @@ class YUPPIObs(object):
             nchanfull = evla_conf.nchan * evla_conf.freqfac
             acclen = int(abs(evla_conf.timeres*subband.bw*1e6/nchanfull))
             nbitsin = int(subband.vdif.numBits)
-            self.command_line = 'digifil -threads 8 -B64 -I0 -c'
+            # TODO Choose nthreads depending on number of subbands
+            # Some benchmarking results:
+            #  block size ~1 MB seems optimal
+            #  Using eg -F32:16 is better than simply -F32 for 4-pol detection
+            #  Might want to optimize this as a fn of nchan
+            #  14 threads seems optimal if using 1 process per node
+            self.command_line = 'digifil -threads 8 -B1 -I0 -c'
+            # old version:
+            #self.command_line = 'digifil -threads 8 -B64 -I0 -c'
             self.command_line += ' -d%d' % evla_conf.npol
             if evla_conf.searchdm != 0.0:
                 self.command_line += ' -F%d:D' % nchanfull
                 self.command_line += ' -D%f' % evla_conf.searchdm
+            elif evla_conf.npol==4:
+                self.command_line += ' -F%d:16' % nchanfull
             else:
                 self.command_line += ' -F%d' % nchanfull
             self.command_line += ' -t%d' % acclen
