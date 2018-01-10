@@ -43,6 +43,16 @@ vciroot = vcixml.getroot()
 
 pfx = '{http://www.nrc.ca/namespaces/widar}'
 
+# List of antennas to use
+antennas = map(int,args.ants.split(','))
+for a in args.remove_ant:
+    try:
+        antennas.remove(a)
+    except ValueError:
+        pass
+if len(antennas)>32:
+    raise RuntimeError("More than 32 antennas not allowed")
+
 # Check that it only has one subband and one baseband
 sio = vciroot.find(pfx+'subArray').find(pfx+'stationInputOutput')
 
@@ -64,23 +74,22 @@ sb.attrib['interFrameDelay'] = '400'
 # Remove existing subband section
 bb.remove(sb)
 
-# List of antennas to use
-antennas = map(int,args.ants.split(','))
-
-for a in args.remove_ant:
-    try:
-        antennas.remove(a)
-    except ValueError:
-        pass
+# If more than 16 antennas we need to add another baseband section
+if len(antennas)>16:
+    bb2 = deepcopy(bb)
+    bb2.attrib['bbA'] = str(int(bb2.attrib['bbA']) + 1)
+    bb2.attrib['bbB'] = str(int(bb2.attrib['bbB']) + 1)
+    sio.append(bb2)
 
 inode = 1
 iblb = 0
+nant = 0
 for iant in antennas:
 
     #newsb = sb.copy() # not in lxml
     newsb = deepcopy(sb)
 
-    newsb.attrib['sbid'] = str(inode-1)
+    newsb.attrib['sbid'] = str((inode-1) % 16)
     newsb.attrib['swIndex'] = str(inode)
 
     blb = newsb.find(pfx+'polProducts').find(pfx+'blbPair')
@@ -120,9 +129,13 @@ for iant in antennas:
     vdif.attrib['aDestPort'] = '50000'
     vdif.attrib['bDestPort'] = '50000'
 
-    bb.append(newsb)
+    if nant<16:
+        bb.append(newsb)
+    else:
+        bb2.append(newsb)
 
     inode += 1
     iblb += 1
+    nant += 1
 
 vcixml.write(sys.stdout,pretty_print=True,standalone=True,encoding='UTF-8')
