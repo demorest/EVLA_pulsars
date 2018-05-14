@@ -53,8 +53,11 @@ logging.basicConfig(format="%(asctime)-15s " + pid
 #scan = '15A-105_sb30474261_1_test.57093.660558020834.963.J1909-3744'
 scan = args[0]
 baseband = opt.bb
-idx0 = opt.idx
-idx1 = opt.idx + opt.nsub
+
+# Read one subint ahead and behind in order to fix "ragged edges" problem
+# when making multiple output files.
+idx0 = opt.idx - 1
+idx1 = opt.idx + opt.nsub + 1
 
 # Example filename:
 # 15A-105_sb30474261_1_test.57093.660558020834.963.J1909-3744.BD-15_0029.ar
@@ -161,11 +164,23 @@ for sub in subbands:
     patch.operate(basearch,sub_arch[sub])
     freqappend.append(basearch,sub_arch[sub])
 
+# Trim off edges as needed
+nextra = basearch.get_nsubint() - opt.nsub
+if opt.idx == 1:
+    # Special case for start of observation, only remove subints from the end
+    for ii in range(nextra):
+        basearch.erase(basearch.get_nsubint() - 1)
+else:
+    # Otherwise always remove one from the start and all other extra from end
+    for ii in range(nextra - 1):
+        basearch.erase(basearch.get_nsubint() - 1)
+    basearch.erase(0)
+
 # Make sure .cf files get marked as cals
 if ext=='cf':
     basearch.set_type('PolnCal')
 
-logging.info("Unloading '%s'" % outfname)
+logging.info("Unloading '%s' (nsub=%d)" % (outfname, basearch.get_nsubint()))
 # Unload to /dev/shm first to avoid slow psrchive/lustre issue..
 tmpdir = '/dev/shm'
 logging.debug("Writing to %s" % tmpdir)
