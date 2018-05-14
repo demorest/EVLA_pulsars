@@ -23,6 +23,11 @@ cmdline.add_option('-B', '--combine-ifs', dest='all_bb', action='store_true',
         help='Combine different basebands into single file [%default]')
 (opt,args) = cmdline.parse_args()
 
+try:
+    scan_prefix = args[0]
+except IndexError:
+    scan_prefix = ''
+
 loglevel = logging.INFO
 if opt.verbose:
     loglevel = logging.DEBUG
@@ -73,7 +78,7 @@ def get_scans(subdir):
     # File extensions to process
     exts = ['ar','cf']
     for ext in exts:
-        all_files += glob.glob('%s/*.%s' % (subdir,ext))
+        all_files += glob.glob('%s/%s*.%s' % (subdir,scan_prefix,ext))
     scans = {}
     for fname in all_files:
         try:
@@ -112,7 +117,7 @@ for scan in scans.keys():
         for bb in bblist:
             # TODO check whether output file exists
             outdir = 'merged_data'
-            cmd = 'yuppi_combine.py'
+            cmd = 'nice -n20 yuppi_combine.py'
             cmd += ' -v'
             cmd += ' -b%s' % bb
             cmd += ' -i%d' % isub
