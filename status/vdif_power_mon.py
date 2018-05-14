@@ -18,9 +18,15 @@ class yuppi_power_mon:
     def make_luts(self):
         # Make power look up tables for 8 and 2 bit data
         self.lut_pow_8bit = numpy.zeros(256)
+        self.lut_pow_4bit = numpy.zeros(256)
         self.lut_pow_2bit = numpy.zeros(256)
         for i in range(256):
             self.lut_pow_8bit[i] = (float(i)-127.5)**2
+        # Make zero not cause big spikes
+        self.lut_pow_8bit[0] = 0.0
+        for i in range(256):
+            for j in range(2):
+                self.lut_pow_4bit[i] += (float((i>>(4*j))&(0xf))-7.5)**2
         for i in range(256):
             for j in range(4):
                 self.lut_pow_2bit[i] += (float((i>>(2*j))&(0x3))-1.5)**2
@@ -53,6 +59,8 @@ class yuppi_power_mon:
                 if (t is None) or (t in self.time): continue
                 if gd.hdr[ib]['NBITS']==2:
                     self.lut_pow = self.lut_pow_2bit
+                elif gd.hdr[ib]['NBITS']==4:
+                    self.lut_pow = self.lut_pow_4bit
                 else:
                     self.lut_pow = self.lut_pow_8bit
                 (pow_p0,pow_p1) = self.raw_data_to_power(gd.data(ib).ravel())
