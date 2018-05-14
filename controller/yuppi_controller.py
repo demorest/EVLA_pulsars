@@ -38,7 +38,7 @@ if opt.verbose:
 logging.basicConfig(format="%(asctime)-15s %(levelname)8s %(message)s",
         level=loglevel)
 
-os.nice(10)
+#os.nice(10)
 
 logging.info('yuppi_controller started')
 
