@@ -6,8 +6,15 @@ import netifaces as ni
 hostname = os.uname()[1]
 
 for nic in ni.interfaces():
-    if not nic.startswith('p2p'): continue
+    if not (nic.startswith('p2p') or nic.startswith('p1p')): continue
     addrs = ni.ifaddresses(nic)
-    ip = addrs[ni.AF_INET][0]['addr']
-    mac = addrs[ni.AF_LINK][0]['addr'].upper()
-    print '%s %s %s %s' % (hostname, nic, ip, mac)
+    if not ni.AF_INET in addrs.keys(): continue
+    if ':' in nic:
+        base_nic = nic.split(':')[0]
+    else:
+        base_nic = nic
+    for addr in addrs[ni.AF_INET]:
+        ip = addr['addr']
+        #mac = addrs[ni.AF_LINK][0]['addr'].upper()
+        mac = ni.ifaddresses(base_nic)[ni.AF_LINK][0]['addr'].upper()
+        print '%s %s %s %s' % (hostname, nic, ip, mac)

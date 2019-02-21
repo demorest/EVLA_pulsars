@@ -55,9 +55,10 @@ else:
     import netifaces
     from yuppi_observation import YUPPIObs
     for nic in netifaces.interfaces():
-        if 'p2p' in nic:
-            data_ips += \
-                    [netifaces.ifaddresses(nic)[netifaces.AF_INET][0]['addr']]
+        if ('p2p' in nic) or ('p1p' in nic):
+            if netifaces.AF_INET in netifaces.ifaddresses(nic).keys():
+                for addr in netifaces.ifaddresses(nic)[netifaces.AF_INET]:
+                    data_ips += [addr['addr'],]
     logging.info('found data IPs: ' + str(data_ips))
 
 node = os.uname()[1]
