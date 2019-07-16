@@ -8,35 +8,33 @@ from lxml import etree
 
 # Read the nic config file
 n_nics = {}
+n_used = {}
 ips = {}
 macs = {}
 nic_file = os.getenv('PSR') + '/share/cbe_nics.dat'
-#nic_file = os.getenv('PSR') + '/share/cbe_nics_01-08.dat'
-#nic_file = os.getenv('PSR') + '/share/cbe_nics_09-16.dat'
-#nic_file = os.getenv('PSR') + '/share/cbe_nics_01-16.dat'
-#nic_file = os.getenv('PSR') + '/share/cbe_nics_01-16.dat'
-#nic_file = os.getenv('PSR') + '/share/cbe_nics_17-32.dat'
 for l in open(nic_file).readlines():
     if l.startswith('#'): continue
     (node,nic,ip,mac) = l.split()
-    if n_nics.has_key(node): 
-        n_nics[node] += 1
-    else:
-        n_nics[node] = 1
-    key = '%s-%s' % (node, nic.replace('p2p',''))
-    ips[key] = ip
-    macs[key] = mac
+    if not n_nics.has_key(node): 
+        n_nics[node] = 0
+        n_used[node] = 0
+        ips[node] = []
+        macs[node] = []
+    #key = '%s-%s' % (node, nic.replace('p2p',''))
+    n_nics[node] += 1
+    ips[node].append(ip)
+    macs[node].append(mac)
 
 # Could check lots of stuff here if we wanted to
 
 nodes = sorted(n_nics.keys())
 
 # Remove any out of service nodes
-nodes.remove('cbe-node-26')
+#nodes.remove('cbe-node-26')
 
 n_nodes = len(nodes)
 print "CBE: %d nodes" % n_nodes
-print "CBE: %d NICs" % len(ips)
+print "CBE: %d NICs" % sum([len(x) for x in ips.values()])
 
 for vcifname in sys.argv[1:]:
 
@@ -60,6 +58,10 @@ for vcifname in sys.argv[1:]:
     n_subband = 0
     n_summedarray = 0
 
+    # Reset list of used nodes
+    for n in n_used.keys():
+        n_used[n] = 0
+
     for baseband in vciroot.iter(pfx+'baseBand'):
         if baseband.attrib['swbbName'] not in bbs_to_convert:
             continue
@@ -79,9 +81,9 @@ for vcifname in sys.argv[1:]:
     print "VCI: %d subBands" % n_subband
     print "VCI: %d summedArrays" % n_summedarray
 
-    if n_summedarray > 2*n_nodes:
-        print "ERROR: Number of subbands greater than number of nodes"
-        sys.exit(1)
+    #if n_summedarray > 2*n_nodes:
+    #    print "ERROR: Number of subbands greater than number of nodes"
+    #    sys.exit(1)
 
     # For now assume summedArray and vdif tags exist
     inode = 0
@@ -89,6 +91,7 @@ for vcifname in sys.argv[1:]:
         if baseband.attrib['swbbName'] not in bbs_to_convert:
             continue
 
+        subs_to_remove = []
         for summedarray in baseband.iter(pfx+'summedArray'):
             vdif = summedarray.find(pfx+'vdif')
             if vdif is None:
@@ -98,19 +101,37 @@ for vcifname in sys.argv[1:]:
             # To enable extra headroom on quantization (not tested)
             #summedarray.attrib['headroom6dB'] = 'true'
 
-            #node = 'cbe-node-%02d' % ((inode/2) + 1)
-            #if inode%2:
-            #node = 'cbe-node-%02d' % (((inode+8) % n_nodes) + 1)
-            #node = 'cbe-node-%02d' % ((inode % n_nodes) + 1)
-            node = nodes[inode % n_nodes]
-            if inode>=n_nodes:
-                nic1 = node + '-3'
-                nic2 = node + '-4'
-                port = '50001'
-            else:
-                nic1 = node + '-1'
-                nic2 = node + '-2'
-                port = '50000'
+            # find a node with 2 unused nics
+            n_tried = 0
+            node = nodes[inode]
+            while (n_nics[node] - n_used[node]) < 2:
+                inode = (inode + 1) % n_nodes
+                node = nodes[inode]
+                n_tried += 1
+                if n_tried > n_nodes:
+                    break
+            if n_tried > n_nodes:
+                # Not enough nodes, remove this subband
+                subs_to_remove.append(summedarray)
+                continue
+            nic1 = n_used[node] + 0
+            nic2 = n_used[node] + 1
+            port = '%d' % (50000 + n_used[node]/2)
+            n_used[node] += 2
+
+            ##node = 'cbe-node-%02d' % ((inode/2) + 1)
+            ##if inode%2:
+            ##node = 'cbe-node-%02d' % (((inode+8) % n_nodes) + 1)
+            ##node = 'cbe-node-%02d' % ((inode % n_nodes) + 1)
+            #node = nodes[inode % n_nodes]
+            #if inode>=n_nodes:
+            #    nic1 = node + '-3'
+            #    nic2 = node + '-4'
+            #    port = '50001'
+            #else:
+            #    nic1 = node + '-1'
+            #    nic2 = node + '-2'
+            #    port = '50000'
 
             # Find bandwidth, use to set number of bits
             bw = abs(float(summedarray.getparent().attrib['bw']))
@@ -138,13 +159,19 @@ for vcifname in sys.argv[1:]:
             vdif.attrib['aThread'] = '0'
             vdif.attrib['aDestPort'] = port
             #vdif.attrib['bDestPort'] = '50000' # XXX need this?
-            vdif.attrib['aDestMAC'] = macs[nic1]
-            vdif.attrib['aDestIP'] = ips[nic1]
-            vdif.attrib['bDestMAC'] = macs[nic2]
-            vdif.attrib['bDestIP'] = ips[nic2]
+            vdif.attrib['aDestMAC'] = macs[node][nic1]
+            vdif.attrib['aDestIP'] = ips[node][nic1]
+            vdif.attrib['bDestMAC'] = macs[node][nic2]
+            vdif.attrib['bDestIP'] = ips[node][nic2]
             vdif.tail = '\n' + 20*' '
 
-            inode += 1
+            #inode += 1
+
+        if len(subs_to_remove):
+            print "WARNING: not enough CBE nodes, removed %d subbands" % (len(subs_to_remove))
+            for s in subs_to_remove:
+                #baseband.remove(s)
+                s.getparent().remove(s)
 
     ext = 'psr'
 
