@@ -10,7 +10,7 @@ par = argparse.ArgumentParser()
 par.add_argument("vcifile", help="Input VCI file")
 par.add_argument("-a", "--ants", 
         help="Comma-separated list of antennas to use [default='%(default)s']",
-        default="1,3,5,6,9,10,11,12,13,14,18,19,23,27")
+        default="1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28")
 par.add_argument("-r", "--remove-ant",
         help="Remove the specified antenna from the list",
         default=[], action="append",type=int)
@@ -21,6 +21,7 @@ args = par.parse_args()
 
 # Read the nic config file
 n_nics = {}
+n_used = {}
 ips = {}
 macs = {}
 if os.getenv('PSR') is not None:
@@ -30,13 +31,16 @@ else:
 for l in open(nic_file).readlines():
     if l.startswith('#'): continue
     (node,nic,ip,mac) = l.split()
-    if n_nics.has_key(node):
-        n_nics[node] += 1
-    else:
-        n_nics[node] = 1
-    key = '%s-%s' % (node, nic.replace('p2p',''))
-    ips[key] = ip
-    macs[key] = mac
+    if not n_nics.has_key(node):
+        n_nics[node] = 0
+        n_used[node] = 0
+        ips[node] = []
+        macs[node] = []
+    n_nics[node] += 1
+    ips[node].append(ip)
+    macs[node].append(mac)
+
+nodes = sorted(n_nics.keys())
 
 vcixml = etree.parse(args.vcifile)
 vciroot = vcixml.getroot()
@@ -50,8 +54,11 @@ for a in args.remove_ant:
         antennas.remove(a)
     except ValueError:
         pass
-if len(antennas)>32:
-    raise RuntimeError("More than 32 antennas not allowed")
+
+# Make sure we have one ant per node
+if len(antennas)>len(nodes):
+    raise RuntimeError("Number of antennas (%d) greater than number of nodes (%d)" % 
+            (len(antennas), len(nodes)))
 
 # Check that it only has one subband and one baseband
 sio = vciroot.find(pfx+'subArray').find(pfx+'stationInputOutput')
@@ -81,7 +88,7 @@ if len(antennas)>16:
     bb2.attrib['bbB'] = str(int(bb2.attrib['bbB']) + 1)
     sio.append(bb2)
 
-inode = 1
+inode = 0
 iblb = 0
 nant = 0
 for iant in antennas:
@@ -89,8 +96,8 @@ for iant in antennas:
     #newsb = sb.copy() # not in lxml
     newsb = deepcopy(sb)
 
-    newsb.attrib['sbid'] = str((inode-1) % 16)
-    newsb.attrib['swIndex'] = str(inode)
+    newsb.attrib['sbid'] = str((inode) % 16)
+    newsb.attrib['swIndex'] = str(inode+1)
 
     blb = newsb.find(pfx+'polProducts').find(pfx+'blbPair')
     blb.attrib['quadrant'] = str((iblb/16)+1)
@@ -105,9 +112,7 @@ for iant in antennas:
 
     vdif = sa.find(pfx+'vdif')
     vdif.clear()
-    node = 'cbe-node-%02d' % inode
-    nic1 = node + '-1'
-    nic2 = node + '-2'
+    node = nodes[inode]
 
     vdif.attrib['agcEnabled'] = 'false'
     vdif.attrib['vdifEnableB'] = 'true'
@@ -122,10 +127,10 @@ for iant in antennas:
     vdif.attrib['aThread'] = '0'
 
     vdif.attrib['stationId'] = str(12300 + iant)
-    vdif.attrib['aDestIP'] = ips[nic1]
-    vdif.attrib['bDestIP'] = ips[nic2]
-    vdif.attrib['aDestMAC'] = macs[nic1]
-    vdif.attrib['bDestMAC'] = macs[nic2]
+    vdif.attrib['aDestIP'] = ips[node][0]
+    vdif.attrib['bDestIP'] = ips[node][1]
+    vdif.attrib['aDestMAC'] = macs[node][0]
+    vdif.attrib['bDestMAC'] = macs[node][1]
     vdif.attrib['aDestPort'] = '50000'
     vdif.attrib['bDestPort'] = '50000'
 
