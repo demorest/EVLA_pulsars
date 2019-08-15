@@ -56,8 +56,8 @@ for a in args.remove_ant:
         pass
 
 # Make sure we have one ant per node
-if len(antennas)>len(nodes):
-    raise RuntimeError("Number of antennas (%d) greater than number of nodes (%d)" % 
+if len(antennas)>2*len(nodes):
+    raise RuntimeError("Number of antennas (%d) greater than 2x number of nodes (%d)" % 
             (len(antennas), len(nodes)))
 
 # Check that it only has one subband and one baseband
@@ -91,6 +91,7 @@ if len(antennas)>16:
 inode = 0
 iblb = 0
 nant = 0
+inic = 0
 for iant in antennas:
 
     #newsb = sb.copy() # not in lxml
@@ -127,10 +128,10 @@ for iant in antennas:
     vdif.attrib['aThread'] = '0'
 
     vdif.attrib['stationId'] = str(12300 + iant)
-    vdif.attrib['aDestIP'] = ips[node][0]
-    vdif.attrib['bDestIP'] = ips[node][1]
-    vdif.attrib['aDestMAC'] = macs[node][0]
-    vdif.attrib['bDestMAC'] = macs[node][1]
+    vdif.attrib['aDestIP'] = ips[node][inic+0]
+    vdif.attrib['bDestIP'] = ips[node][inic+1]
+    vdif.attrib['aDestMAC'] = macs[node][inic+0]
+    vdif.attrib['bDestMAC'] = macs[node][inic+1]
     vdif.attrib['aDestPort'] = '50000'
     vdif.attrib['bDestPort'] = '50000'
 
@@ -140,6 +141,9 @@ for iant in antennas:
         bb2.append(newsb)
 
     inode += 1
+    if inode >= len(nodes):
+        inode -= len(nodes)
+        inic += 2
     iblb += 1
     nant += 1
 
