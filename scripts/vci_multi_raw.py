@@ -92,13 +92,14 @@ inode = 0
 iblb = 0
 nant = 0
 inic = 0
+iport = 0
 for iant in antennas:
 
     #newsb = sb.copy() # not in lxml
     newsb = deepcopy(sb)
 
-    newsb.attrib['sbid'] = str((inode) % 16)
-    newsb.attrib['swIndex'] = str(inode+1)
+    newsb.attrib['sbid'] = str((nant) % 16)
+    newsb.attrib['swIndex'] = str(nant+1)
 
     blb = newsb.find(pfx+'polProducts').find(pfx+'blbPair')
     blb.attrib['quadrant'] = str((iblb/16)+1)
@@ -132,8 +133,9 @@ for iant in antennas:
     vdif.attrib['bDestIP'] = ips[node][inic+1]
     vdif.attrib['aDestMAC'] = macs[node][inic+0]
     vdif.attrib['bDestMAC'] = macs[node][inic+1]
-    vdif.attrib['aDestPort'] = '50000'
-    vdif.attrib['bDestPort'] = '50000'
+    destport = '%d' % (50000 + iport)
+    vdif.attrib['aDestPort'] = destport
+    vdif.attrib['bDestPort'] = destport
 
     if nant<16:
         bb.append(newsb)
@@ -144,6 +146,7 @@ for iant in antennas:
     if inode >= len(nodes):
         inode -= len(nodes)
         inic += 2
+        iport += 1
     iblb += 1
     nant += 1
 
