@@ -116,7 +116,7 @@ for iant in antennas:
     vdif.clear()
     node = nodes[inode]
 
-    vdif.attrib['agcEnabled'] = 'false'
+    vdif.attrib['agcMode'] = 'setRms'
     vdif.attrib['vdifEnableB'] = 'true'
     vdif.attrib['vdifEnableA'] = 'true'
     vdif.attrib['aPacketDelay'] = '0'
