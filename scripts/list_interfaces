@@ -6,7 +6,8 @@ import netifaces as ni
 hostname = os.uname()[1]
 
 for nic in ni.interfaces():
-    if not (nic.startswith('p2p') or nic.startswith('p1p')): continue
+    if not (nic.startswith('p2p') or nic.startswith('p1p')
+            or nic.startswith('em1:')): continue
     addrs = ni.ifaddresses(nic)
     if not ni.AF_INET in addrs.keys(): continue
     if ':' in nic:
