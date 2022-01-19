@@ -59,6 +59,15 @@ baseband = opt.bb
 idx0 = opt.idx - 1
 idx1 = opt.idx + opt.nsub + 1
 
+# Check for output file existing, we don't know file ext yet so just check
+# both ar and cf
+for ext in ('ar','cf'):
+    outfname = '%s.%s_%04d.%s' % (scan, baseband, opt.outidx, ext)
+    full_outfname = opt.outdir + '/' + outfname
+    if os.path.exists(full_outfname) and not opt.force:
+        logging.info("Output file '%s' exists, exiting." % full_outfname)
+        sys.exit(0)
+
 # Example filename:
 # 15A-105_sb30474261_1_test.57093.660558020834.963.J1909-3744.BD-15_0029.ar
 class FileInfo(namedtuple('FileInfo','path fname scan ifid sbid idx ext')):
