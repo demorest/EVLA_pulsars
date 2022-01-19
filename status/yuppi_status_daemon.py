@@ -18,7 +18,7 @@ print "yuppi_status_daemon started at", time.ctime()
 class yuppi_node_status:
 
     def __init__(self):
-        self.n_daq = 2 
+        self.n_daq = 4 
         self.shmem_keys = [None,] * self.n_daq
         self.processes = []
 

@@ -57,7 +57,7 @@ if cmd not in cmds.keys():
     print "Commands: " + str(cmds.keys())
     sys.exit(1)
 
-nodes = ["cbe-node-%02d" % i for i in range(1,33)]
+nodes = ["cbe-node-%02d" % i for i in range(1,17)]
 
 node_threads = []
 for node in nodes:
