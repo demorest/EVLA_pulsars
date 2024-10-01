@@ -189,7 +189,8 @@ class YUPPIObs(object):
             #  Using eg -F32:16 is better than simply -F32 for 4-pol detection
             #  Might want to optimize this as a fn of nchan
             #  14 threads seems optimal if using 1 process per node
-            self.command_line = 'digifil -threads 8 -B1 -I0 -c'
+            self.command_line = 'digifil -threads 7 -B96 -I0 -c'
+            #self.command_line = 'digifil -threads 6 -B1 -I0 -c'
             # old version:
             #self.command_line = 'digifil -threads 8 -B64 -I0 -c'
             self.command_line += ' -d%d' % evla_conf.npol
@@ -200,7 +201,8 @@ class YUPPIObs(object):
                 self.command_line += ' -F%d:16' % nchanfull
             else:
                 self.command_line += ' -F%d' % nchanfull
-            self.command_line += ' -t%d' % acclen
+            if acclen>1:
+                self.command_line += ' -t%d' % acclen
             if evla_conf.freqfac > 1:
                 self.command_line += ' -f%d' % evla_conf.freqfac
                 if evla_conf.searchdm != 0.0:
@@ -219,8 +221,10 @@ class YUPPIObs(object):
                     4: 2.7**2/50.0,
                     8: 10.0**2/50.0
                     }
-            self.command_line += ' -b%d -s%f' % (evla_conf.nbitsout, 
-                    digiscale[nbitsin]/outscale[evla_conf.nbitsout])
+            bitsign = 1
+            if evla_conf.nbitsout==32: bitsign=-1  # XXX hack to fix float output
+            self.command_line += ' -b%d -s%f' % (bitsign*evla_conf.nbitsout, 
+                    digiscale[nbitsin]/outscale[bitsign*evla_conf.nbitsout])
             self.command_line += ' -o%s.fil' % output_file
 
         else:
