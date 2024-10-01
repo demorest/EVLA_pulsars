@@ -153,7 +153,10 @@ def do_display(scr):
                 statstring = statfmt % (dp, ds[:statnchar], ns[:8], dt, fr)
 
                 # print it to screen, red if droptot > 10%
-                cc = ec if float(dt)>0.1 else vc
+                try:
+                    cc = ec if float(dt)>0.1 else vc
+                except ValueError:
+                    cc = vc
                 scr.addstr(curline,rcol[i],statstring,cc)
 
         scr.refresh()
