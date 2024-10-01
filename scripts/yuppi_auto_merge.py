@@ -90,7 +90,30 @@ def get_scans(subdir):
         scans[info.scan].add_file(fname)
     return scans
 
-scans = get_scans(opt.dir)
+def get_scans2(subdir):
+    all_files = []
+    subdirs = ['cbe-node-%02d'%i for i in range(1,17)]
+    for d in subdirs:
+        #print(d)
+        for f in os.listdir(d):
+            if (f.endswith('.ar') or f.endswith('.cf')) and (f.startswith(scan_prefix)):
+                mjd = int(f.split('.')[-6])
+                if mjd>60200:
+                    all_files.append(d+'/'+f)
+    scans = {}
+    for fname in all_files:
+        #print(fname)
+        try:
+            info = FileInfo(fname)
+        except ValueError:
+            logging.debug("Error parsing filename '%s'" % fname)
+            continue
+        if info.scan not in scans.keys(): scans[info.scan] = ScanInfo()
+        scans[info.scan].add_file(fname)
+    return scans
+
+#scans = get_scans(opt.dir)
+scans = get_scans2(opt.dir)
 
 for scan in scans.keys():
     info = scans[scan]
@@ -101,7 +124,7 @@ for scan in scans.keys():
                 info.ifids)
     # Split so that we have ~1GB output files per scan, in 2^N sized 
     # groups of subints.
-    nparts = int(info.total_filesize/float(len(info.ifids))/float(1<<30)) + 1
+    nparts = int(info.total_filesize/float(len(info.ifids))/float(1<<31)) + 1
     nsub = info.idx1 - info.idx0 + 1
     if nparts==1:
         subints_per_part = nsub
