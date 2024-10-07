@@ -1,13 +1,14 @@
 #! /usr/bin/env python
 
-# Simple pyro daemon that will publish the current guppi_status and 
+# Simple HTTP daemon that will publish the current guppi_status and 
 # other basic info
 
 import os
-import Pyro4
 import errno
-import socket
 import time
+import json
+from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
+
 from guppi_daq.guppi_utils import guppi_status
 
 print "yuppi_status_daemon started at", time.ctime()
@@ -43,22 +44,19 @@ class yuppi_node_status:
         # TODO do something with ps to get the processes we want
         self.processes = []
 
-Pyro4.config.SERVERTYPE = 'multiplex'
-Pyro4.config.HMAC_KEY='blahblahblah'
-stat = yuppi_node_status()
-# Retry until connected, this waits for the previous copy of the
-# process to exit.
-daemon = None
-while daemon==None:
+class StatusHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        stat = yuppi_node_status()
+        stat.update()
+        result = json.dumps(stat.shmem_keys)
+        self.send_response(200)
+        self.end_headers()
+        self.wfile.write(result)
+
+if __name__ == '__main__':
+    server = HTTPServer(('',50101), StatusHandler)
     try:
-        daemon = Pyro4.Daemon(host=os.uname()[1],port=50100)
-    except socket.error, v:
-        errcode = v[0]
-        if errcode==errno.EADDRINUSE:
-            pass
-        else:
-            raise 
-uri = daemon.register(stat,objectId="yuppi_status")
-print uri
-daemon.requestLoop()
+        server.serve_forever()
+    except KeyboardInterrupt:
+        pass
 

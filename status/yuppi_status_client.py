@@ -3,15 +3,25 @@
 # connect to all nodes, print awesome screen
 
 import time
-import Pyro4
-Pyro4.config.HMAC_KEY='blahblahblah'
+import requests
+
+class StatusHTTP:
+
+    def __init__(self,url):
+        self.url = url
+
+    def update(self):
+        self.status = requests.get(self.url).json()
+
+    def get_shmem_keys(self, idx):
+        return self.status[idx]
 
 # connect em
 nodelist = ["cbe-node-%02d" % i for i in range(1,17)]
 status = {}
 for node in nodelist:
-    uri = "PYRO:yuppi_status@%s:50100" % node
-    status[node] = Pyro4.Proxy(uri)
+    uri = "http://%s:50101" % node
+    status[node] = StatusHTTP(uri)
 
 def get(d,k):
     try:
