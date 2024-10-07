@@ -167,7 +167,7 @@ class YUPPIObs(object):
             return
 
         elif 'PULSAR_FOLD' in evla_conf.scan_intent:
-            self.command_line = 'dspsr -a PSRFITS -minram=1 -t8 -2 c0'
+            self.command_line = 'dspsr -a PSRFITS -minram=1 -U256 -t8 -2 c0'
             self.command_line += ' -F%d:D' % evla_conf.nchan
             self.command_line += ' -d%d' % evla_conf.npol
             self.command_line += ' -L%f' % evla_conf.foldtime
