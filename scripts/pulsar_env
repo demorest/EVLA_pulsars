@@ -1,4 +1,4 @@
 #! /bin/bash
 # Run a program with pulsar environment
-source /opt/cbe-local/yuppi/pulsar_env.bash
+source /opt/cbe-local/yuppi/yuppi_rhel8.bash
 exec $@
