@@ -120,10 +120,12 @@ class EVLAConfig(object):
     @property
     def searchdm(self):
         # XXX temp hack
-        if '22B-192' in self.datasetId:
+        #if '22B-192' in self.datasetId:
+        if '24B-436' in self.datasetId:
             if self.source=='B0531+21':
                 #return 56.7296 # JB 2022/10/15
-                return 56.7385 # JB 2023/07/15
+                #return 56.7385 # JB 2023/07/15
+                return 56.7234 # JB 2024/10/15
             if self.source=='B1937+21':
                 return 71.02
         return float(self.get_intent("PsrSearchDM",0.0))
@@ -131,7 +133,8 @@ class EVLAConfig(object):
     @property
     def freqfac(self):
         # XXX temp hack!
-        if '22B-192' in self.datasetId:
+        #if '22B-192' in self.datasetId:
+        if '24B-436' in self.datasetId:
             if self.get_receiver("AC")=="1.5GHz":
                 return 32 
             else:
