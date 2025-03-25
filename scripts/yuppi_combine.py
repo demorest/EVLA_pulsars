@@ -146,11 +146,11 @@ for subband in sorted(subbands):
     # to read times from files since we need read all of them anyways.
     for fname in sorted(sub_files[subband]):
         if first:
-            sub_arch[subband] = psrchive.Archive_load(fname)
+            sub_arch[subband] = psrchive.Archive.load(fname)
             timeappend.init(sub_arch[subband])
             first = False
         else:
-            timeappend.append(sub_arch[subband], psrchive.Archive_load(fname))
+            timeappend.append(sub_arch[subband], psrchive.Archive.load(fname))
 
 # Now combine subbands into the final archive
 logging.debug("Combining all subbands")
