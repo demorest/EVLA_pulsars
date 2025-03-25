@@ -151,4 +151,5 @@ for scan in scans.keys():
             cmd += ' ' + scan
             print cmd
         outidx += 1
+        sys.stdout.flush()
 
